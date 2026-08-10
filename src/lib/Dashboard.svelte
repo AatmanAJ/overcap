@@ -6,6 +6,7 @@
   import ProviderIcon from './ProviderIcon.svelte';
   import ProviderLinks from './ProviderLinks.svelte';
   import ProviderNoticeRow from './ProviderNoticeRow.svelte';
+  import ProviderSparkline from './ProviderSparkline.svelte';
   import Icon from './Icon.svelte';
   import HeroGauge from './HeroGauge.svelte';
   import MetricRenderer from './MetricRenderer.svelte';
@@ -513,6 +514,7 @@
             >
           {/if}
         </span>
+        <ProviderSparkline daily={snapshot.usage.daily} {now} />
         <span class="provider-mark"><ProviderIcon providerId={provider.id} size={17} /></span>
       </header>
       <section
