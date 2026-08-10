@@ -14,9 +14,18 @@ describe('update controller helpers', () => {
       action: 'Try again later.',
       retryable: false,
     });
-    expect(updateFailure(new Error('Update service unavailable.'), 'Safe fallback').message).toBe(
-      'Update service unavailable.',
-    );
+    expect(updateFailure(new Error('Update service unavailable.'), 'Safe fallback')).toEqual({
+      code: 'update_failed',
+      message: 'Update service unavailable.',
+      action: 'Try again later.',
+      retryable: true,
+    });
+    expect(updateFailure('No response.', 'Safe fallback')).toEqual({
+      code: 'update_failed',
+      message: 'No response.',
+      action: 'Try again or use the release page.',
+      retryable: true,
+    });
   });
 
   it('formats refresh timing without constructing mutable date state', () => {

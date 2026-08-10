@@ -43,11 +43,11 @@ export class SettingsController {
       })
       .catch(async (error: unknown) => {
         if (revision !== this.#revision) return;
-        this.onError(typeof error === 'string' ? error : 'Settings could not be saved.');
+        this.onError(typeof error === 'string' ? error : "Couldn't save settings.");
         try {
           this.setState(await getAppSettings());
         } catch {
-          this.onError('Settings could not be saved or reloaded.');
+          this.onError("Couldn't reload settings.");
         }
       })
       .finally(() => {

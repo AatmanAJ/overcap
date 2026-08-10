@@ -14,6 +14,7 @@
     onSettingsState,
     onUpdateProgress,
     onUsageState,
+    openExternalLink as openExternalLinkCommand,
     openProviderLink as openProviderLinkCommand,
     openNotificationSettings as openSystemNotificationSettings,
     openLogFolder as openSystemLogFolder,
@@ -282,7 +283,7 @@
           ]),
         ),
       };
-      settingsError = 'Overcap could not start a provider refresh.';
+      settingsError = "Couldn't refresh providers. Retrying.";
     }
   }
   async function refreshProvider(providerId: string) {
@@ -306,7 +307,7 @@
           },
         };
       }
-      settingsError = `${providerDisplayName(providerId)} usage could not be refreshed.`;
+      settingsError = `Couldn't reach ${providerDisplayName(providerId)}. Retrying.`;
     }
   }
   function openProviderLink(providerId: string, linkIndex: number) {
@@ -323,7 +324,7 @@
     try {
       settingsController.setState(await resetCustomizationCommand());
     } catch {
-      settingsError = 'Customization could not be reset.';
+      settingsError = "Couldn't reset customisation.";
     } finally {
       resettingCustomization = false;
       resetConfirmationOpen = false;
@@ -338,7 +339,7 @@
     try {
       settingsController.setState(await resetProviderCustomizationCommand(providerId));
     } catch {
-      settingsError = `${providerDisplayName(providerId)} customization could not be reset.`;
+      settingsError = `Couldn't reset ${providerDisplayName(providerId)}.`;
     }
   }
   async function copyCanvas(canvas: HTMLCanvasElement, fallback: string) {
@@ -375,7 +376,7 @@
       });
       await copyCanvas(canvas, snapshot);
     } catch {
-      settingsError = 'Provider screenshot could not be copied.';
+      settingsError = "Couldn't copy that receipt.";
     }
   }
   async function shareTotalSpend(projection: SpendProjection) {
@@ -394,7 +395,7 @@
       await copyCanvas(canvas, card.innerText.trim());
       return true;
     } catch {
-      settingsError = 'Total Spend screenshot could not be copied.';
+      settingsError = "Couldn't copy that receipt.";
       return false;
     }
   }
@@ -412,6 +413,13 @@
   }
   function closeAboutFromBackdrop(event: MouseEvent) {
     if (event.target === event.currentTarget) showAbout = false;
+  }
+  function openAboutLink(event: MouseEvent) {
+    event.preventDefault();
+    const url = (event.currentTarget as HTMLAnchorElement).href;
+    void openExternalLinkCommand(url).catch(() => {
+      settingsError = "Couldn't open that link.";
+    });
   }
   function ownsEnterKey(target: EventTarget | null) {
     if (!(target instanceof Element)) return false;
@@ -501,7 +509,7 @@
         // upstream support is still unavailable.
         await getCurrentWindow().startResizeDragging(edge === 'top' ? 'North' : 'South');
       } catch {
-        settingsError = 'Overcap panel resize could not be started.';
+        settingsError = "Couldn't resize Overcap.";
       } finally {
         await lockPanelResizeAxis().catch(() => undefined);
         updatePanelHeightMode();
@@ -517,7 +525,7 @@
     event.preventDefault();
     void getCurrentWindow()
       .startDragging()
-      .catch(() => (settingsError = 'Overcap window could not be moved.'));
+      .catch(() => (settingsError = "Couldn't move Overcap."));
   }
   async function changePanelHeightMode(mode: PanelHeightMode) {
     if (!('__TAURI_INTERNALS__' in window)) return;
@@ -528,7 +536,7 @@
       acceptPanelHeightMode(mode);
       if (mode === 'automatic') scheduleWindowFit();
     } catch {
-      settingsError = 'Overcap could not change the panel height mode.';
+      settingsError = "Couldn't change panel height.";
       updatePanelHeightMode();
     }
   }
@@ -540,14 +548,14 @@
       const permissionState = await requestNotificationPermission();
       settingsController.setState({ ...permissionState, settings: currentSettings });
     } catch {
-      settingsError = 'Notification permission could not be requested.';
+      settingsError = "Couldn't request notification access.";
     }
   }
   async function openNotificationSettings() {
     try {
       await openSystemNotificationSettings();
     } catch {
-      settingsError = 'Notification settings could not be opened on this system.';
+      settingsError = "Couldn't open notification settings.";
     }
   }
   async function checkForUpdates(manual = false) {
@@ -637,7 +645,7 @@
     document.addEventListener('keydown', handleKeydown);
     const clock = window.setInterval(() => (now = Date.now()), 30_000);
     const listeners = createListenerRegistry(() => {
-      settingsError ??= 'Overcap event bridge is unavailable.';
+      settingsError ??= 'Overcap lost its event bridge.';
     });
     listeners.add(onUsageState((state) => (viewState = state)));
     listeners.add(
@@ -666,7 +674,7 @@
         settingsController.setState(state.settings);
         automaticUpdatesReady = true;
       })
-      .catch(() => (settingsError = 'Overcap backend is unavailable.'));
+      .catch(() => (settingsError = "Couldn't reach the Overcap backend."));
     return () => {
       document.removeEventListener('keydown', handleKeydown);
       window.clearInterval(clock);
@@ -767,7 +775,6 @@
               <Dashboard
                 {viewState}
                 {catalog}
-                renamableProviderIds={settingsState.renamableProviderIds}
                 settings={settingsState.settings}
                 {now}
                 onSettingsChange={saveSettings}
@@ -803,6 +810,7 @@
                 checkingUpdate={updates.checking}
                 onCheckForUpdates={() => void checkForUpdates(true)}
                 onCustomize={() => navigate('customize')}
+                onAbout={() => (showAbout = true)}
                 onCopyLogPath={copyLogPath}
                 onOpenLogFolder={openLogFolder}
               />
@@ -822,7 +830,6 @@
                 settings={settingsState.settings}
                 providerId={screen.slice(9)}
                 {catalog}
-                renamableProviderIds={settingsState.renamableProviderIds}
                 onChange={saveCustomization}
                 onNameChange={saveSettings}
                 onReorderStart={beginCustomizationGesture}
@@ -906,7 +913,7 @@
                   <summary
                     ><span class="share-menu__direction"
                       ><Icon name="chevron-left" size={12} /></span
-                    ><span>Share Screenshot</span></summary
+                    ><span>Share receipt</span></summary
                   >
                   <div>
                     {#if shareMenuOpen}
@@ -981,9 +988,17 @@
             ><Icon name="close" size={11} strokeWidth={2.3} /></button
           >
           <OvercapMark size={44} />
-          <h1>Overcap</h1>
-          <p>Version {appVersion}</p>
-          <small>Private, local usage monitoring for your AI coding tools.</small>
+          <h1>Overcap by AIWITHAJ</h1>
+          <p class="about-card__version">Version {appVersion}</p>
+          <a
+            class="about-card__credit"
+            href="https://github.com/deviffyy/OpenQuota"
+            onclick={openAboutLink}>Started life as OpenQuota by deviffyy</a
+          >
+          <nav class="about-card__links" aria-label="Overcap links">
+            <a href="https://overcap.dev" onclick={openAboutLink}>overcap.dev</a>
+            <a href="https://aiwithaj.dev" onclick={openAboutLink}>aiwithaj.dev</a>
+          </nav>
         </div>
       </div>
     {/if}
@@ -1615,12 +1630,49 @@
       letter-spacing: 0.04em;
     }
 
-    .about-card p,
-    .about-card small {
+    .about-card p {
       margin: 0;
       color: var(--secondary);
+      font-family: var(--font-mono);
       font-size: 10px;
+      font-variant-numeric: tabular-nums;
       text-align: center;
+    }
+
+    .about-card__credit {
+      margin-top: 14px;
+      color: var(--text);
+      font-size: 10px;
+      line-height: 14px;
+      text-align: center;
+      text-decoration: underline;
+      text-decoration-color: color-mix(in srgb, var(--text) 40%, transparent);
+      text-underline-offset: 3px;
+    }
+
+    .about-card__links {
+      display: flex;
+      gap: 12px;
+      margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: 9px;
+    }
+
+    .about-card__links a {
+      color: var(--secondary);
+      text-decoration: none;
+    }
+
+    .about-card__credit:hover,
+    .about-card__links a:hover {
+      color: var(--text);
+    }
+
+    .about-card__credit:focus-visible,
+    .about-card__links a:focus-visible {
+      border-radius: 3px;
+      outline: 1px solid var(--text);
+      outline-offset: 3px;
     }
 
     .about-card__close {

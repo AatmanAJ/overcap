@@ -1,9 +1,5 @@
 import type { AppSettings } from './types';
 
-export function canRenameProvider(providerId: string, renamableProviderIds: readonly string[]) {
-  return renamableProviderIds.includes(providerId);
-}
-
 export function withProviderName(
   settings: AppSettings,
   providerId: string,

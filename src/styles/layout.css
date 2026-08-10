@@ -163,7 +163,7 @@
   }
 
   .switch input:checked + span {
-    background: var(--meter-fill);
+    background: var(--text);
   }
 
   .switch input:checked + span::after {

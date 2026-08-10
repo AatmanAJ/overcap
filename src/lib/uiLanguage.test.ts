@@ -5,8 +5,13 @@ import tokensCss from '../styles/tokens.css?raw';
 import customizeDetail from './CustomizeProviderDetail.svelte?raw';
 import customizeList from './CustomizeProviderList.svelte?raw';
 import dashboard from './Dashboard.svelte?raw';
+import heroGauge from './HeroGauge.svelte?raw';
+import overcapMark from './OvercapMark.svelte?raw';
 import providerNameSection from './ProviderNameSection.svelte?raw';
+import providerSparkline from './ProviderSparkline.svelte?raw';
 import settings from './SettingsScreen.svelte?raw';
+import shareCard from './shareCard.ts?raw';
+import statusMetric from './StatusMetric.svelte?raw';
 import { coLocatedComponentCss } from './uiStyleSources';
 
 const css = `${tokensCss}\n${layoutCss}\n${sharedComponentCss}\n${coLocatedComponentCss}`;
@@ -30,6 +35,22 @@ describe('native UI language contract', () => {
     expect(sharedCss).not.toMatch(/transition:[^;]*opacity/s);
     expect(sharedComponentCss).toMatch(/@keyframes detail-in\s*{[^}]*translateY\(6px\)/s);
     expect(sharedComponentCss).not.toMatch(/@keyframes (?:detail|menu)-in[\s\S]*?opacity:/);
+  });
+
+  it('reserves Lime Squeeze for the five product accent roles', () => {
+    expect(heroGauge).toContain('stroke: var(--meter-fill);');
+    expect(providerSparkline).toContain('fill: var(--spark-current);');
+    expect(sharedComponentCss).toContain('background: var(--action-fill);');
+    expect(shareCard).toContain("header: '#c7ff69'");
+
+    for (const source of [layoutCss, sharedComponentCss, customizeDetail, statusMetric]) {
+      expect(source).not.toContain('var(--meter-fill)');
+    }
+
+    expect(overcapMark).toContain('stroke="currentColor"');
+    expect(overcapMark).toContain('fill="currentColor"');
+    expect(overcapMark).not.toContain('overcap-mark.png');
+    expect(overcapMark).not.toContain('#c7ff69');
   });
 
   it('keeps the critical flame colored while its warning copy stays secondary', () => {
@@ -98,7 +119,7 @@ describe('native UI language contract', () => {
   it('keeps dashboard onboarding, empty state, and menus on the shared wording', () => {
     expect(dashboard).toContain('Welcome to Overcap');
     expect(dashboard).toContain('Open Customize');
-    expect(dashboard).toContain('Turn on Customize to choose what to show.');
+    expect(dashboard).toContain('Nothing connected yet. Add a provider in customise.');
     expect(dashboard).toContain('Customize…');
     expect(dashboard).toContain('Refresh {providerDisplayName(menuProvider.id)}');
     expect(dashboard).not.toContain('Providers Detected');

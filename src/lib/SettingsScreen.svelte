@@ -23,6 +23,7 @@
     checkingUpdate: boolean;
     onCheckForUpdates: () => void;
     onCustomize: () => void;
+    onAbout: () => void;
     onCopyLogPath: () => Promise<void>;
     onOpenLogFolder: () => Promise<void>;
   }
@@ -38,6 +39,7 @@
     checkingUpdate,
     onCheckForUpdates,
     onCustomize,
+    onAbout,
     onCopyLogPath,
     onOpenLogFolder,
   }: Props = $props();
@@ -285,7 +287,11 @@
 
   <div class="settings-section">
     <h2>
-      Notifications {#if notificationsNeedAttention}<span class="permission-warning">!</span>{/if}
+      Notifications {#if notificationsNeedAttention}<span
+          class="permission-warning"
+          aria-label="Notification permission needed"
+          ><Icon name="warning" size={10} strokeWidth={2} /></span
+        >{/if}
     </h2>
     <NotificationThresholdControls
       thresholds={settings.notificationThresholds}
@@ -418,6 +424,11 @@
   <button class="screen-cross-link" type="button" aria-label="Customize" onclick={onCustomize}>
     <Icon name="sliders" size={17} />
     <span><b>Customize</b><small>Choose what's visible and where</small></span>
+    <Icon name="chevron-right" size={13} strokeWidth={2.2} />
+  </button>
+  <button class="screen-cross-link" type="button" aria-label="About Overcap" onclick={onAbout}>
+    <Icon name="about" size={17} />
+    <span><b>About Overcap</b><small>Version, credits and product links</small></span>
     <Icon name="chevron-right" size={13} strokeWidth={2.2} />
   </button>
 </section>

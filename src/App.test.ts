@@ -40,6 +40,7 @@ type InvokeArgs = {
   settings?: SettingsViewState['settings'];
   providerId?: string;
   linkIndex?: number;
+  url?: string;
   height?: number;
 };
 type InvokeImplementation = (command: string, args?: InvokeArgs) => unknown;
@@ -86,6 +87,7 @@ describe('Overcap dashboard', () => {
         return Promise.resolve({ ...settingsState, notificationPermission: 'granted' });
       if (command === 'open_notification_settings') return Promise.resolve();
       if (command === 'open_provider_link') return Promise.resolve();
+      if (command === 'open_external_link') return Promise.resolve();
       if (command === 'reset_customization') return Promise.resolve(settingsState);
       if (command === 'reset_provider_customization') return Promise.resolve(settingsState);
       if (command === 'get_panel_resize_edge') return Promise.resolve('bottom');
@@ -899,7 +901,13 @@ describe('Overcap dashboard', () => {
       return Promise.resolve(liveState);
     });
     render(App);
-    expect(await screen.findByRole('alert')).toHaveTextContent('Could not connect to Codex.');
+    const networkAlert = await screen.findByRole('alert');
+    expect(networkAlert).toHaveTextContent("Couldn't reach Codex. Retrying.");
+    expect(networkAlert).toHaveAttribute('aria-label', "Couldn't reach Codex. Retrying.");
+    expect(networkAlert).toHaveAttribute('data-tooltip', "Couldn't reach Codex. Retrying.");
+    expect(document.getElementById('provider-error-detail-codex')).toHaveTextContent(
+      'Details: Could not connect to Codex.',
+    );
     expect(screen.getByText('Outdated')).toHaveAttribute(
       'data-tooltip',
       expect.stringMatching(/^Last updated/),
@@ -1206,7 +1214,7 @@ describe('Overcap dashboard', () => {
     );
     expect(within(provider).getByRole('region', { name: 'Codex usage' })).toBe(card);
     expect(provider.querySelector('.provider-status-slot')).not.toHaveClass('active');
-    expect(screen.getByText('Overcap could not start a provider refresh.')).toBeInTheDocument();
+    expect(screen.getByText("Couldn't refresh providers. Retrying.")).toBeInTheDocument();
   });
 
   it('shows platform-correct Ctrl shortcuts and handles Ctrl+Q', async () => {
@@ -1247,7 +1255,7 @@ describe('Overcap dashboard', () => {
     const optionsSummary = screen.getByLabelText('Open options');
     const optionsMenu = optionsSummary.closest('details')!;
     await fireEvent.click(optionsSummary);
-    const shareSummary = screen.getByText('Share Screenshot').closest('summary')!;
+    const shareSummary = screen.getByText('Share receipt').closest('summary')!;
     const shareMenu = shareSummary.closest('details')!;
     await fireEvent.click(shareSummary);
     expect(optionsMenu).toHaveAttribute('open');
@@ -1408,11 +1416,28 @@ describe('Overcap dashboard', () => {
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'About Overcap' }));
     expect(screen.getByRole('dialog', { name: 'About Overcap' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Overcap by AIWITHAJ' })).toBeInTheDocument();
+    expect(screen.getByText(`Version ${import.meta.env.APP_VERSION}`)).toBeInTheDocument();
+    expect(screen.getByRole('link', { name: /Started life/ })).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole('link', { name: 'overcap.dev' }));
+    expect(mocks.invoke).toHaveBeenCalledWith('open_external_link', {
+      url: 'https://overcap.dev/',
+    });
     const close = screen.getByRole('button', { name: 'Close About' });
     expect(close.querySelector('svg')).not.toBeNull();
     expect(close).not.toHaveTextContent('×');
     await fireEvent.click(close);
     expect(screen.queryByRole('dialog', { name: 'About Overcap' })).not.toBeInTheDocument();
+  });
+
+  it('opens About from Settings', async () => {
+    render(App);
+    await screen.findByText('Plus');
+    await fireEvent.click(screen.getByLabelText('Open options'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'About Overcap' }));
+
+    expect(screen.getByRole('dialog', { name: 'About Overcap' })).toBeInTheDocument();
   });
 
   it('matches provider context-menu and Customize to Settings navigation behavior', async () => {
@@ -1422,7 +1447,7 @@ describe('Overcap dashboard', () => {
       clientX: 120,
       clientY: 180,
     });
-    expect(screen.getByRole('menuitem', { name: 'Share Screenshot' })).toBeInTheDocument();
+    expect(screen.getByRole('menuitem', { name: 'Share receipt' })).toBeInTheDocument();
     await fireEvent.click(screen.getByRole('menuitem', { name: 'Customize…' }));
     expect(screen.getByRole('heading', { name: 'Codex' })).toBeInTheDocument();
     await fireEvent.click(screen.getByRole('button', { name: 'Back' }));

@@ -72,7 +72,7 @@
       availabilityError = null;
       resetEditor();
     } catch (cause) {
-      error = errorMessage(cause, 'The API key could not be saved.');
+      error = errorMessage(cause, "Couldn't save that API key.");
     } finally {
       saving = false;
     }
@@ -87,7 +87,7 @@
       availabilityError = null;
       resetEditor();
     } catch (cause) {
-      error = errorMessage(cause, 'The saved API key could not be removed.');
+      error = errorMessage(cause, "Couldn't remove that API key.");
     } finally {
       saving = false;
     }
@@ -101,7 +101,7 @@
       })
       .catch((cause) => {
         supported = true;
-        availabilityError = errorMessage(cause, 'The system credential store is unavailable.');
+        availabilityError = errorMessage(cause, "Couldn't reach the system credential store.");
       });
   });
 </script>

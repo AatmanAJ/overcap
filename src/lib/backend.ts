@@ -40,6 +40,10 @@ export function openProviderLink(providerId: string, linkIndex: number) {
   return invoke<void>('open_provider_link', { providerId, linkIndex });
 }
 
+export function openExternalLink(url: string) {
+  return invoke<void>('open_external_link', { url });
+}
+
 export function getProviderApiKeyState(providerId: string) {
   return invoke<ProviderApiKeyState | null>('get_provider_api_key_state', { providerId });
 }

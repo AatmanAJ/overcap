@@ -59,7 +59,7 @@
         : result?.outcome === 'noCredit'
           ? 'This reset is no longer available.'
           : result?.outcome === 'failed'
-            ? 'Could not use this reset. Try again.'
+            ? "Couldn't use this reset. Try again."
             : null,
   );
 

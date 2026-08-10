@@ -9,13 +9,11 @@
   import ProviderNameSection from './ProviderNameSection.svelte';
   import { reorderFlip } from './motion';
   import { pointerReorder } from './pointerReorder';
-  import { canRenameProvider } from './providerNames';
 
   interface Props {
     settings: AppSettings;
     providerId: string;
     catalog: ProviderCatalogIndex;
-    renamableProviderIds: string[];
     onChange: (settings: AppSettings) => void;
     onNameChange: (settings: AppSettings) => void;
     onReorderStart: () => void;
@@ -26,7 +24,6 @@
     settings,
     providerId,
     catalog,
-    renamableProviderIds,
     onChange,
     onNameChange,
     onReorderStart,
@@ -144,9 +141,7 @@
     class="screen customize-detail"
     aria-label={`Customize ${providerDisplayName(provider.id)}`}
   >
-    {#if canRenameProvider(provider.id, renamableProviderIds)}
-      <ProviderNameSection {settings} {provider} {catalog} onChange={onNameChange} />
-    {/if}
+    <ProviderNameSection {settings} {provider} {catalog} onChange={onNameChange} />
     <div class="metric-section provider-threshold-section">
       <h2>Alerts</h2>
       <div class="provider-threshold-card">
@@ -346,7 +341,7 @@
     }
 
     .pin-button.pinned {
-      color: var(--meter-fill);
+      color: var(--text);
     }
 
     .metric-section {

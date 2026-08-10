@@ -157,7 +157,7 @@ export function createWindowController(options: WindowControllerOptions) {
     } catch {
       pendingResizeHeight = null;
       resizeAvailable = false;
-      options.onError('Overcap window could not adapt to its content.');
+      options.onError("Couldn't resize Overcap.");
     } finally {
       resizeInFlight = false;
     }

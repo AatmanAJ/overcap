@@ -14,13 +14,13 @@
   import type { SpendProjection } from './totalSpend';
   import type { ProviderCatalogIndex } from './metrics';
   import { paceProjectionLine } from './pacing';
-  import { canRenameProvider } from './providerNames';
   import { selectHeroGaugeMetric } from './heroGauge';
   import type {
     AppSettings,
     MetricLayout,
     ProviderLayout,
     ProviderSnapshot,
+    ProviderViewState,
     UpdateProgress,
     UpdateFailure,
     UsageHistory,
@@ -33,7 +33,6 @@
     settings: AppSettings;
     now: number;
     catalog: ProviderCatalogIndex;
-    renamableProviderIds: string[];
     onSettingsChange: (settings: AppSettings) => void;
     onCustomizationChange: (settings: AppSettings) => void;
     onReorderStart: () => void;
@@ -59,7 +58,6 @@
     settings,
     now,
     catalog,
-    renamableProviderIds,
     onSettingsChange,
     onCustomizationChange,
     onReorderStart,
@@ -245,8 +243,7 @@
     event.preventDefault();
     metricMenu = null;
     const focusFirstItem = event.button !== 2;
-    const provider = settings.providers.find((item) => item.id === providerId);
-    const menuHeight = provider && canRenameProvider(provider.id, renamableProviderIds) ? 204 : 174;
+    const menuHeight = 204;
     providerMenu = {
       id: providerId,
       x: Math.max(6, Math.min(event.clientX, window.innerWidth - 196)),
@@ -328,6 +325,17 @@
     const remainingMinutes = minutes % 60;
     return `Last updated ${hours}h${remainingMinutes ? ` ${remainingMinutes}m` : ''} ago`;
   }
+  function providerErrorPresentation(
+    error: string,
+    kind: ProviderViewState['errorKind'],
+    displayName: string,
+  ) {
+    if (kind !== 'network') return { message: error, detail: null };
+    return {
+      message: `Couldn't reach ${displayName}. Retrying.`,
+      detail: error,
+    };
+  }
 </script>
 
 <svelte:window
@@ -342,11 +350,11 @@
 {/if}
 
 {#if updateStatus?.available && updateStatus.version !== settings.dismissedUpdateVersion}
-  <section class="hint-card update-banner" aria-label="Update Available">
+  <section class="hint-card update-banner" aria-label="New build ready">
     <span class="hint-card__icon"><Icon name="refresh" size={16} strokeWidth={2} /></span>
     <div>
-      <strong>Update Available</strong>
-      <span>Overcap {updateStatus.version} is ready to download.</span>
+      <strong>New build ready.</strong>
+      <span>Restart to switch.</span>
       {#if updateStatus.body}<details class="update-notes">
           <summary>What’s new</summary>
           <p>{updateStatus.body}</p>
@@ -494,15 +502,25 @@
               ><Icon name="refresh" size={12} strokeWidth={2} /></span
             >
           {:else if state?.error}
+            {@const errorPresentation = providerErrorPresentation(
+              state.error,
+              state.errorKind,
+              providerDisplayName(provider.id),
+            )}
+            {@const errorDetailId = `provider-error-detail-${provider.id}`}
             <span
               class="provider-warning"
               role="alert"
-              data-tooltip={state.error}
-              aria-label={state.error}
+              data-tooltip={errorPresentation.message}
+              aria-label={errorPresentation.message}
+              aria-describedby={errorPresentation.detail ? errorDetailId : undefined}
               ><Icon name="warning" size={12} strokeWidth={2} /><span class="sr-only"
-                >{state.error}</span
+                >{errorPresentation.message}</span
               ></span
             >
+            {#if errorPresentation.detail}
+              <span id={errorDetailId} class="sr-only">Details: {errorPresentation.detail}</span>
+            {/if}
           {:else if snapshot.warnings.length > 0}
             <span
               class="provider-warning"
@@ -660,17 +678,15 @@
       <button type="button" role="menuitem" onclick={() => onRefresh(menuProvider.id)}
         ><Icon name="refresh" size={15} />Refresh {providerDisplayName(menuProvider.id)}</button
       >
-      {#if canRenameProvider(menuProvider.id, renamableProviderIds)}
-        <button type="button" role="menuitem" onclick={() => onRenameProvider(menuProvider.id)}
-          ><Icon name="edit" size={15} />Rename…</button
-        >
-      {/if}
+      <button type="button" role="menuitem" onclick={() => onRenameProvider(menuProvider.id)}
+        ><Icon name="edit" size={15} />Rename…</button
+      >
       <button type="button" role="menuitem" onclick={() => onOpenProviderCustomize(menuProvider.id)}
         ><Icon name="sliders" size={15} />Customize…</button
       >
       <hr />
       <button type="button" role="menuitem" onclick={() => onShare(menuProvider.id)}
-        ><Icon name="share" size={15} />Share Screenshot</button
+        ><Icon name="share" size={15} />Share receipt</button
       >
     </div>
   {/if}
@@ -727,7 +743,7 @@
 
 {#if enabledProviders.length === 0}
   <section class="empty-dashboard">
-    <span>Turn on Customize to choose what to show.</span>
+    <span>Nothing connected yet. Add a provider in customise.</span>
   </section>
 {/if}
 

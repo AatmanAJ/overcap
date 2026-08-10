@@ -102,8 +102,8 @@
     <button
       class="icon-button icon-button--plain total-card__share"
       type="button"
-      aria-label={`Share ${metricTitle()} Screenshot`}
-      data-tooltip="Share Screenshot"
+      aria-label={`Share ${metricTitle()} receipt`}
+      data-tooltip="Share receipt"
       onclick={share}
       ><Icon name={shareCopied ? 'check' : 'share'} size={14} strokeWidth={1.8} /></button
     >

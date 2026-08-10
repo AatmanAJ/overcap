@@ -130,12 +130,13 @@ describe('Overcap update lifecycle', () => {
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
-    expect(await screen.findByRole('region', { name: 'Update Available' })).toHaveTextContent(
-      'Overcap 0.2.0 is ready to download.',
-    );
+    const updateBanner = await screen.findByRole('region', { name: 'New build ready' });
+    expect(updateBanner).toHaveTextContent('New build ready.');
+    expect(updateBanner).toHaveTextContent('Restart to switch.');
+    expect(screen.getByText('New build ready. Restart to switch.')).toBeInTheDocument();
     expect(screen.getByText('New release')).toBeInTheDocument();
     await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
-    expect(screen.queryByRole('region', { name: 'Update Available' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('region', { name: 'New build ready' })).not.toBeInTheDocument();
     expect(mocks.invoke).toHaveBeenCalledWith(
       'save_app_settings',
       expect.objectContaining({

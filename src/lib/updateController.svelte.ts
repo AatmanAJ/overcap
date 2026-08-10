@@ -25,7 +25,7 @@ export class UpdateController {
       onChecked(new SvelteDate().toISOString());
       if (manual) onMessage(updateCheckMessage(status));
     } catch (error) {
-      if (manual) this.error = updateFailure(error, 'Updates could not be checked.');
+      if (manual) this.error = updateFailure(error, "Couldn't check for updates.");
     } finally {
       this.checking = false;
     }
@@ -39,7 +39,7 @@ export class UpdateController {
     try {
       await installApplicationUpdate();
     } catch (error) {
-      this.error = updateFailure(error, 'The update could not be installed.');
+      this.error = updateFailure(error, "Couldn't install that update.");
       this.installing = false;
       this.progress = null;
     }
@@ -49,7 +49,7 @@ export class UpdateController {
     try {
       await openUpdatePage();
     } catch (error) {
-      this.error = updateFailure(error, 'The Overcap download page could not be opened.');
+      this.error = updateFailure(error, "Couldn't open the download page.");
     }
   }
 
@@ -87,14 +87,12 @@ export function updateFailure(error: unknown, fallback: string): UpdateFailure {
   return {
     code: 'update_failed',
     message: typeof error === 'string' ? error : fallback,
-    action: 'Try again or download the installer from the release page.',
+    action: 'Try again or use the release page.',
     retryable: true,
   };
 }
 
 function updateCheckMessage(status: UpdateStatus) {
   if (!status.available) return `Overcap ${status.currentVersion} is up to date.`;
-  return status.version
-    ? `Overcap ${status.version} is available.`
-    : 'An Overcap update is available.';
+  return 'New build ready. Restart to switch.';
 }

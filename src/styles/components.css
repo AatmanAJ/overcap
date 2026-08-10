@@ -144,7 +144,7 @@
   .reorder-grip:focus-visible,
   .metric-reorder-handle:focus-visible {
     border-radius: 6px;
-    outline: 2px solid color-mix(in srgb, var(--meter-fill) 72%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--text) 72%, transparent);
     outline-offset: 2px;
     opacity: 1;
   }

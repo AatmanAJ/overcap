@@ -95,13 +95,12 @@ async function drag(
 }
 
 describe('pointer reorder integrations', () => {
-  it('renames an observed Claude card from its dedicated Name section', async () => {
+  it('renames a provider without an account-name capability gate', async () => {
     const onChange = vi.fn();
     render(CustomizeProviderDetail, {
       settings,
-      providerId: 'claude',
+      providerId: 'codex',
       catalog: providerCatalogIndex,
-      renamableProviderIds: ['claude'],
       onChange,
       onNameChange: onChange,
       onReorderStart: vi.fn(),
@@ -109,13 +108,13 @@ describe('pointer reorder integrations', () => {
       reducedMotion: false,
     });
 
-    const input = screen.getByRole('textbox', { name: 'Name for Claude' });
-    expect(input).toHaveAttribute('placeholder', 'Claude');
+    const input = screen.getByRole('textbox', { name: 'Name for Codex' });
+    expect(input).toHaveAttribute('placeholder', 'Codex');
     await fireEvent.input(input, { target: { value: 'Personal' } });
     await fireEvent.blur(input);
 
     expect((onChange.mock.calls[0][0] as AppSettings).providerNames).toEqual({
-      claude: 'Personal',
+      codex: 'Personal',
     });
   });
 
@@ -125,7 +124,6 @@ describe('pointer reorder integrations', () => {
       settings: { ...settings, providerNames: { claude: 'Work' } },
       providerId: 'claude',
       catalog: providerCatalogIndex,
-      renamableProviderIds: ['claude'],
       onChange: vi.fn(),
       onNameChange,
       onReorderStart: vi.fn(),
@@ -153,7 +151,6 @@ describe('pointer reorder integrations', () => {
       settings: independent,
       providerId: 'codex',
       catalog: providerCatalogIndex,
-      renamableProviderIds: [],
       onChange,
       onNameChange: vi.fn(),
       onReorderStart: vi.fn(),
@@ -185,7 +182,6 @@ describe('pointer reorder integrations', () => {
       settings,
       providerId: 'codex',
       catalog: providerCatalogIndex,
-      renamableProviderIds: [],
       onChange,
       onNameChange: vi.fn(),
       onReorderStart: vi.fn(),
@@ -262,7 +258,6 @@ describe('pointer reorder integrations', () => {
       settings,
       providerId: 'codex',
       catalog: providerCatalogIndex,
-      renamableProviderIds: [],
       onChange,
       onNameChange: vi.fn(),
       onReorderStart: vi.fn(),

@@ -1,6 +1,4 @@
 <script lang="ts">
-  import overcapMark from '../assets/overcap-mark.png';
-
   interface Props {
     size?: number;
     decorative?: boolean;
@@ -9,18 +7,28 @@
   let { size = 18, decorative = true }: Props = $props();
 </script>
 
-<img
-  src={overcapMark}
+<svg
+  class="overcap-mark"
   width={size}
   height={size}
-  alt={decorative ? '' : 'Overcap'}
+  viewBox="0 0 24 24"
+  fill="none"
+  stroke="currentColor"
+  stroke-linecap="round"
+  stroke-linejoin="round"
   aria-hidden={decorative}
-  draggable="false"
-/>
+  aria-label={decorative ? undefined : 'Overcap'}
+  role={decorative ? undefined : 'img'}
+  focusable="false"
+>
+  <path d="M3.5 16.5A9 9 0 0 1 20.5 15" stroke-width="2.25" />
+  <path d="m12 16 3.15-9.15" stroke-width="2" />
+  <circle cx="12" cy="16" r="1.75" fill="currentColor" stroke="none" />
+</svg>
 
 <style>
-  img {
+  .overcap-mark {
     display: block;
-    object-fit: contain;
+    flex: 0 0 auto;
   }
 </style>

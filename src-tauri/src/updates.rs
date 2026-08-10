@@ -95,7 +95,7 @@ fn classify_updater_error(error: &UpdaterError, operation: &'static str) -> Upda
         return UpdateFailure::new(
             "download_forbidden",
             "GitHub refused the update download.",
-            "Try again. If it still fails, download the verified installer from the release page.",
+            "Try again or use the release page.",
             true,
         );
     }
@@ -121,15 +121,15 @@ fn classify_updater_error(error: &UpdaterError, operation: &'static str) -> Upda
     if matches!(error, UpdaterError::Reqwest(_) | UpdaterError::Network(_)) {
         return UpdateFailure::new(
             "network",
-            format!("Overcap could not {operation} because the network request failed."),
-            "Check your connection or proxy, then try again.",
+            format!("Couldn't {operation}."),
+            "Check your connection, then try again.",
             true,
         );
     }
     UpdateFailure::new(
         "update_failed",
-        format!("Overcap could not {operation}."),
-        "Try again or use the release page to download the installer manually.",
+        format!("Couldn't {operation}."),
+        "Try again or use the release page.",
         true,
     )
 }
@@ -308,7 +308,7 @@ pub fn open_update_page() -> Result<(), String> {
         .args(arguments)
         .spawn()
         .map(|_| ())
-        .map_err(|error| format!("The Overcap download page could not be opened: {error}"))
+        .map_err(|error| format!("Couldn't open the download page: {error}"))
 }
 
 #[cfg(test)]

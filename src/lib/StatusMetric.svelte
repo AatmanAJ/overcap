@@ -53,8 +53,8 @@
     }
 
     .status-badge--positive {
-      color: var(--meter-fill);
-      background: color-mix(in srgb, var(--meter-fill) 12%, transparent);
+      color: var(--text);
+      background: var(--button-hover);
     }
 
     .status-badge--warning {

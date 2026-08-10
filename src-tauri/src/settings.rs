@@ -525,12 +525,16 @@ impl SettingsService {
         platform_summary: Option<String>,
     ) -> SettingsViewState {
         let (settings, account_revision) = self.get_with_account_revision();
-        let mut renamable_provider_ids = self.registry.observed_account_provider_ids();
+        let mut renamable_provider_ids = self
+            .registry
+            .catalog()
+            .providers
+            .iter()
+            .map(|provider| provider.id.clone())
+            .collect::<Vec<_>>();
         if let Ok(stored_ids) = self.storage.load_observed_account_provider_ids() {
             for provider_id in stored_ids {
-                if self.registry.supports_account_names(&provider_id)
-                    && !renamable_provider_ids.contains(&provider_id)
-                {
+                if !renamable_provider_ids.contains(&provider_id) {
                     renamable_provider_ids.push(provider_id);
                 }
             }
@@ -619,7 +623,7 @@ fn normalize_with_persisted_accounts(
         .map(|shortcut| shortcut.trim().to_owned())
         .filter(|shortcut| !shortcut.is_empty());
     settings.notification_thresholds = settings.notification_thresholds.normalized();
-    let known_threshold_provider_ids = catalog
+    let known_provider_ids = catalog
         .providers
         .iter()
         .map(|provider| provider.id.as_str())
@@ -629,15 +633,14 @@ fn normalize_with_persisted_accounts(
         .provider_notification_thresholds
         .retain(|provider_id, thresholds| {
             *thresholds = thresholds.normalized();
-            known_threshold_provider_ids.contains(provider_id.as_str())
+            known_provider_ids.contains(provider_id.as_str())
         });
     settings.provider_names.retain(|provider_id, name| {
-        if !registry.supports_account_names(provider_id)
-            && !persisted_accounts.contains(provider_id)
-        {
+        if !known_provider_ids.contains(provider_id.as_str()) {
             return false;
         }
-        *name = name.trim().chars().take(48).collect();
+        let truncated = name.trim().chars().take(48).collect::<String>();
+        *name = truncated.trim_end().to_owned();
         !name.is_empty()
     });
 
@@ -1237,6 +1240,46 @@ mod tests {
             Some("Personal")
         );
         assert!(state.renamable_provider_ids.contains(&"claude".to_owned()));
+    }
+
+    #[test]
+    fn non_account_provider_name_is_normalized_and_survives_a_restart() {
+        let directory = tempdir().unwrap();
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
+        let registry = catalog();
+        let (first, _) = SettingsService::new_deferred(storage.clone(), registry.clone()).unwrap();
+        let mut settings = first.get();
+        settings
+            .provider_names
+            .insert("cursor".into(), format!("  {} suffix  ", "x".repeat(47)));
+        settings
+            .provider_names
+            .insert("removed-provider".into(), "Old name".into());
+
+        let saved = first
+            .update_from_view(settings, first.account_revision())
+            .unwrap();
+        assert_eq!(
+            saved.provider_names.get("cursor").map(String::as_str),
+            Some("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+        );
+        assert!(!saved.provider_names.contains_key("removed-provider"));
+        drop(first);
+
+        let (second, _) = SettingsService::new_deferred(storage, registry).unwrap();
+        let state = second.view_state("prompt", None, false, None);
+        assert_eq!(
+            state
+                .settings
+                .provider_names
+                .get("cursor")
+                .map(String::as_str),
+            Some("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx")
+        );
+        assert!(state.renamable_provider_ids.contains(&"cursor".to_owned()));
+        assert!(state
+            .renamable_provider_ids
+            .contains(&"openrouter".to_owned()));
     }
 
     #[test]
