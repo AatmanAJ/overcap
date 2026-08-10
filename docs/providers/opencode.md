@@ -1,6 +1,6 @@
 # OpenCode
 
-OpenQuota combines OpenCode Go quota information with usage recorded by local OpenCode sessions.
+Overcap combines OpenCode Go quota information with usage recorded by local OpenCode sessions.
 
 ## What it tracks
 
@@ -18,11 +18,11 @@ shown when OpenCode has been used without that plan.
 The Go meters compare usage recorded on this computer with the plan caps. Usage from another device
 or a session that has not yet been written locally can make them lower than the account-wide total.
 The displayed costs come from the values recorded by OpenCode rather than being estimated by
-OpenQuota.
+Overcap.
 
 ## Sign-in and local data
 
-Sign in to OpenCode Go or use OpenCode locally first. OpenQuota reads OpenCode's local authentication
+Sign in to OpenCode Go or use OpenCode locally first. Overcap reads OpenCode's local authentication
 file and databases from its data directory. `OPENCODE_DATA_DIR` and `XDG_DATA_HOME` are respected
 when present.
 

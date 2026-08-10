@@ -1,6 +1,6 @@
 # Z.ai
 
-OpenQuota tracks quota information for the Z.ai GLM Coding Plan.
+Overcap tracks quota information for the Z.ai GLM Coding Plan.
 
 ## What it tracks
 
@@ -12,9 +12,9 @@ OpenQuota tracks quota information for the Z.ai GLM Coding Plan.
 
 ## Setup
 
-Add a Z.ai API key from **Customize** in OpenQuota. Saved keys are kept in the operating system's
-credential store. OpenQuota also checks `ZAI_API_KEY`, `GLM_API_KEY`,
-`~/.config/openquota/zai.json`, and `~/.config/zai/key.json`; a key saved in the app takes priority.
+Add a Z.ai API key from **Customize** in Overcap. Saved keys are kept in the operating system's
+credential store. Overcap also checks `ZAI_API_KEY`, `GLM_API_KEY`,
+`~/.config/overcap/zai.json`, and `~/.config/zai/key.json`; a key saved in the app takes priority.
 
 The key must belong to an account with an active GLM Coding Plan.
 

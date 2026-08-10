@@ -1,6 +1,6 @@
 # Cursor
 
-OpenQuota tracks plan usage from the Cursor account already signed in on your computer.
+Overcap tracks plan usage from the Cursor account already signed in on your computer.
 
 ## What it tracks
 
@@ -17,8 +17,8 @@ OpenQuota tracks plan usage from the Cursor account already signed in on your co
 
 ## Sign-in and local data
 
-Sign in through the Cursor app or run `agent login`. OpenQuota looks for Cursor's local application
-state and platform credential storage, so no separate OpenQuota login is required.
+Sign in through the Cursor app or run `agent login`. Overcap looks for Cursor's local application
+state and platform credential storage, so no separate Overcap login is required.
 
 Recent history comes from Cursor's usage export. Exported data can arrive later than live account
 usage, so spend and token totals may briefly lag behind the quota meters.
@@ -28,4 +28,4 @@ usage, so spend and token totals may briefly lag behind the quota meters.
 - **Not logged in** — open Cursor and sign in, or run `agent login`.
 - **Session expired** — sign in again through Cursor or the agent CLI.
 - **Some metrics show No data** — Cursor returns different fields for different plans.
-- **History is delayed** — wait for Cursor's usage export to update, then refresh OpenQuota.
+- **History is delayed** — wait for Cursor's usage export to update, then refresh Overcap.

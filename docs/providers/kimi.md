@@ -1,6 +1,6 @@
 # Kimi
 
-OpenQuota tracks the Session (rolling five-hour) and Weekly quotas of a Kimi Code membership.
+Overcap tracks the Session (rolling five-hour) and Weekly quotas of a Kimi Code membership.
 
 ## What it tracks
 
@@ -12,8 +12,8 @@ OpenQuota tracks the Session (rolling five-hour) and Weekly quotas of a Kimi Cod
 ## Setup
 
 Create a Kimi Code API key in the [Kimi Code Console](https://www.kimi.com/code/console), then add
-it in **Customize** in OpenQuota. Saved keys are stored in the operating system's credential store.
-OpenQuota also checks `KIMI_API_KEY` and `~/.config/openquota/kimi.json`; a key saved in the app
+it in **Customize** in Overcap. Saved keys are stored in the operating system's credential store.
+Overcap also checks `KIMI_API_KEY` and `~/.config/overcap/kimi.json`; a key saved in the app
 takes priority.
 
 This provider uses the Kimi Code endpoint, `https://api.kimi.com/coding/v1`. Kimi Code keys are not

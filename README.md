@@ -1,86 +1,82 @@
 <p align="center">
-  <img src="assets/openquota-icon.png" alt="OpenQuota logo" width="88">
+  <img src="assets/overcap-icon.png" alt="Overcap logo" width="88">
 </p>
 
-<h1 align="center">OpenQuota</h1>
+<h1 align="center">Overcap</h1>
 
 <p align="center">
-  Track usage and limits across your AI coding tools.
+  Track usage and limits across your AI coding tools
 </p>
 
 <p align="center">
-  <a href="https://github.com/deviffyy/OpenQuota/actions/workflows/ci.yml"><img src="https://github.com/deviffyy/OpenQuota/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
-  <a href="https://github.com/deviffyy/OpenQuota/releases/latest"><img src="https://img.shields.io/github/v/release/deviffyy/OpenQuota" alt="Latest release"></a>
-  <a href="https://github.com/deviffyy/OpenQuota/releases"><img src="https://img.shields.io/github/downloads/deviffyy/OpenQuota/total" alt="Total downloads"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue.svg" alt="MIT license"></a>
+  <a href="https://github.com/AJ-Base44/overcap/actions/workflows/ci.yml"><img src="https://github.com/AJ-Base44/overcap/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
+  <a href="https://github.com/AJ-Base44/overcap/releases/latest"><img src="https://img.shields.io/github/v/release/AJ-Base44/overcap" alt="Latest release"></a>
+  <a href="https://github.com/AJ-Base44/overcap/releases"><img src="https://img.shields.io/github/downloads/AJ-Base44/overcap/total" alt="Total downloads"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-141414.svg" alt="MIT license"></a>
 </p>
 
-OpenQuota brings usage data from Claude Code, Codex, Cursor, Copilot, and other AI coding providers
-into one compact panel. See session and weekly limits, reset times, token usage, and estimated
-spend at a glance.
+Overcap brings the limits and usage data from your AI coding tools into one compact desktop panel.
+See the tightest constraint first, check your pace, and know when you are about to hit the cap.
 
 <p align="center">
-  <img src="assets/openquota-demo.gif" alt="OpenQuota dashboard showing animated AI usage in light and dark themes" width="840">
+  <!-- TODO re-record with Overcap UI -->
+  <img src="assets/overcap-demo.gif" alt="Overcap dashboard showing AI usage and limits" width="840">
 </p>
 
 ## Download
 
-| Platform | Available builds                           | Download                                                                      |
-| -------- | ------------------------------------------ | ----------------------------------------------------------------------------- |
-| Windows  | x64 and ARM64 installers                   | [Download for Windows](https://github.com/deviffyy/OpenQuota/releases/latest) |
-| macOS    | Universal DMG for Apple Silicon and Intel  | [Download for macOS](https://github.com/deviffyy/OpenQuota/releases/latest)   |
-| Linux    | x64 and ARM64 AppImage and Debian packages | [Download for Linux](https://github.com/deviffyy/OpenQuota/releases/latest)   |
+| Platform | Available builds                           | Download                                                                     |
+| -------- | ------------------------------------------ | ---------------------------------------------------------------------------- |
+| Windows  | x64 and ARM64 installers                   | [Download for Windows](https://github.com/AJ-Base44/overcap/releases/latest) |
+| macOS    | Universal DMG for Apple Silicon and Intel  | [Download for macOS](https://github.com/AJ-Base44/overcap/releases/latest)   |
+| Linux    | x64 and ARM64 AppImage and Debian packages | [Download for Linux](https://github.com/AJ-Base44/overcap/releases/latest)   |
 
 Open the latest release and choose the file for your platform:
 
 - **Windows:** `_x64-setup.exe` or `_arm64-setup.exe`
-- **macOS:** `_universal.dmg` — requires macOS 11 or later
+- **macOS:** `_universal.dmg` (macOS 11 or later)
 - **Linux:** `.AppImage` or `.deb`
 
-OpenQuota checks for updates automatically. Installable updates are cryptographically signed.
-
-## Supported providers
-
-- **[Claude Code](docs/providers/claude.md)** — multiple accounts, session and weekly limits,
-  model-specific usage, token history, and estimated spend
-- **[Codex](docs/providers/codex.md)** — session and weekly limits, credits, token history, model
-  breakdown, and estimated spend
-- **[Cursor](docs/providers/cursor.md)** — total, Auto and API usage, credits, token history, and
-  estimated spend
-- **[Antigravity](docs/providers/antigravity.md)** — shared Gemini and Claude quota pools
-- **[Copilot](docs/providers/copilot.md)** — premium requests, extra usage, chat and completion
-  quotas, plus organization billing
-- **[Devin](docs/providers/devin.md)** — daily and weekly limits, reset times, and extra usage balance
-- **[Grok](docs/providers/grok.md)** — weekly allowance, extra usage status, token history, and
-  estimated spend
-- **[OpenCode](docs/providers/opencode.md)** — OpenCode Go session, weekly and monthly spend caps,
-  plus local hosted usage history
-- **[OpenRouter](docs/providers/openrouter.md)** — credit balance and daily, weekly and monthly spend
-  (API key)
-- **[Z.ai](docs/providers/zai.md)** — GLM Coding Plan session, weekly, and web-search quotas (API key)
-- **[Kimi](docs/providers/kimi.md)** — Kimi Code session and weekly quotas (API key)
-- **[MiniMax](docs/providers/minimax.md)** — Token Plan session and weekly quotas (API key)
-
-Most providers use credentials already available on your computer. OpenRouter, Z.ai, Kimi, and
-MiniMax require API keys, which you can add in Customize; OpenQuota stores them securely in your
-operating system's credential store. Codex subscription limits require a ChatGPT login and are not
-available in API-key-only sessions.
+Overcap checks for signed updates automatically.
 
 ## Features
 
-- **Tray or floating dashboard.** View quotas in a compact popup, or keep the panel open and move it
-  around your desktop.
-- **Pinned metrics.** Keep important values visible in the tray or macOS menu bar.
-- **Used or left.** Display how much quota you have consumed or how much remains.
-- **Usage history.** Review today, yesterday, and the last 30 days of token usage and estimated
-  spend.
-- **Pacing alerts.** See whether your current usage is likely to last until the next reset.
-- **Custom layouts.** Reorder providers and metrics, hide rows, and choose what stays visible.
-- **Desktop integration.** Launch at login, use a global shortcut, and follow the system theme.
-- **Fast refresh.** Cached values appear immediately and providers refresh automatically in the
-  background.
+- **Hero gauge.** The tightest live limit stays at the top, with a clear redline before the cap.
+- **Pace projections.** See whether you will cap before reset and where monthly spend is heading.
+- **Provider sparklines.** Scan the last seven days of token usage without opening another view.
+- **Threshold alerts.** Set global or per-provider warnings at 80%, 95%, and 100%.
+- **Share receipts.** Export usage and spend as a compact till-style PNG receipt.
+- **Tray or floating dashboard.** Open a compact popup or pin the movable panel to your desktop.
+- **Used or left.** Show how much quota has gone or how much remains.
+- **Custom layouts.** Reorder providers and metrics, hide rows, and add provider nicknames.
+- **Local by default.** Overcap has no account, cloud backend, analytics, or usage telemetry.
 
-OpenQuota runs locally and has no account, cloud backend, analytics, or usage telemetry of its own.
+## Supported providers
+
+- **[Claude Code](docs/providers/claude.md)** - multiple accounts, session and weekly limits,
+  model-specific usage, token history, and estimated spend
+- **[Codex](docs/providers/codex.md)** - session and weekly limits, credits, token history, model
+  breakdown, and estimated spend
+- **[Cursor](docs/providers/cursor.md)** - total, Auto and API usage, credits, token history, and
+  estimated spend
+- **[Antigravity](docs/providers/antigravity.md)** - shared Gemini and Claude quota pools
+- **[Copilot](docs/providers/copilot.md)** - premium requests, extra usage, chat and completion
+  quotas, plus organization billing
+- **[Devin](docs/providers/devin.md)** - daily and weekly limits, reset times, and extra usage balance
+- **[Grok](docs/providers/grok.md)** - weekly allowance, extra usage status, token history, and
+  estimated spend
+- **[OpenCode](docs/providers/opencode.md)** - OpenCode Go session, weekly and monthly spend caps,
+  plus local hosted usage history
+- **[OpenRouter](docs/providers/openrouter.md)** - credit balance and daily, weekly and monthly spend
+  (API key)
+- **[Z.ai](docs/providers/zai.md)** - GLM Coding Plan session, weekly, and web-search quotas (API key)
+- **[Kimi](docs/providers/kimi.md)** - Kimi Code session and weekly quotas (API key)
+- **[MiniMax](docs/providers/minimax.md)** - Token Plan session and weekly quotas (API key)
+
+Most providers reuse credentials already available on your computer. OpenRouter, Z.ai, Kimi, and
+MiniMax require API keys added in Customize. Overcap stores them in your operating system's
+credential store. Codex subscription limits require a ChatGPT login and are unavailable in
+API-key-only sessions.
 
 ## Development
 
@@ -91,14 +87,14 @@ Requirements:
 - Stable Rust toolchain
 - [Tauri 2 platform prerequisites](https://v2.tauri.app/start/prerequisites/)
 
-Install dependencies and start the development app:
+Install dependencies and start the desktop app:
 
 ```sh
 corepack pnpm install --frozen-lockfile
 corepack pnpm tauri dev
 ```
 
-Run the complete quality checks:
+Run the complete quality gate:
 
 ```sh
 corepack pnpm verify
@@ -114,14 +110,18 @@ corepack pnpm tauri build --bundles dmg   # macOS
 
 ## Contributing
 
-Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) before contributing,
-and report security problems privately as described in [SECURITY.md](SECURITY.md).
+Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Report security
+problems privately through [SECURITY.md](SECURITY.md).
 
-## Acknowledgements
+## Credits
 
-OpenQuota was inspired by [OpenUsage](https://github.com/robinebers/openusage) and developed as a
-cross-platform alternative for Windows, Linux, and macOS.
+Overcap started life as [OpenQuota by deviffyy](https://github.com/deviffyy/OpenQuota). Full credit
+to the original build, this fork rebrands, rethemes and extends it as an AIWITHAJ product.
 
 ## License
 
 [MIT](LICENSE)
+
+<p align="center">
+  Built by AIWITHAJ · <a href="https://aiwithaj.dev">aiwithaj.dev</a> · <a href="https://overcap.dev">overcap.dev</a>
+</p>

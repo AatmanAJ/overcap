@@ -1,6 +1,6 @@
 # Devin
 
-OpenQuota tracks quota and balance information for the Devin account signed in on your computer.
+Overcap tracks quota and balance information for the Devin account signed in on your computer.
 
 ## What it tracks
 
@@ -11,18 +11,18 @@ OpenQuota tracks quota and balance information for the Devin account signed in o
 | Extra Balance | Additional usage balance reported by Devin |
 
 Reset times are shown when Devin includes them in the account response.
-If Devin hides the daily quota and does not report a separate weekly value, OpenQuota uses the
+If Devin hides the daily quota and does not report a separate weekly value, Overcap uses the
 remaining daily value for the Weekly row.
 
 ## Sign-in and local data
 
-Sign in through the Devin app or run `devin auth login`. OpenQuota checks the local credentials
+Sign in through the Devin app or run `devin auth login`. Overcap checks the local credentials
 created by the Devin CLI and the signed-in state maintained by the desktop app. The correct
 platform-specific locations are selected automatically.
 
 ## Troubleshooting
 
 - **Not logged in** — run `devin auth login` or sign in to the Devin app.
-- **Login expired** — authenticate again, then refresh OpenQuota.
+- **Login expired** — authenticate again, then refresh Overcap.
 - **Quota unavailable** — the signed-in account may not expose quota data.
 - **Could not reach Devin** — check the connection and try another refresh.

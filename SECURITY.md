@@ -2,21 +2,21 @@
 
 ## Supported versions
 
-Security fixes are provided for the latest published version of OpenQuota. Before reporting a
+Security fixes are provided for the latest published version of Overcap. Before reporting a
 problem, check whether it is still present in the
-[latest release](https://github.com/deviffyy/OpenQuota/releases/latest).
+[latest release](https://github.com/AJ-Base44/overcap/releases/latest).
 
 ## Reporting a vulnerability
 
 Please do not open a public issue for security vulnerabilities.
 
 Use GitHub's
-[private vulnerability reporting](https://github.com/deviffyy/OpenQuota/security/advisories/new)
+[private vulnerability reporting](https://github.com/AJ-Base44/overcap/security/advisories/new)
 to report the issue confidentially.
 
 Include:
 
-- The affected OpenQuota version and operating system
+- The affected Overcap version and operating system
 - A clear description of the vulnerability and its impact
 - Reproduction steps or a proof of concept when available
 - Any suggested mitigation

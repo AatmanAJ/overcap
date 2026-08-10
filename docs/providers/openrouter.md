@@ -1,6 +1,6 @@
 # OpenRouter
 
-OpenQuota tracks account credits, balance, and spending through an OpenRouter API key.
+Overcap tracks account credits, balance, and spending through an OpenRouter API key.
 
 ## What it tracks
 
@@ -15,8 +15,8 @@ OpenQuota tracks account credits, balance, and spending through an OpenRouter AP
 
 ## Setup
 
-Add an OpenRouter API key from **Customize** in OpenQuota. Saved keys are kept in the operating
-system's credential store. OpenQuota can also use `OPENROUTER_API_KEY` or
+Add an OpenRouter API key from **Customize** in Overcap. Saved keys are kept in the operating
+system's credential store. Overcap can also use `OPENROUTER_API_KEY` or
 `OPENROUTER_KEY`, or read `~/.config/openrouter/key.json`; a key saved in the app takes priority.
 
 ## Troubleshooting

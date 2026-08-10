@@ -64,7 +64,7 @@ Not every conflict represents a Code of Conduct violation, and this Code of Cond
 encouraged behaviors and norms that can help avoid conflicts and minimize harm.
 
 When an incident does occur, it is important to report it promptly. To report a possible violation,
-email [openquota@proton.me](mailto:openquota@proton.me). Reports will be handled as confidentially as
+email [aj@seebyond.com](mailto:aj@seebyond.com). Reports will be handled as confidentially as
 possible.
 
 Project maintainers take reports of violations seriously and will make every effort to respond in a

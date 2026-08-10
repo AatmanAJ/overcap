@@ -1,6 +1,6 @@
 # GitHub Copilot
 
-OpenQuota tracks the usage and quota information available for your GitHub Copilot account.
+Overcap tracks the usage and quota information available for your GitHub Copilot account.
 
 ## What it tracks
 
@@ -18,7 +18,7 @@ organization.
 
 ## Sign-in and local data
 
-OpenQuota first looks for credentials left by Copilot integrations, then checks GitHub CLI
+Overcap first looks for credentials left by Copilot integrations, then checks GitHub CLI
 authentication. Signing in to Copilot in a supported editor is usually enough. You can also run
 `gh auth login`.
 
