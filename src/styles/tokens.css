@@ -3,30 +3,34 @@
 @layer tokens {
   :root {
     font-family:
-      'Inter',
+      'Inter Variable',
+      Inter,
       system-ui,
       -apple-system,
       BlinkMacSystemFont,
       'Segoe UI',
       sans-serif;
-    color: var(--text);
-    background: transparent;
+    color: var(--ink);
+    background: var(--paper);
     font-synthesis: none;
     text-rendering: optimizeLegibility;
-    --font-ui: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-    --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
-    --font-display: 'Bebas Neue', Impact, sans-serif;
-    --tray: #fdf9f0;
-    --card: color-mix(in srgb, var(--text) 5%, var(--tray));
-    --card-hover: color-mix(in srgb, var(--text) 8%, var(--tray));
-    --text: #141414;
-    --secondary: color-mix(in srgb, var(--text) 55%, var(--tray));
-    --tertiary: color-mix(in srgb, var(--text) 35%, var(--tray));
-    --meter-track: color-mix(in srgb, var(--text) 14%, var(--tray));
-    --meter-fill: #141414;
-    --meter-warning: #e5a400;
-    --meter-critical: #e3483f;
-    --spark-current: #141414;
+
+    --font-ui:
+      'Inter Variable', Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+
+    /* Swiss instrument palette: light is the primary system. */
+    --paper: #fafaf8;
+    --ink: #16171a;
+    --body: #3a3a38;
+    /* #8a8a84 was 3.32:1 on paper; this nearest warm correction clears AA at 11px. */
+    --muted: #73736d;
+    --rule: #d9d8d2;
+    --rule-faint: #e8e7e2;
+    --accent: #c7ff69;
+    --warning: #b8860b;
+    --critical: #c0392b;
+
+    /* Provider identity colours are data. Keep these values unchanged. */
     --provider: #10a37f;
     --provider-codex: #10a37f;
     --provider-claude: #de7356;
@@ -37,100 +41,61 @@
     --provider-opencode: #6e6e73;
     --provider-openrouter: #6467f2;
     --provider-zai: #2d2d2d;
-    --separator: color-mix(in srgb, var(--text) 9%, transparent);
-    --button-hover: color-mix(in srgb, var(--text) 8%, transparent);
-    --warning: #a85d00;
-    --warning-bg: #fff4df;
-    --error: #b42318;
-    --error-bg: #fff0ee;
-    --action-fill: #c7ff69;
-    --action-text: #141414;
-    --action-hover: color-mix(in srgb, #141414 12%, #c7ff69);
-    --surface-border: color-mix(in srgb, var(--text) 24%, transparent);
-    --hard-shadow: 3px 3px 0 color-mix(in srgb, #141414 30%, transparent);
-    --motion-snap: 160ms cubic-bezier(0.2, 0, 0, 1);
-    --motion-switch: 140ms ease-in-out;
-    --motion-wipe: 140ms cubic-bezier(0.2, 0, 0, 1);
+
+    --motion-measured: 200ms cubic-bezier(0.4, 0, 0.2, 1);
     color-scheme: light;
   }
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --tray: #141414;
-    --card: color-mix(in srgb, var(--text) 5%, var(--tray));
-    --card-hover: color-mix(in srgb, var(--text) 8%, var(--tray));
-    --text: #fdf9f0;
-    --secondary: color-mix(in srgb, var(--text) 62%, var(--tray));
-    --tertiary: color-mix(in srgb, var(--text) 40%, var(--tray));
-    --meter-track: color-mix(in srgb, var(--text) 14%, var(--tray));
-    --meter-fill: #c7ff69;
-    --meter-warning: #ffd54a;
-    --meter-critical: #ff6961;
-    --spark-current: #c7ff69;
+    --paper: #131312;
+    --ink: #f5f4ef;
+    --body: #c9c7c0;
+    --muted: #85837c;
+    --rule: #2e2d2a;
+    --rule-faint: #232220;
+    --warning: #d4a017;
+    --critical: #e06055;
     --provider: #19c39a;
     --provider-cursor: #f5f5f7;
     --provider-grok: #98989d;
     --provider-opencode: #aeaeb2;
     --provider-zai: #d1d1d6;
-    --separator: color-mix(in srgb, var(--text) 9%, transparent);
-    --button-hover: color-mix(in srgb, var(--text) 8%, transparent);
-    --warning: #ffb95c;
-    --warning-bg: #3b2e1e;
-    --error: #ff8f86;
-    --error-bg: #3d2525;
     color-scheme: dark;
   }
 }
 
 :root[data-theme='light'] {
-  --tray: #fdf9f0;
-  --card: color-mix(in srgb, var(--text) 5%, var(--tray));
-  --card-hover: color-mix(in srgb, var(--text) 8%, var(--tray));
-  --text: #141414;
-  --secondary: color-mix(in srgb, var(--text) 55%, var(--tray));
-  --tertiary: color-mix(in srgb, var(--text) 35%, var(--tray));
-  --meter-track: color-mix(in srgb, var(--text) 14%, var(--tray));
-  --meter-fill: #141414;
-  --meter-warning: #e5a400;
-  --meter-critical: #e3483f;
-  --spark-current: #141414;
+  --paper: #fafaf8;
+  --ink: #16171a;
+  --body: #3a3a38;
+  --muted: #73736d;
+  --rule: #d9d8d2;
+  --rule-faint: #e8e7e2;
+  --warning: #b8860b;
+  --critical: #c0392b;
   --provider: #10a37f;
   --provider-cursor: #13120a;
   --provider-grok: #8e8e93;
   --provider-opencode: #6e6e73;
   --provider-zai: #2d2d2d;
-  --separator: color-mix(in srgb, var(--text) 9%, transparent);
-  --button-hover: color-mix(in srgb, var(--text) 8%, transparent);
-  --warning: #a85d00;
-  --warning-bg: #fff4df;
-  --error: #b42318;
-  --error-bg: #fff0ee;
   color-scheme: light;
 }
 
 :root[data-theme='dark'] {
-  --tray: #141414;
-  --card: color-mix(in srgb, var(--text) 5%, var(--tray));
-  --card-hover: color-mix(in srgb, var(--text) 8%, var(--tray));
-  --text: #fdf9f0;
-  --secondary: color-mix(in srgb, var(--text) 62%, var(--tray));
-  --tertiary: color-mix(in srgb, var(--text) 40%, var(--tray));
-  --meter-track: color-mix(in srgb, var(--text) 14%, var(--tray));
-  --meter-fill: #c7ff69;
-  --meter-warning: #ffd54a;
-  --meter-critical: #ff6961;
-  --spark-current: #c7ff69;
+  --paper: #131312;
+  --ink: #f5f4ef;
+  --body: #c9c7c0;
+  --muted: #85837c;
+  --rule: #2e2d2a;
+  --rule-faint: #232220;
+  --warning: #d4a017;
+  --critical: #e06055;
   --provider: #19c39a;
   --provider-cursor: #f5f5f7;
   --provider-grok: #98989d;
   --provider-opencode: #aeaeb2;
   --provider-zai: #d1d1d6;
-  --separator: color-mix(in srgb, var(--text) 9%, transparent);
-  --button-hover: color-mix(in srgb, var(--text) 8%, transparent);
-  --warning: #ffb95c;
-  --warning-bg: #3b2e1e;
-  --error: #ff8f86;
-  --error-bg: #3d2525;
   color-scheme: dark;
 }

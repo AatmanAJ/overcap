@@ -31,7 +31,7 @@
 </script>
 
 <section class="provider-name-section" aria-labelledby={`provider-name-title-${provider.id}`}>
-  <h2 id={`provider-name-title-${provider.id}`}>Name</h2>
+  <h2 class="section-label" id={`provider-name-title-${provider.id}`}>Name</h2>
   <div class="provider-name-card">
     <input
       type="text"
@@ -60,26 +60,7 @@
 
 <style>
   .provider-name-section {
-    margin-bottom: 14px;
-  }
-
-  .provider-name-section h2 {
-    margin: 0;
-    padding: 0 8px 4px;
-    color: var(--secondary);
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  .provider-name-card {
-    overflow: hidden;
-    border-radius: 12px;
-    background: var(--card);
-  }
-
-  .provider-name-card:focus-within {
-    outline: 1px solid color-mix(in srgb, var(--text) 65%, transparent);
-    outline-offset: -1px;
+    margin-bottom: 24px;
   }
 
   input {
@@ -87,22 +68,23 @@
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    padding: 10px 12px;
+    height: 36px;
+    padding: 0;
     border: 0;
+    border-bottom: 0.5px solid var(--rule);
     outline: none;
-    color: var(--text);
-    background: transparent;
+    color: var(--ink);
     font: inherit;
-    font-size: 12px;
+    font-family: var(--font-ui);
+    font-size: 13px;
   }
 
   input::placeholder {
-    color: var(--tertiary);
+    color: var(--muted);
     opacity: 1;
   }
 
-  :global(:root[data-density='compact']) input {
-    padding-top: 8px;
-    padding-bottom: 8px;
+  input:focus {
+    border-color: var(--ink);
   }
 </style>

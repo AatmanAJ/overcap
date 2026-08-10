@@ -18,10 +18,10 @@ const SWEEP_STEPS: usize = 192;
 
 type Rgba = (u8, u8, u8, u8);
 
-const TRACK_COLOR: Rgba = (142, 142, 147, 150);
+const TRACK_COLOR: Rgba = (115, 115, 109, 150);
 const HEALTHY_COLOR: Rgba = (199, 255, 105, 255);
-const CAUTION_COLOR: Rgba = (240, 195, 60, 255);
-const CRITICAL_COLOR: Rgba = (227, 72, 63, 255);
+const CAUTION_COLOR: Rgba = (184, 134, 11, 255);
+const CRITICAL_COLOR: Rgba = (192, 57, 43, 255);
 const CRITICAL_THRESHOLD: f64 = 0.2;
 const HEALTHY_THRESHOLD: f64 = 0.6;
 

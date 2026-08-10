@@ -16,55 +16,41 @@ export const SHARE_CARD_WIDTH = 360;
 export const SHARE_CARD_SCALE = 4;
 
 export const SHARE_RECEIPT_COLORS = {
-  paper: '#fdf9f0',
-  ink: '#141414',
-  header: '#c7ff69',
+  paper: '#fafaf8',
+  ink: '#16171a',
+  muted: '#73736d',
+  rule: '#d9d8d2',
+  accent: '#c7ff69',
 } as const;
 
 const RECEIPT_HEADER_HEIGHT = 64;
-const RECEIPT_BODY_PADDING_TOP = 14;
+const RECEIPT_HEADER_CONTENT_HEIGHT = 56;
+const RECEIPT_ACCENT_HEIGHT = 8;
+const RECEIPT_BODY_PADDING_TOP = 24;
 const RECEIPT_HORIZONTAL_PADDING = 20;
-const RECEIPT_ROW_HEIGHT = 24;
-const RECEIPT_SEPARATOR_HEIGHT = 21;
-const RECEIPT_FOOTER_HEIGHT = 40;
+const RECEIPT_ROW_HEIGHT = 36;
+const RECEIPT_HERO_HEIGHT = 108;
+const RECEIPT_QUOTA_ROW_HEIGHT = 48;
+const RECEIPT_SEPARATOR_HEIGHT = 24;
+const RECEIPT_FOOTER_HEIGHT = 48;
 const RECEIPT_EMPTY_ROW_HEIGHT = RECEIPT_ROW_HEIGHT;
-const DISPLAY_FONT = '"Bebas Neue", Impact, sans-serif';
-const MONO_FONT = '"JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace';
+const RECEIPT_FONT = '"Inter Variable", Inter, system-ui, sans-serif';
 const RECEIPT_MONTHS = [
-  'JAN',
-  'FEB',
-  'MAR',
-  'APR',
-  'MAY',
-  'JUN',
-  'JUL',
-  'AUG',
-  'SEP',
-  'OCT',
-  'NOV',
-  'DEC',
+  'Jan',
+  'Feb',
+  'Mar',
+  'Apr',
+  'May',
+  'Jun',
+  'Jul',
+  'Aug',
+  'Sep',
+  'Oct',
+  'Nov',
+  'Dec',
 ] as const;
 
 export const TOTAL_SPEND_PERIOD_LABELS = ['Today', 'Yesterday', '30 Days'] as const;
-export const TOTAL_SPEND_GEOMETRY = {
-  width: 320,
-  outerPadding: 10,
-  cardPaddingX: 14,
-  cardPaddingY: 12,
-  switcherHeight: 27,
-  bodyGap: 12,
-  ringDiameter: 104,
-  innerRadiusRatio: 0.618,
-  gapWidth: 1.6,
-  cornerRadius: 3,
-  legendGap: 18,
-  legendRowHeight: 22,
-  periodFontSize: 11,
-  legendFontSize: 12,
-  centerFontSize: 13,
-  centerUnitFontSize: 9,
-} as const;
-export const TOTAL_SPEND_OUTER_PADDING = TOTAL_SPEND_GEOMETRY.outerPadding;
 
 export type ShareRow =
   | {
@@ -207,8 +193,12 @@ export function buildProviderShareRows(
 
 export function providerShareCardHeight(rows: ShareRow[], hasPlan = false) {
   const providerRowsHeight = RECEIPT_ROW_HEIGHT * (hasPlan ? 2 : 1);
+  const heroRow = rows.find((row) => row.kind === 'quota');
   const contentHeight = rows.length
-    ? rows.reduce((height, row) => height + shareRowHeight(row), 0)
+    ? rows.reduce(
+        (height, row) => height + (row === heroRow ? RECEIPT_HERO_HEIGHT : shareRowHeight(row)),
+        0,
+      )
     : RECEIPT_EMPTY_ROW_HEIGHT;
   return (
     RECEIPT_HEADER_HEIGHT +
@@ -229,7 +219,7 @@ export function totalSpendShareCardHeight(providerCount = 0) {
     RECEIPT_SEPARATOR_HEIGHT +
     Math.max(1, providerCount) * RECEIPT_ROW_HEIGHT +
     RECEIPT_SEPARATOR_HEIGHT +
-    RECEIPT_ROW_HEIGHT +
+    RECEIPT_HERO_HEIGHT +
     RECEIPT_FOOTER_HEIGHT
   );
 }
@@ -259,9 +249,15 @@ export function renderProviderShareCard(
     drawReceiptLine(context, 'Usage', 'No data', rowTop);
     rowTop += RECEIPT_EMPTY_ROW_HEIGHT;
   } else {
+    const heroRow = options.rows.find((row) => row.kind === 'quota');
     for (const row of options.rows) {
-      drawReceiptShareRow(context, row, rowTop);
-      rowTop += shareRowHeight(row);
+      if (row === heroRow) {
+        drawReceiptHero(context, row.label, row.reading, rowTop, heroDetails(row));
+        rowTop += RECEIPT_HERO_HEIGHT;
+      } else {
+        drawReceiptShareRow(context, row, rowTop);
+        rowTop += shareRowHeight(row);
+      }
     }
   }
   rowTop = drawReceiptSeparator(context, SHARE_CARD_WIDTH, rowTop);
@@ -293,24 +289,21 @@ export function renderTotalSpendShareCard(
         catalog.displayName(slice.id, options.providerNames),
         formatSpendValue(slice.value, options.metric, 'full'),
         rowTop,
-        false,
-        true,
       );
       rowTop += RECEIPT_ROW_HEIGHT;
     }
   }
 
   rowTop = drawReceiptSeparator(context, width, rowTop);
-  drawReceiptLine(
+  drawReceiptHero(
     context,
     receiptMetricLabel(options.metric),
     options.projection.centerValue === null
       ? 'No data'
       : formatSpendValue(options.projection.centerValue, options.metric, 'full'),
     rowTop,
-    true,
   );
-  rowTop += RECEIPT_ROW_HEIGHT;
+  rowTop += RECEIPT_HERO_HEIGHT;
   drawReceiptFooter(context, width, rowTop);
   return canvas;
 }
@@ -392,7 +385,7 @@ function usageReading(period: UsagePeriod | null) {
 }
 
 function shareRowHeight(row: ShareRow) {
-  return row.kind === 'quota' ? 42 : RECEIPT_ROW_HEIGHT;
+  return row.kind === 'quota' ? RECEIPT_QUOTA_ROW_HEIGHT : RECEIPT_ROW_HEIGHT;
 }
 
 function createCanvas(width: number, height: number) {
@@ -407,9 +400,9 @@ function createCanvas(width: number, height: number) {
 }
 
 export function formatReceiptDate(now: number) {
-  if (!Number.isFinite(now)) return 'DATE UNAVAILABLE';
+  if (!Number.isFinite(now)) return 'Date unavailable';
   const date = new Date(now);
-  if (!Number.isFinite(date.getTime())) return 'DATE UNAVAILABLE';
+  if (!Number.isFinite(date.getTime())) return 'Date unavailable';
   const day = String(date.getDate()).padStart(2, '0');
   const month = RECEIPT_MONTHS[date.getMonth()];
   const year = String(date.getFullYear()).padStart(4, '0');
@@ -424,18 +417,21 @@ function drawReceiptBase(
 ) {
   context.fillStyle = SHARE_RECEIPT_COLORS.paper;
   context.fillRect(0, 0, width, height);
-  context.fillStyle = SHARE_RECEIPT_COLORS.header;
-  context.fillRect(0, 0, width, RECEIPT_HEADER_HEIGHT);
 
-  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-  context.font = `400 32px ${DISPLAY_FONT}`;
+  context.fillStyle = SHARE_RECEIPT_COLORS.muted;
+  context.font = `500 11px ${RECEIPT_FONT}`;
+  context.letterSpacing = '0.99px';
   context.textAlign = 'left';
-  context.fillText('OVERCAP', RECEIPT_HORIZONTAL_PADDING, 42);
+  context.fillText('OVERCAP', RECEIPT_HORIZONTAL_PADDING, 28);
 
-  context.font = `600 10px ${MONO_FONT}`;
+  context.font = `400 11px ${RECEIPT_FONT}`;
+  context.letterSpacing = '0px';
   context.textAlign = 'right';
-  context.fillText(formatReceiptDate(now), width - RECEIPT_HORIZONTAL_PADDING, 37);
+  context.fillText(formatReceiptDate(now), width - RECEIPT_HORIZONTAL_PADDING, 28);
   context.textAlign = 'left';
+
+  context.fillStyle = SHARE_RECEIPT_COLORS.accent;
+  context.fillRect(0, RECEIPT_HEADER_CONTENT_HEIGHT, width, RECEIPT_ACCENT_HEIGHT);
 }
 
 function drawReceiptLine(
@@ -443,33 +439,59 @@ function drawReceiptLine(
   label: string,
   value: string,
   top: number,
-  emphasis = false,
-  preserveLabelCase = false,
 ) {
   const left = RECEIPT_HORIZONTAL_PADDING;
   const right = SHARE_CARD_WIDTH - RECEIPT_HORIZONTAL_PADDING;
-  const baseline = top + 16;
+  const baseline = top + 24;
   context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-  context.font = `${emphasis ? '600 13px' : '600 10px'} ${MONO_FONT}`;
-  fitText(context, preserveLabelCase ? label : label.toUpperCase(), left, baseline, 145);
+  context.font = `400 12px ${RECEIPT_FONT}`;
+  context.letterSpacing = '0px';
+  fitText(context, label, left, baseline, 144);
 
-  context.font = `${emphasis ? '600 13px' : '400 11px'} ${MONO_FONT}`;
+  context.fillStyle = SHARE_RECEIPT_COLORS.muted;
+  context.font = `400 12px ${RECEIPT_FONT}`;
   context.textAlign = 'right';
-  fitTextRight(context, value, right, baseline, 165);
+  fitTextRight(context, value, right, baseline, 164);
   context.textAlign = 'left';
+}
+
+function drawReceiptHero(
+  context: CanvasRenderingContext2D,
+  label: string,
+  value: string,
+  top: number,
+  details: string | null = null,
+) {
+  context.fillStyle = SHARE_RECEIPT_COLORS.muted;
+  context.font = `500 11px ${RECEIPT_FONT}`;
+  context.letterSpacing = '0.99px';
+  fitText(context, label.toUpperCase(), RECEIPT_HORIZONTAL_PADDING, top + 12, 320);
+
+  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
+  context.font = `500 52px ${RECEIPT_FONT}`;
+  context.letterSpacing = '-2.08px';
+  fitText(context, value, RECEIPT_HORIZONTAL_PADDING, top + 72, 320);
+
+  if (details) {
+    context.fillStyle = SHARE_RECEIPT_COLORS.muted;
+    context.font = `400 11px ${RECEIPT_FONT}`;
+    context.letterSpacing = '0px';
+    fitText(context, details, RECEIPT_HORIZONTAL_PADDING, top + 96, 320);
+  }
 }
 
 function drawReceiptShareRow(context: CanvasRenderingContext2D, row: ShareRow, top: number) {
   if (row.kind === 'quota') {
     drawReceiptLine(context, row.label, row.reading, top);
-    const details = [row.trailing, row.paceLabel].filter(Boolean).join(' / ');
-    context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-    context.font = `400 9px ${MONO_FONT}`;
+    const details = heroDetails(row);
+    context.fillStyle = SHARE_RECEIPT_COLORS.muted;
+    context.font = `400 11px ${RECEIPT_FONT}`;
+    context.letterSpacing = '0px';
     fitText(
       context,
-      details.toUpperCase(),
+      details,
       RECEIPT_HORIZONTAL_PADDING,
-      top + 35,
+      top + 40,
       SHARE_CARD_WIDTH - RECEIPT_HORIZONTAL_PADDING * 2,
     );
     return;
@@ -490,32 +512,35 @@ function drawReceiptShareRow(context: CanvasRenderingContext2D, row: ShareRow, t
   drawReceiptLine(context, row.label, row.value, top);
 }
 
+function heroDetails(row: Extract<ShareRow, { kind: 'quota' }>) {
+  return [row.trailing, row.paceLabel].filter(Boolean).join(' / ');
+}
+
 function drawReceiptSeparator(context: CanvasRenderingContext2D, width: number, top: number) {
   const y = top + RECEIPT_SEPARATOR_HEIGHT / 2;
   context.save();
   context.beginPath();
-  context.setLineDash([5, 4]);
-  context.strokeStyle = SHARE_RECEIPT_COLORS.ink;
-  context.lineWidth = 1;
+  context.strokeStyle = SHARE_RECEIPT_COLORS.rule;
+  context.lineWidth = 0.5;
   context.moveTo(RECEIPT_HORIZONTAL_PADDING, y);
   context.lineTo(width - RECEIPT_HORIZONTAL_PADDING, y);
   context.stroke();
-  context.setLineDash([]);
   context.restore();
   return top + RECEIPT_SEPARATOR_HEIGHT;
 }
 
 function drawReceiptFooter(context: CanvasRenderingContext2D, width: number, top: number) {
-  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-  context.font = `600 10px ${MONO_FONT}`;
+  context.fillStyle = SHARE_RECEIPT_COLORS.muted;
+  context.font = `400 11px ${RECEIPT_FONT}`;
+  context.letterSpacing = '0px';
   context.textAlign = 'center';
-  context.fillText('overcap.dev', width / 2, top + 25);
+  context.fillText('overcap.dev', width / 2, top + 28);
   context.textAlign = 'left';
 }
 
 function receiptPeriodLabel(period: AppSettings['totalSpendPeriod']) {
   const index = period === 'today' ? 0 : period === 'yesterday' ? 1 : 2;
-  return TOTAL_SPEND_PERIOD_LABELS[index].toUpperCase();
+  return TOTAL_SPEND_PERIOD_LABELS[index];
 }
 
 function receiptMetricLabel(metric: AppSettings['totalSpendMetric']) {

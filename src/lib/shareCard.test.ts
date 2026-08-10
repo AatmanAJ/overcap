@@ -1,7 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { codexState, providerCatalogIndex, settingsState } from '../test/appFixtures';
 import { ProviderCatalogIndex } from './metrics';
-import totalSpendSource from './TotalSpend.svelte?raw';
 import {
   buildProviderShareRows as buildProviderShareRowsWithCatalog,
   formatReceiptDate,
@@ -12,7 +11,6 @@ import {
   SHARE_CARD_SCALE,
   SHARE_CARD_WIDTH,
   SHARE_RECEIPT_COLORS,
-  TOTAL_SPEND_GEOMETRY,
   TOTAL_SPEND_PERIOD_LABELS,
   totalSpendShareCardHeight,
   type ShareRow,
@@ -38,7 +36,13 @@ function renderTotalSpendShareCard(
 const NOW = new Date(2026, 6, 18, 12).getTime();
 
 function installCanvasMock() {
-  const drawn: Array<{ value: string; font: string; fillStyle: string; textAlign: string }> = [];
+  const drawn: Array<{
+    value: string;
+    font: string;
+    fillStyle: string;
+    textAlign: string;
+    letterSpacing: string;
+  }> = [];
   const fills: Array<{
     x: number;
     y: number;
@@ -46,6 +50,7 @@ function installCanvasMock() {
     height: number;
     fillStyle: string;
   }> = [];
+  const strokes: Array<{ strokeStyle: string; lineWidth: number }> = [];
   const context = {
     scale: vi.fn(),
     fillRect: (x: number, y: number, width: number, height: number) =>
@@ -53,7 +58,7 @@ function installCanvasMock() {
     beginPath: vi.fn(),
     moveTo: vi.fn(),
     lineTo: vi.fn(),
-    stroke: vi.fn(),
+    stroke: () => strokes.push({ strokeStyle: context.strokeStyle, lineWidth: context.lineWidth }),
     save: vi.fn(),
     restore: vi.fn(),
     setLineDash: vi.fn(),
@@ -65,18 +70,20 @@ function installCanvasMock() {
         font: context.font,
         fillStyle: context.fillStyle,
         textAlign: context.textAlign,
+        letterSpacing: context.letterSpacing,
       }),
     textAlign: 'left',
     textBaseline: 'alphabetic',
     fillStyle: '',
     strokeStyle: '',
     font: '',
+    letterSpacing: '0px',
     lineWidth: 1,
   };
   vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
     context as unknown as CanvasRenderingContext2D,
   );
-  return { context, drawn, fills };
+  return { context, drawn, fills, strokes };
 }
 
 afterEach(() => vi.restoreAllMocks());
@@ -303,26 +310,13 @@ describe('share card layout', () => {
 
   it('uses deterministic receipt dates and content-driven Total Spend heights', () => {
     expect(TOTAL_SPEND_PERIOD_LABELS).toEqual(['Today', 'Yesterday', '30 Days']);
-    expect(formatReceiptDate(NOW)).toBe('18 JUL 2026');
-    expect(formatReceiptDate(Number.NaN)).toBe('DATE UNAVAILABLE');
+    expect(formatReceiptDate(NOW)).toBe('18 Jul 2026');
+    expect(formatReceiptDate(Number.NaN)).toBe('Date unavailable');
     expect(totalSpendShareCardHeight(3)).toBeGreaterThan(totalSpendShareCardHeight(1));
   });
 
-  it('leaves the live Total Spend geometry source intact', () => {
-    expect(TOTAL_SPEND_GEOMETRY).toMatchObject({
-      width: 320,
-      switcherHeight: 27,
-      ringDiameter: 104,
-      legendGap: 18,
-    });
-    expect(totalSpendSource).toContain("import { TOTAL_SPEND_GEOMETRY } from './shareCard';");
-    expect(totalSpendSource).toContain('--total-switcher-height:');
-    expect(totalSpendSource).toContain('--total-ring-size:');
-    expect(totalSpendSource).toContain('ringSectorPath(segment, TOTAL_SPEND_GEOMETRY)');
-  });
-
   it('renders provider cards as fixed-palette receipts with nicknames and usage rows', () => {
-    const { context, drawn, fills } = installCanvasMock();
+    const { context, drawn, fills, strokes } = installCanvasMock();
     const rows = [
       {
         kind: 'quota',
@@ -350,36 +344,57 @@ describe('share card layout', () => {
     expect(text).toEqual(
       expect.arrayContaining([
         'OVERCAP',
-        '18 JUL 2026',
-        'PROVIDER',
+        '18 Jul 2026',
+        'Provider',
         'Work Codex',
-        'PLAN',
+        'Plan',
         'Plus',
         'SESSION',
         '25% used',
-        'TODAY',
+        'Today',
         '$3.50 / 2,000 tokens',
         'overcap.dev',
       ]),
     );
-    expect(drawn.find((entry) => entry.value === 'OVERCAP')?.font).toContain('Bebas Neue');
-    expect(
-      drawn
-        .filter((entry) => entry.value !== 'OVERCAP')
-        .every((entry) => entry.font.includes('JetBrains Mono')),
-    ).toBe(true);
-    expect(drawn.every((entry) => entry.fillStyle === SHARE_RECEIPT_COLORS.ink)).toBe(true);
-    expect(fills).toEqual(
-      expect.arrayContaining([
-        expect.objectContaining({ fillStyle: SHARE_RECEIPT_COLORS.paper }),
-        expect.objectContaining({ fillStyle: SHARE_RECEIPT_COLORS.header }),
-      ]),
+    expect(drawn.every((entry) => entry.font.includes('Inter Variable'))).toBe(true);
+    expect(drawn.every((entry) => !/[6-9]00 /.test(entry.font))).toBe(true);
+    expect(drawn.find((entry) => entry.value === 'OVERCAP')).toMatchObject({
+      font: expect.stringContaining('500 11px'),
+      fillStyle: SHARE_RECEIPT_COLORS.muted,
+      letterSpacing: '0.99px',
+    });
+    expect(drawn.find((entry) => entry.value === '25% used')).toMatchObject({
+      font: expect.stringContaining('500 52px'),
+      fillStyle: SHARE_RECEIPT_COLORS.ink,
+      letterSpacing: '-2.08px',
+    });
+    expect(drawn.find((entry) => entry.value === 'overcap.dev')?.fillStyle).toBe(
+      SHARE_RECEIPT_COLORS.muted,
     );
-    expect(context.setLineDash).toHaveBeenCalledWith([5, 4]);
+    expect(fills).toEqual([
+      {
+        x: 0,
+        y: 0,
+        width: SHARE_CARD_WIDTH,
+        height: providerShareCardHeight(rows, true),
+        fillStyle: SHARE_RECEIPT_COLORS.paper,
+      },
+      {
+        x: 0,
+        y: 56,
+        width: SHARE_CARD_WIDTH,
+        height: 8,
+        fillStyle: SHARE_RECEIPT_COLORS.accent,
+      },
+    ]);
+    expect(strokes).not.toHaveLength(0);
+    expect(strokes.every((stroke) => stroke.lineWidth === 0.5)).toBe(true);
+    expect(strokes.every((stroke) => stroke.strokeStyle === SHARE_RECEIPT_COLORS.rule)).toBe(true);
+    expect(context.setLineDash).not.toHaveBeenCalled();
   });
 
   it('renders Total Spend as provider rows and a receipt total without ring geometry', () => {
-    const { context, drawn, fills } = installCanvasMock();
+    const { context, drawn, fills, strokes } = installCanvasMock();
 
     const canvas = renderTotalSpendShareCard({
       projection: {
@@ -411,9 +426,9 @@ describe('share card layout', () => {
     expect(text).toEqual(
       expect.arrayContaining([
         'OVERCAP',
-        '18 JUL 2026',
-        'PERIOD',
-        '30 DAYS',
+        '18 Jul 2026',
+        'Period',
+        '30 Days',
         'Night Shift',
         '$12.00',
         'TOTAL SPEND',
@@ -421,12 +436,16 @@ describe('share card layout', () => {
       ]),
     );
     expect(context.arc).not.toHaveBeenCalled();
-    expect(context.setLineDash).toHaveBeenCalledWith([5, 4]);
-    expect(fills).toEqual(
+    expect(context.setLineDash).not.toHaveBeenCalled();
+    expect(drawn.filter((entry) => entry.value === '$12.00')).toEqual(
       expect.arrayContaining([
-        expect.objectContaining({ fillStyle: SHARE_RECEIPT_COLORS.paper }),
-        expect.objectContaining({ fillStyle: SHARE_RECEIPT_COLORS.header }),
+        expect.objectContaining({ font: expect.stringContaining('400 12px') }),
+        expect.objectContaining({ font: expect.stringContaining('500 52px') }),
       ]),
     );
+    expect(fills.filter((fill) => fill.fillStyle === SHARE_RECEIPT_COLORS.accent)).toEqual([
+      expect.objectContaining({ x: 0, y: 56, width: SHARE_CARD_WIDTH, height: 8 }),
+    ]);
+    expect(strokes.every((stroke) => stroke.lineWidth === 0.5)).toBe(true);
   });
 });

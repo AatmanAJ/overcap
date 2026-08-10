@@ -754,7 +754,7 @@ impl Default for AppSettings {
             known_provider_ids: Vec::new(),
             provider_names: BTreeMap::new(),
             show_total_spend: true,
-            theme: ThemePreference::Dark,
+            theme: ThemePreference::Light,
             density: DensityPreference::Default,
             window_mode: WindowMode::Popup,
             menu_bar_style: MenuBarStyle::Text,
@@ -808,9 +808,9 @@ mod tests {
     };
 
     #[test]
-    fn first_run_defaults_to_dark_while_system_remains_a_supported_preference() {
+    fn first_run_defaults_to_light_while_system_remains_a_supported_preference() {
         let settings = AppSettings::default();
-        assert_eq!(settings.theme, ThemePreference::Dark);
+        assert_eq!(settings.theme, ThemePreference::Light);
         assert_ne!(settings.theme, ThemePreference::System);
     }
 

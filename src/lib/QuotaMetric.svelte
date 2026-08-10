@@ -120,13 +120,6 @@
     const left = Math.max(0, 100 - pace.projectedUsedPercent);
     return pace.severity === 'close' ? `~${Math.max(1, Math.round(left))}% spare` : paceDetail;
   });
-  const paceTickPercent = $derived(
-    pace.evenPacePercent === null
-      ? null
-      : usageDisplay === 'left'
-        ? 100 - pace.evenPacePercent
-        : pace.evenPacePercent,
-  );
   const resetTooltip = $derived(
     quota.resetsAt
       ? formatReset(
@@ -148,7 +141,7 @@
           class="metric-estimate"
           data-tooltip={estimateNote}
           aria-label="Estimated quota"
-          role="img"><Icon name="about" size={11} strokeWidth={1.9} /></span
+          role="img"><Icon name="about" size={12} strokeWidth={2} /></span
         >
       {/if}
     </h2>
@@ -162,7 +155,7 @@
             aria-label={paceLabel}
             onclick={onToggleReset}
             ><span class="pace-warning__icon"
-              ><Icon name="flame-filled" size={11} strokeWidth={1.8} /></span
+              ><Icon name="flame-filled" size={12} strokeWidth={2} /></span
             >{paceLabel}</button
           >
         {:else}
@@ -171,7 +164,7 @@
             data-tooltip={paceTooltipDetail ?? undefined}
             aria-label={pace.severity === 'spent' ? 'Limit reached' : 'Will reach limit'}
             ><span class="pace-warning__icon"
-              ><Icon name="flame-filled" size={11} strokeWidth={1.8} /></span
+              ><Icon name="flame-filled" size={12} strokeWidth={2} /></span
             >{paceLabel ?? ''}</span
           >
         {/if}
@@ -199,13 +192,6 @@
         style={`--fill-percent: ${fillPercent}%`}
       ></span>
     </div>
-    {#if showPace && paceTickPercent !== null}
-      <span
-        class="meter__pace"
-        style={`--pace-percent: ${Math.min(100, Math.max(0, paceTickPercent))}%`}
-        aria-hidden="true"
-      ></span>
-    {/if}
   </div>
 
   <div class="metric__reading">
@@ -227,90 +213,61 @@
     .metric__heading .pace-warning {
       display: inline-flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
       margin: 0;
       padding: 0;
       border: 0;
-      color: var(--secondary);
-      background: transparent;
+      color: var(--muted);
       font: inherit;
-      font-size: 13px;
-      line-height: 17px;
+      font-size: 11px;
+      line-height: 16px;
     }
 
     .metric__heading .metric-estimate {
       display: inline-flex;
-      margin-left: 3px;
-      color: var(--secondary);
-      vertical-align: -1px;
+      margin-left: 4px;
+      color: var(--muted);
     }
 
     .metric__heading .pace-warning__icon {
-      color: var(--meter-critical);
+      color: var(--critical);
     }
 
     .meter__fill {
       position: absolute;
       inset: 0 auto 0 0;
       width: 0;
-      border-radius: inherit;
-      background: var(--secondary);
-      transition:
-        width var(--motion-switch),
-        background-color var(--motion-switch);
+      background: var(--muted);
+      transition: width var(--motion-measured);
     }
 
     .meter__fill--visible {
-      width: max(5px, var(--fill-percent));
-    }
-
-    .meter--warning .meter__fill {
-      background: var(--meter-warning);
-    }
-
-    .meter--critical .meter__fill {
-      background: var(--meter-critical);
-    }
-
-    .meter__pace {
-      position: absolute;
-      top: -2px;
-      left: clamp(1px, var(--pace-percent), calc(100% - 1px));
-      width: 2px;
-      height: 9px;
-      border-radius: 2px;
-      background: var(--secondary);
-      transform: translateX(-1px);
+      width: var(--fill-percent);
     }
 
     .metric__reading strong {
-      color: var(--text);
-      font-family: var(--font-mono);
-      font-weight: 500;
+      color: var(--ink);
+      font-family: var(--font-ui);
+      font-weight: 400;
     }
 
     .metric__reading button {
       padding: 0;
       border: 0;
-      border-radius: 6px;
       color: inherit;
-      background: none;
       cursor: pointer;
-      transition:
-        color var(--motion-switch),
-        background-color var(--motion-switch);
+      font-variant-numeric: tabular-nums lining-nums;
+      transition: opacity var(--motion-measured);
     }
 
     .metric__reading button:first-child {
-      color: var(--text);
+      color: var(--ink);
       font-weight: 500;
     }
 
-    .metric__reading button:hover,
     .metric__reading button:focus-visible {
-      background: var(--button-hover);
-      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
-      outline-offset: 2px;
+      outline: 1px solid color-mix(in srgb, var(--ink) 64%, transparent);
+      outline-offset: 4px;
     }
   }
 </style>

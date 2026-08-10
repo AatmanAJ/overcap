@@ -122,12 +122,14 @@ describe('Overcap dashboard', () => {
       '32',
     );
     expect(screen.getByRole('progressbar', { name: 'Weekly used' })).toBeInTheDocument();
-    expect(screen.getByRole('region', { name: 'Total Spend' })).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: 'Total spend' })).toBeInTheDocument();
     expect(screen.getByRole('region', { name: 'Usage Trend' })).toBeInTheDocument();
-    expect(container.querySelector('.spend-ring__label')).toHaveAttribute(
-      'data-tooltip',
-      '$3.84 · Estimated locally, so it may be off',
-    );
+    expect(container.querySelector('.total-spend-figure')).toHaveTextContent('$3.84');
+    expect(container.querySelector('.spend-row')).toHaveClass('first');
+    expect(container.querySelector('.spend-ring')).not.toBeInTheDocument();
+    const hero = screen.getByRole('progressbar', { name: 'Codex Weekly usage' });
+    expect(hero.querySelector('.hero-gauge__fill')).toHaveStyle('width: 59%');
+    expect(hero.querySelector('.hero-gauge__threshold')).toHaveStyle('left: 80%');
     expect(screen.getByText(`Overcap ${import.meta.env.APP_VERSION}`)).toBeInTheDocument();
     expect(container.querySelector('.floating-chrome')).not.toBeInTheDocument();
   });
@@ -241,7 +243,7 @@ describe('Overcap dashboard', () => {
       );
       await fireEvent.click(screen.getByLabelText('Open options'));
       await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-      await fireEvent.click(screen.getByRole('combobox', { name: 'Window Mode' }));
+      await fireEvent.click(screen.getByRole('combobox', { name: 'Window mode' }));
       await fireEvent.click(screen.getByRole('option', { name: 'Tray Popup' }));
 
       await waitFor(() =>
@@ -327,9 +329,9 @@ describe('Overcap dashboard', () => {
     expect(await screen.findByRole('heading', { name: 'Claude' })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: 'Antigravity' })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: '$37.50 left' })).toBeInTheDocument();
-    expect(screen.getAllByRole('progressbar')).toHaveLength(6);
+    expect(screen.getAllByRole('progressbar')).toHaveLength(7);
     expect(
-      within(screen.getByRole('region', { name: 'Total Spend' })).getByRole('img', {
+      within(screen.getByRole('region', { name: 'Total spend' })).getByRole('img', {
         name: 'Only includes Claude and Codex',
       }),
     ).toBeInTheDocument();
@@ -386,7 +388,7 @@ describe('Overcap dashboard', () => {
     const provider = await screen.findByRole('group', { name: 'Claude provider' });
     await fireEvent.contextMenu(provider);
     await fireEvent.click(screen.getByRole('menuitem', { name: 'Rename…' }));
-    const dialog = screen.getByRole('dialog', { name: 'Rename Card' });
+    const dialog = screen.getByRole('dialog', { name: 'Rename provider' });
     const input = within(dialog).getByRole('textbox', { name: 'Name' });
     await fireEvent.input(input, { target: { value: 'Personal' } });
     await fireEvent.click(within(dialog).getByRole('button', { name: 'Rename' }));
@@ -473,7 +475,7 @@ describe('Overcap dashboard', () => {
     const provider = await screen.findByRole('group', { name: 'Claude — Work provider' });
     await fireEvent.contextMenu(provider);
     await fireEvent.click(screen.getByRole('menuitem', { name: 'Rename…' }));
-    const dialog = screen.getByRole('dialog', { name: 'Rename Card' });
+    const dialog = screen.getByRole('dialog', { name: 'Rename provider' });
     await fireEvent.input(within(dialog).getByRole('textbox', { name: 'Name' }), {
       target: { value: 'Client' },
     });
@@ -486,12 +488,12 @@ describe('Overcap dashboard', () => {
     });
   });
 
-  it('persists Total Spend metric and period choices', async () => {
+  it('persists total spend metric and period choices', async () => {
     render(App);
     await screen.findByText('Plus');
-    await fireEvent.click(screen.getByRole('combobox', { name: 'Total Spend Metric' }));
+    await fireEvent.click(screen.getByRole('combobox', { name: 'Total spend metric' }));
     await fireEvent.click(screen.getByRole('option', { name: 'Tokens' }));
-    await fireEvent.click(screen.getByRole('button', { name: '30 Days' }));
+    await fireEvent.click(screen.getByRole('button', { name: '30 days' }));
     await waitFor(() =>
       expect(mocks.invoke).toHaveBeenCalledWith(
         'save_app_settings',
@@ -533,14 +535,13 @@ describe('Overcap dashboard', () => {
       return Promise.resolve(liveState);
     });
     render(App);
-    const totalSpend = await screen.findByRole('region', { name: 'Total Spend' });
+    const totalSpend = await screen.findByRole('region', { name: 'Total spend' });
     expect(within(totalSpend).getByText('No cost data for this period')).toBeInTheDocument();
-    await fireEvent.click(within(totalSpend).getByRole('combobox', { name: 'Total Spend Metric' }));
+    await fireEvent.click(within(totalSpend).getByRole('combobox', { name: 'Total spend metric' }));
     await fireEvent.click(screen.getByRole('option', { name: 'Tokens' }));
     expect(within(totalSpend).getByText('Codex')).toBeInTheDocument();
-    expect(within(totalSpend).getByText('2.1')).toBeInTheDocument();
-    expect(within(totalSpend).getByText('million')).toBeInTheDocument();
-    expect(within(totalSpend).getByText('2.1M')).toBeInTheDocument();
+    expect(totalSpend.querySelector('.total-spend-figure')).toHaveTextContent('2.1M');
+    expect(totalSpend.querySelector('.spend-row')).toHaveTextContent('2.1M');
     expect(within(totalSpend).queryByText('No data')).not.toBeInTheDocument();
   });
 
@@ -661,24 +662,23 @@ describe('Overcap dashboard', () => {
     expect(screen.getByRole('button', { name: 'Dashboard, opens in browser' })).toBeInTheDocument();
   });
 
-  it('renders the Total Spend ring as separated rounded SVG sectors', async () => {
-    render(App);
-    expect(await screen.findByRole('region', { name: 'Total Spend' })).toBeInTheDocument();
-    await waitFor(() => expect(document.querySelector('.spend-ring svg')).not.toBeNull());
-    const segment = document.querySelector('.spend-ring__segment');
-    expect(segment?.tagName).toBe('path');
-    expect(segment?.getAttribute('d')).toMatch(/^M .* A .* Q .* Z$/);
-    expect(document.querySelector('.spend-ring__track')).toBeNull();
-    expect(document.querySelector('.period-switcher__selection')).not.toBeNull();
+  it('renders total spend as a Swiss figure with ruled provider rows', async () => {
+    const { container } = render(App);
+    const totalSpend = await screen.findByRole('region', { name: 'Total spend' });
+    expect(totalSpend.querySelector('.total-spend-figure')).toHaveTextContent('$3.84');
+    expect(totalSpend.querySelector('.spend-row')).toHaveClass('first');
+    expect(totalSpend.querySelector('.period-switcher .active')).toHaveTextContent('Today');
+    expect(container.querySelector('.spend-ring')).not.toBeInTheDocument();
+    expect(container.querySelector('.period-switcher__selection')).not.toBeInTheDocument();
   });
 
-  it('opens Customize and exposes the two-section metric layout', async () => {
+  it('opens Customise and exposes the two-section metric layout', async () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
-    expect(screen.getByRole('heading', { name: 'Customize' })).toBeInTheDocument();
-    await fireEvent.click(screen.getByRole('button', { name: 'Customize codex' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Customise' }));
+    expect(screen.getByRole('heading', { name: 'Customise' })).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole('button', { name: 'Customise codex' }));
     expect(screen.getByRole('group', { name: 'Always Visible metrics' })).toBeInTheDocument();
     expect(screen.getByRole('group', { name: 'On Demand metrics' })).toBeInTheDocument();
   });
@@ -687,8 +687,8 @@ describe('Overcap dashboard', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'Customize codex' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Customise' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Customise codex' }));
     await fireEvent.click(screen.getByRole('button', { name: 'Reset Codex' }));
 
     expect(mocks.invoke).toHaveBeenCalledWith('reset_provider_customization', {
@@ -696,12 +696,12 @@ describe('Overcap dashboard', () => {
     });
   });
 
-  it('enforces the two-pinned-metrics limit in Customize', async () => {
+  it('enforces the two-pinned-metrics limit in Customise', async () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'Customize codex' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Customise' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Customise codex' }));
     await fireEvent.click(screen.getByRole('button', { name: 'Pin Today' }));
     expect(screen.getByText('Up to 2 stars per provider')).toBeInTheDocument();
   });
@@ -725,7 +725,7 @@ describe('Overcap dashboard', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     await fireEvent.click(screen.getByRole('combobox', { name: 'Density' }));
     await fireEvent.click(screen.getByRole('option', { name: 'Compact' }));
-    await fireEvent.click(screen.getByRole('combobox', { name: 'Time Format' }));
+    await fireEvent.click(screen.getByRole('combobox', { name: 'Time format' }));
     await fireEvent.click(screen.getByRole('option', { name: '24-hour' }));
     await waitFor(() =>
       expect(mocks.invoke).toHaveBeenCalledWith(
@@ -753,7 +753,7 @@ describe('Overcap dashboard', () => {
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    await fireEvent.click(screen.getByRole('combobox', { name: 'Log Level' }));
+    await fireEvent.click(screen.getByRole('combobox', { name: 'Log level' }));
     await fireEvent.click(screen.getByRole('option', { name: 'Debug' }));
     await waitFor(() =>
       expect(mocks.invoke).toHaveBeenCalledWith(
@@ -762,7 +762,7 @@ describe('Overcap dashboard', () => {
       ),
     );
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Copy Log Path' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Copy log path' }));
     await waitFor(() => expect(writeText).toHaveBeenCalledWith('C:\\Overcap\\logs\\Overcap.log'));
     expect(mocks.invoke).toHaveBeenCalledWith('get_log_path');
     expect(screen.getByRole('status')).toHaveTextContent('Log path copied');
@@ -776,7 +776,7 @@ describe('Overcap dashboard', () => {
 
     await fireEvent.click(
       screen.getByRole('button', {
-        name: /Reveal in Finder|Reveal in File Explorer|Open Containing Folder/,
+        name: /Reveal in Finder|Reveal in File Explorer|Open containing folder/,
       }),
     );
     expect(mocks.invoke).toHaveBeenCalledWith('open_log_folder');
@@ -793,7 +793,7 @@ describe('Overcap dashboard', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
 
     mocks.invoke.mockRejectedValueOnce(new Error('log path unavailable'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Copy Log Path' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Copy log path' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       "Couldn't copy the log path to the clipboard.",
@@ -836,7 +836,7 @@ describe('Overcap dashboard', () => {
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    const recorder = screen.getByRole('button', { name: 'Record Shortcut' });
+    const recorder = screen.getByRole('button', { name: 'Record shortcut' });
     await fireEvent.click(recorder);
     await fireEvent.keyDown(recorder, { key: 'Q', code: 'KeyQ', ctrlKey: true, shiftKey: true });
     await fireEvent.click(screen.getByRole('checkbox', { name: /80% alert/ }));
@@ -879,7 +879,7 @@ describe('Overcap dashboard', () => {
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     expect(screen.getByText('Notifications are blocked')).toBeInTheDocument();
-    await fireEvent.click(screen.getByRole('button', { name: 'Open Settings' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Open settings' }));
     expect(mocks.invoke).toHaveBeenCalledWith('open_notification_settings');
   });
 
@@ -1235,7 +1235,7 @@ describe('Overcap dashboard', () => {
     const menu = summary.closest('details')!;
     await fireEvent.click(summary);
     expect(menu).toHaveAttribute('open');
-    await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Check for updates…' }));
     expect(menu).not.toHaveAttribute('open');
   });
 
@@ -1311,7 +1311,7 @@ describe('Overcap dashboard', () => {
       await fireEvent.click(screen.getByLabelText('Open options'));
       await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
       await waitFor(() =>
-        expect(screen.getByRole('combobox', { name: 'Panel Height' })).toHaveTextContent('Manual'),
+        expect(screen.getByRole('combobox', { name: 'Panel height' })).toHaveTextContent('Manual'),
       );
       await fireEvent.click(screen.getByLabelText('Back'));
       mocks.invoke.mockClear();
@@ -1371,7 +1371,7 @@ describe('Overcap dashboard', () => {
       await screen.findByText('Plus');
       await fireEvent.click(screen.getByLabelText('Open options'));
       await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-      const windowMode = screen.getByRole('combobox', { name: 'Window Mode' });
+      const windowMode = screen.getByRole('combobox', { name: 'Window mode' });
       await fireEvent.click(windowMode);
       await fireEvent.click(screen.getByRole('option', { name: 'Floating Window' }));
       await waitFor(() =>
@@ -1383,7 +1383,7 @@ describe('Overcap dashboard', () => {
         ),
       );
 
-      const heightMode = screen.getByRole('combobox', { name: 'Panel Height' });
+      const heightMode = screen.getByRole('combobox', { name: 'Panel height' });
       await waitFor(() => expect(heightMode).toHaveTextContent('Manual'));
 
       await fireEvent.click(heightMode);
@@ -1440,7 +1440,7 @@ describe('Overcap dashboard', () => {
     expect(screen.getByRole('dialog', { name: 'About Overcap' })).toBeInTheDocument();
   });
 
-  it('matches provider context-menu and Customize to Settings navigation behavior', async () => {
+  it('matches provider context-menu and Customise to Settings navigation behavior', async () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.contextMenu(screen.getByRole('group', { name: 'Codex provider' }), {
@@ -1448,13 +1448,13 @@ describe('Overcap dashboard', () => {
       clientY: 180,
     });
     expect(screen.getByRole('menuitem', { name: 'Share receipt' })).toBeInTheDocument();
-    await fireEvent.click(screen.getByRole('menuitem', { name: 'Customize…' }));
+    await fireEvent.click(screen.getByRole('menuitem', { name: 'Customise…' }));
     expect(screen.getByRole('heading', { name: 'Codex' })).toBeInTheDocument();
     await fireEvent.click(screen.getByRole('button', { name: 'Back' }));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     expect(screen.getByRole('heading', { name: 'Settings' })).toBeInTheDocument();
-    await fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
-    expect(screen.getByRole('heading', { name: 'Customize' })).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole('button', { name: 'Customise' }));
+    expect(screen.getByRole('heading', { name: 'Customise' })).toBeInTheDocument();
   });
 
   it('supports native-like keyboard navigation in dashboard context menus', async () => {

@@ -58,8 +58,7 @@
     aria-labelledby="confirmation-title"
     aria-describedby="confirmation-message"
   >
-    <span class="confirmation-sheet__icon"><Icon name="warning" size={18} strokeWidth={1.9} /></span
-    >
+    <span class="confirmation-sheet__icon"><Icon name="warning" size={20} strokeWidth={2} /></span>
     <div class="confirmation-sheet__copy">
       <h1 id="confirmation-title">{title}</h1>
       <p id="confirmation-message">{message}</p>
@@ -69,6 +68,7 @@
         >Cancel</button
       >
       <button
+        data-cta="primary"
         class="confirmation-sheet__confirm"
         type="button"
         disabled={pending}
@@ -83,54 +83,48 @@
     position: absolute;
     z-index: 120;
     display: grid;
-    padding: 48px 18px 18px;
-    background: color-mix(in srgb, #000 24%, transparent);
+    padding: 48px 20px;
     inset: 0;
     place-items: start center;
   }
 
   .confirmation-sheet {
     display: grid;
-    width: min(252px, 100%);
+    width: min(256px, 100%);
     box-sizing: border-box;
-    grid-template-columns: 30px 1fr;
-    gap: 0 10px;
-    padding: 17px;
-    border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
-    border-radius: 15px;
-    color: var(--text);
-    background: var(--tray);
-    box-shadow: var(--hard-shadow);
-    animation: confirmation-sheet-in var(--motion-snap) both;
+    grid-template-columns: 24px 1fr;
+    gap: 0 12px;
+    padding: 16px 0;
+    border-top: 0.5px solid var(--rule);
+    border-bottom: 0.5px solid var(--rule);
+    color: var(--ink);
+    animation: confirmation-sheet-in var(--motion-measured) both;
   }
 
   .confirmation-sheet__icon {
     display: grid;
-    width: 30px;
-    height: 30px;
-    border-radius: 9px;
-    color: var(--meter-critical);
-    background: color-mix(in srgb, var(--meter-critical) 13%, transparent);
+    width: 24px;
+    height: 24px;
+    color: var(--critical);
     place-items: center;
   }
 
   .confirmation-sheet__copy {
     min-width: 0;
-    padding-top: 1px;
   }
 
   .confirmation-sheet h1 {
-    margin: 0 0 5px;
+    margin: 0 0 4px;
     font-size: 13px;
-    font-weight: 600;
+    font-weight: 500;
     letter-spacing: -0.01em;
   }
 
   .confirmation-sheet p {
     margin: 0;
-    color: var(--secondary);
-    font-size: 11px;
-    line-height: 15px;
+    color: var(--body);
+    font-size: 13px;
+    line-height: 1.5;
   }
 
   .confirmation-sheet__actions {
@@ -142,59 +136,23 @@
   }
 
   .confirmation-sheet__actions button {
-    min-width: 76px;
-    min-height: 31px;
-    padding: 6px 12px;
-    border: 1px solid color-mix(in srgb, var(--text) 9%, transparent);
-    border-radius: 999px;
-    color: var(--text);
-    background: color-mix(in srgb, var(--text) 7%, var(--tray));
-    font-size: 11px;
-    font-weight: 600;
+    min-height: 28px;
+    padding: 0;
+    border: 0;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 500;
     cursor: pointer;
-    transition:
-      background-color 120ms ease,
-      border-color 120ms ease,
-      transform var(--motion-switch);
+    text-decoration: none;
   }
 
-  .confirmation-sheet__actions button:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--text) 11%, var(--tray));
-  }
-
-  .confirmation-sheet__actions button:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  .confirmation-sheet__actions button:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--text) 65%, transparent);
-    outline-offset: 2px;
+  .confirmation-sheet__actions button:not([data-cta='primary']):hover:not(:disabled) {
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
 
   .confirmation-sheet__actions .confirmation-sheet__confirm {
-    position: relative;
-    overflow: hidden;
-    border-color: color-mix(in srgb, var(--action-text) 24%, transparent);
-    color: var(--action-text);
-    background: var(--action-fill);
-  }
-
-  .confirmation-sheet__confirm::before {
-    position: absolute;
-    background: var(--action-hover);
-    content: '';
-    inset: 0;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--motion-switch);
-  }
-
-  .confirmation-sheet__confirm > span {
-    position: relative;
-  }
-
-  .confirmation-sheet__actions .confirmation-sheet__confirm:hover:not(:disabled)::before {
-    transform: scaleX(1);
+    padding: 0 12px;
   }
 
   .confirmation-sheet__actions button:disabled {
@@ -204,11 +162,8 @@
 
   @keyframes confirmation-sheet-in {
     from {
-      transform: translateY(-6px);
+      opacity: 0;
+      transform: translateY(-4px);
     }
-  }
-
-  :global(:root[data-reduced-motion]) .confirmation-sheet__confirm::before {
-    transition: none;
   }
 </style>

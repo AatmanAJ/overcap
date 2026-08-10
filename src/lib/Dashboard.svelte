@@ -1,7 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { flip } from 'svelte/animate';
-  import { reorderFlip, snapMotion, snapScale, snapSlide } from './motion';
+  import { measuredMotion, measuredReveal } from './motion';
   import { pointerReorder } from './pointerReorder';
   import ProviderIcon from './ProviderIcon.svelte';
   import ProviderLinks from './ProviderLinks.svelte';
@@ -170,7 +170,7 @@
     if (demandMorphing) {
       demandMorphTimer = window.setTimeout(
         () => (demandMorphing = false),
-        snapMotion(false).duration + 34,
+        measuredMotion(false).duration + 32,
       );
     }
     onContentMorph();
@@ -259,8 +259,8 @@
     metricMenu = {
       providerId,
       metricId,
-      x: Math.max(6, Math.min(event.clientX, window.innerWidth - 196)),
-      y: Math.max(6, Math.min(event.clientY, window.innerHeight - 154)),
+      x: Math.max(4, Math.min(event.clientX, window.innerWidth - 192)),
+      y: Math.max(4, Math.min(event.clientY, window.innerHeight - 152)),
     };
     queueMicrotask(() => focusContextMenu(focusFirstItem));
   }
@@ -392,19 +392,20 @@
       <button
         type="button"
         class="update-primary-action"
+        data-cta="primary"
         onclick={updateStatus.installable ? onInstallUpdate : onOpenUpdatePage}
         disabled={installingUpdate}
         >{updateStatus.installable
           ? installingUpdate
             ? 'Updating…'
             : updateError?.retryable
-              ? 'Try Again'
-              : 'Install Update'
+              ? 'Try again'
+              : 'Install update'
           : 'Download from GitHub'}</button
       >
       {#if updateStatus.installable && !installingUpdate}
         <button type="button" class="update-release-action" onclick={onOpenUpdatePage}
-          >View Release</button
+          >View release</button
         >
       {/if}
     </div>
@@ -416,21 +417,27 @@
         onSettingsChange({
           ...settings,
           dismissedUpdateVersion: updateStatus?.version ?? null,
-        })}><Icon name="close" size={10} strokeWidth={2.2} /></button
+        })}><Icon name="close" size={12} strokeWidth={2} /></button
     >
   </section>
 {/if}
 
 {#if !settings.detectionNoticeDismissed}
-  <section class="detection-card" out:snapScale={{ start: 0.95, reducedMotion }}>
+  <section class="detection-card" out:measuredReveal={{ reducedMotion }}>
     <div>
       <strong>Welcome to Overcap</strong><span
         >We set you up with the AI tools found on your computer. Add or hide providers any time.</span
       >
     </div>
-    <button type="button" onclick={onCustomize}>Open Customize</button>
+    <button
+      type="button"
+      class:pill-cta={!(
+        updateStatus?.available && updateStatus.version !== settings.dismissedUpdateVersion
+      )}
+      onclick={onCustomize}>Open customise</button
+    >
     <button class="dismiss" type="button" aria-label="Dismiss" onclick={dismissDetection}
-      ><Icon name="close" size={10} strokeWidth={2.2} /></button
+      ><Icon name="close" size={12} strokeWidth={2} /></button
     >
   </section>
 {/if}
@@ -450,7 +457,7 @@
   <div
     class="provider-reorder-shell"
     class:provider-reorder-shell--content-morph={demandMorphing}
-    animate:flip={reorderFlip(reducedMotion || demandMorphing)}
+    animate:flip={measuredMotion(reducedMotion || demandMorphing)}
   >
     <section
       class="provider-section"
@@ -485,9 +492,10 @@
           tabindex="0"
           aria-label={`Move ${providerDisplayName(provider.id)}`}
           aria-describedby="reorder-instructions"
-          aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><Icon name="grip-dots" size={13} /></span
+          aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"><Icon name="grip-dots" size={12} /></span
         >
-        <h1>{providerDisplayName(provider.id)}</h1>
+        <h1 class="section-label">{providerDisplayName(provider.id)}</h1>
+        <ProviderSparkline daily={snapshot.usage.daily} {now} />
         {#if snapshot.plan}<span class="plan">{snapshot.plan}</span>{/if}
         {#if state?.snapshot && state.stale}<span
             class="status-badge"
@@ -533,8 +541,7 @@
             >
           {/if}
         </span>
-        <ProviderSparkline daily={snapshot.usage.daily} {now} />
-        <span class="provider-mark"><ProviderIcon providerId={provider.id} size={17} /></span>
+        <span class="provider-mark"><ProviderIcon providerId={provider.id} size={16} /></span>
       </header>
       <section
         class="provider-card"
@@ -561,7 +568,7 @@
               onStart: onReorderStart,
               onEnd: onReorderEnd,
             }}
-            animate:flip={reorderFlip(reducedMotion || demandMorphing)}
+            animate:flip={measuredMotion(reducedMotion || demandMorphing)}
             oncontextmenu={(event) => openMetricMenu(event, provider.id, metric.id)}
           >
             <button
@@ -572,7 +579,7 @@
               aria-label={`Move ${metricDefinition(metric.id)?.label ?? metric.id}`}
               aria-describedby="reorder-instructions"
               aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
-              ><Icon name="grip-lines" size={13} strokeWidth={2} /></button
+              ><Icon name="grip-lines" size={12} strokeWidth={2} /></button
             >
             <MetricRenderer
               layout={metric}
@@ -596,12 +603,12 @@
           >
             <Icon
               name={provider.expanded ? 'chevron-up' : 'chevron-down'}
-              size={10}
-              strokeWidth={2.2}
+              size={12}
+              strokeWidth={2}
             />
           </button>
           {#if provider.expanded}
-            <div class="demand-metrics" transition:snapSlide={{ reducedMotion }}>
+            <div class="demand-metrics" transition:measuredReveal={{ reducedMotion }}>
               {#each demandMetrics as metric (metric.id)}
                 <div
                   class="metric-context-target"
@@ -620,7 +627,7 @@
                     onStart: onReorderStart,
                     onEnd: onReorderEnd,
                   }}
-                  animate:flip={reorderFlip(reducedMotion || demandMorphing)}
+                  animate:flip={measuredMotion(reducedMotion || demandMorphing)}
                   oncontextmenu={(event) => openMetricMenu(event, provider.id, metric.id)}
                 >
                   <button
@@ -631,7 +638,7 @@
                     aria-label={`Move ${metricDefinition(metric.id)?.label ?? metric.id}`}
                     aria-describedby="reorder-instructions"
                     aria-keyshortcuts="Alt+ArrowUp Alt+ArrowDown"
-                    ><Icon name="grip-lines" size={13} strokeWidth={2} /></button
+                    ><Icon name="grip-lines" size={12} strokeWidth={2} /></button
                   >
                   <MetricRenderer
                     layout={metric}
@@ -672,21 +679,21 @@
         type="button"
         role="menuitem"
         onclick={() => hideProvider(menuProvider.id)}
-        ><Icon name="power" size={15} />Hide {providerDisplayName(menuProvider.id)}</button
+        ><Icon name="power" size={16} />Hide {providerDisplayName(menuProvider.id)}</button
       >
       <hr />
       <button type="button" role="menuitem" onclick={() => onRefresh(menuProvider.id)}
-        ><Icon name="refresh" size={15} />Refresh {providerDisplayName(menuProvider.id)}</button
+        ><Icon name="refresh" size={16} />Refresh {providerDisplayName(menuProvider.id)}</button
       >
       <button type="button" role="menuitem" onclick={() => onRenameProvider(menuProvider.id)}
-        ><Icon name="edit" size={15} />Rename…</button
+        ><Icon name="edit" size={16} />Rename…</button
       >
       <button type="button" role="menuitem" onclick={() => onOpenProviderCustomize(menuProvider.id)}
-        ><Icon name="sliders" size={15} />Customize…</button
+        ><Icon name="sliders" size={16} />Customise…</button
       >
       <hr />
       <button type="button" role="menuitem" onclick={() => onShare(menuProvider.id)}
-        ><Icon name="share" size={15} />Share receipt</button
+        ><Icon name="share" size={16} />Share receipt</button
       >
     </div>
   {/if}
@@ -710,7 +717,7 @@
         type="button"
         role="menuitem"
         onclick={() => patchMetric(metricProvider.id, menuMetric.id, { enabled: false })}
-        ><Icon name="power" size={15} />Hide</button
+        ><Icon name="power" size={16} />Hide</button
       >
       {#if metricDefinition(menuMetric.id)?.pinnable}
         <button
@@ -722,20 +729,20 @@
             patchMetric(metricProvider.id, menuMetric.id, {
               pinned: !menuMetric.pinned,
             })}
-          ><Icon name={menuMetric.pinned ? 'star-filled' : 'star'} size={15} />{menuMetric.pinned
+          ><Icon name={menuMetric.pinned ? 'star-filled' : 'star'} size={16} />{menuMetric.pinned
             ? 'Unstar'
             : 'Star for menu bar'}</button
         >
       {/if}
       <hr />
       <button type="button" role="menuitem" onclick={() => onRefresh(metricProvider.id)}
-        ><Icon name="refresh" size={15} />Refresh {providerDisplayName(metricProvider.id)}</button
+        ><Icon name="refresh" size={16} />Refresh {providerDisplayName(metricProvider.id)}</button
       >
       <button
         type="button"
         role="menuitem"
         onclick={() => onOpenProviderCustomize(metricProvider.id)}
-        ><Icon name="sliders" size={15} />Customize…</button
+        ><Icon name="sliders" size={16} />Customise…</button
       >
     </div>
   {/if}
@@ -749,71 +756,68 @@
 
 <style>
   :global {
+    .provider-section {
+      position: relative;
+      min-width: 0;
+    }
+
     .provider-header {
       display: flex;
-      min-height: 28px;
+      width: 100%;
+      height: 36px;
       align-items: center;
-      gap: 7px;
-      padding: 0 4px 4px 2px;
+      gap: 12px;
+      padding: 0;
+      cursor: grab;
     }
 
-    .provider-header h1 {
+    .provider-header:active {
+      cursor: grabbing;
+    }
+
+    .provider-header .section-label {
+      min-width: 0;
+      flex: 1;
       margin: 0;
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: -0.01em;
-    }
-
-    .plan {
-      color: var(--secondary);
-      font-size: 11px;
-      line-height: 1;
+      overflow: hidden;
+      text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .status-badge {
-      padding: 2px 6px;
-      border-radius: 999px;
-      color: var(--warning);
-      background: var(--warning-bg);
-      font-size: 9px;
-      font-weight: 600;
-      text-transform: uppercase;
-      letter-spacing: 0.04em;
+    .provider-header .provider-sparkline {
+      margin-left: auto;
     }
 
-    .provider-mark {
+    .plan,
+    .status-badge {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 16px;
+      white-space: nowrap;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .provider-mark,
+    .provider-status-slot,
+    .provider-warning,
+    .provider-refreshing,
+    .drag-grip {
       display: grid;
-      margin-left: auto;
-      color: var(--secondary);
+      width: 16px;
+      height: 16px;
+      flex: 0 0 16px;
+      color: var(--muted);
       place-items: center;
     }
 
     .provider-status-slot {
-      display: grid;
-      width: 16px;
-      height: 18px;
-      flex: 0 0 16px;
-      margin-left: auto;
       opacity: 0;
-      place-items: center;
     }
 
     .provider-status-slot.active {
       opacity: 1;
-    }
-
-    .provider-header .provider-mark {
-      margin-left: 0;
-    }
-
-    .provider-warning,
-    .provider-refreshing {
-      display: grid;
-      width: 16px;
-      height: 18px;
-      flex: 0 0 16px;
-      place-items: center;
     }
 
     .provider-warning {
@@ -822,388 +826,16 @@
     }
 
     .provider-refreshing {
-      color: var(--secondary);
-      animation: spin 900ms linear infinite;
-    }
-
-    .drag-grip {
-      display: grid;
-      width: 8px;
-      grid-template-columns: repeat(2, 2px);
-      grid-template-rows: repeat(3, 2px);
-      gap: 2px;
-      opacity: 0.6;
-    }
-
-    .drag-grip i {
-      width: 2px;
-      height: 2px;
-      border-radius: 50%;
-      background: var(--tertiary);
+      animation: spin 800ms linear infinite;
     }
 
     .provider-card {
-      padding: 5px 12px;
-      border: 1px solid var(--separator);
-      border-radius: 12px;
-      background: var(--card);
+      padding: 0;
     }
 
-    .demand-divider {
-      display: grid;
-      width: 100%;
-      min-height: 24px;
-      padding: 5px 14px;
-      border: 0;
-      color: var(--secondary);
-      background: none;
-      cursor: pointer;
-      place-items: center;
-    }
-
-    .demand-metrics {
-      overflow: hidden;
-    }
-
-    .provider-reorder-shell--content-morph {
-      transform: none !important;
-    }
-
+    .provider-reorder-shell--content-morph,
     .metric-context-target--content-morph {
       transform: none !important;
-    }
-
-    .detection-card {
-      position: relative;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      gap: 8px;
-      margin-bottom: 10px;
-      padding: 10px 28px 10px 11px;
-      border-radius: 11px;
-      background: color-mix(in srgb, var(--provider) 11%, var(--card));
-    }
-
-    .hint-card {
-      position: relative;
-      display: grid;
-      grid-template-columns: auto 1fr;
-      gap: 3px 10px;
-      margin-bottom: 14px;
-      padding: 11px 32px 11px 12px;
-      border-radius: 12px;
-      background: var(--card);
-    }
-
-    .hint-card__icon {
-      display: grid;
-      width: 22px;
-      height: 22px;
-      grid-row: 1 / span 2;
-      color: var(--text);
-      place-items: center;
-    }
-
-    .hint-card > div {
-      display: flex;
-      min-width: 0;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .hint-card strong {
-      font-size: 12px;
-    }
-
-    .hint-card span {
-      color: var(--secondary);
-      font-size: 10px;
-      line-height: 13px;
-    }
-
-    .update-actions button {
-      width: fit-content;
-      padding: 4px 8px;
-      border: 0;
-      border-radius: 6px;
-      color: var(--text);
-      background: var(--button-hover);
-      font-size: 10px;
-    }
-
-    .hint-card > .update-actions {
-      display: flex;
-      grid-column: 2;
-      align-items: center;
-      flex-direction: row;
-      gap: 6px;
-      margin-top: 5px;
-    }
-
-    .update-actions .update-primary-action {
-      position: relative;
-      z-index: 0;
-      overflow: hidden;
-      border-radius: 999px;
-      color: var(--action-text);
-      background: var(--action-fill);
-      font-weight: 600;
-      isolation: isolate;
-    }
-
-    .update-actions .update-primary-action::before,
-    .detection-card button:not(.dismiss)::before {
-      position: absolute;
-      z-index: -1;
-      background: var(--action-hover);
-      content: '';
-      inset: 0;
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform var(--motion-switch);
-    }
-
-    .update-actions .update-primary-action:hover::before,
-    .update-actions .update-primary-action:focus-visible::before,
-    .detection-card button:not(.dismiss):hover::before,
-    .detection-card button:not(.dismiss):focus-visible::before {
-      transform: scaleX(1);
-    }
-
-    .update-actions .update-release-action {
-      color: var(--secondary);
-      background: transparent;
-    }
-
-    .update-actions .update-release-action:hover,
-    .update-actions .update-release-action:focus-visible {
-      color: var(--text);
-      background: var(--button-hover);
-    }
-
-    .hint-card__dismiss {
-      position: absolute;
-      top: 5px;
-      right: 6px;
-      display: grid;
-      width: 20px;
-      height: 20px;
-      padding: 0;
-      border: 0;
-      border-radius: 5px;
-      color: var(--secondary);
-      background: transparent;
-      cursor: pointer;
-      place-items: center;
-    }
-
-    .hint-card__dismiss:hover,
-    .hint-card__dismiss:focus-visible,
-    .detection-card .dismiss:hover,
-    .detection-card .dismiss:focus-visible {
-      outline: none;
-      color: var(--text);
-      background: var(--button-hover);
-    }
-
-    .update-notes {
-      margin-top: 3px;
-      color: var(--secondary);
-      font-size: 9px;
-      line-height: 12px;
-    }
-
-    .update-notes summary {
-      width: fit-content;
-      color: var(--secondary);
-      cursor: pointer;
-      font-size: 10px;
-    }
-
-    .update-notes p {
-      max-height: 72px;
-      margin: 5px 0 0;
-      padding-right: 3px;
-      overflow-y: auto;
-      white-space: pre-line;
-    }
-
-    .update-error {
-      gap: 1px;
-      margin-top: 4px;
-      padding: 6px 7px;
-      border-radius: 7px;
-      color: var(--error);
-      background: var(--error-bg);
-    }
-
-    .update-error strong {
-      font-size: 10px;
-    }
-
-    .update-error small {
-      color: var(--error);
-      font-size: 9px;
-      line-height: 12px;
-    }
-
-    .update-progress {
-      height: 4px;
-      margin-top: 4px;
-      overflow: hidden;
-      border-radius: 999px;
-      background: var(--meter-track);
-    }
-
-    .update-progress span {
-      display: block;
-      min-width: 8%;
-      height: 100%;
-      border-radius: inherit;
-      background: var(--text);
-      transition: width var(--motion-snap);
-    }
-
-    .detection-card div {
-      display: flex;
-      min-width: 0;
-      flex-direction: column;
-      gap: 2px;
-    }
-
-    .detection-card strong {
-      font-size: 12px;
-    }
-
-    .detection-card span {
-      color: var(--secondary);
-      font-size: 10px;
-      line-height: 14px;
-    }
-
-    .detection-card button {
-      position: relative;
-      z-index: 0;
-      align-self: center;
-      overflow: hidden;
-      padding: 4px 8px;
-      border: 0;
-      border-radius: 999px;
-      color: var(--action-text);
-      background: var(--action-fill);
-      font-size: 10px;
-      cursor: pointer;
-      isolation: isolate;
-    }
-
-    .detection-card .dismiss {
-      position: absolute;
-      top: 4px;
-      right: 4px;
-      display: grid;
-      width: 20px;
-      height: 20px;
-      padding: 0;
-      border: 0;
-      border-radius: 5px;
-      color: var(--secondary);
-      background: transparent;
-      cursor: pointer;
-      place-items: center;
-    }
-
-    .empty-dashboard {
-      display: flex;
-      min-height: 0;
-      align-items: center;
-      justify-content: center;
-      padding: 24px 16px;
-      color: var(--secondary);
-      text-align: center;
-    }
-
-    .empty-dashboard strong {
-      color: var(--text);
-      font-size: 13px;
-    }
-
-    .empty-dashboard span {
-      width: 100%;
-      font-size: 12px;
-    }
-
-    .warning {
-      margin: 9px 2px 0;
-    }
-
-    .provider-header {
-      min-height: 24px;
-      gap: 6px;
-      margin-bottom: 4px;
-      padding: 0 4px 2px 2px;
-      cursor: grab;
-    }
-
-    .provider-header:active {
-      cursor: grabbing;
-    }
-
-    .provider-header h1 {
-      font-size: 14px;
-      font-weight: 600;
-      letter-spacing: 0;
-    }
-
-    .status-badge {
-      padding: 0;
-      color: var(--tertiary);
-      background: transparent;
-      font-size: 11px;
-      font-weight: 400;
-      text-transform: none;
-      letter-spacing: 0;
-    }
-
-    .provider-mark {
-      width: 16px;
-      height: 16px;
-      color: var(--text);
-    }
-
-    .drag-grip {
-      width: 7px;
-      grid-template-columns: repeat(2, 1.75px);
-      grid-template-rows: repeat(3, 1.75px);
-      gap: 2px;
-      opacity: 1;
-    }
-
-    .drag-grip i {
-      width: 1.75px;
-      height: 1.75px;
-    }
-
-    .provider-card {
-      padding: 5px 8px;
-      border: 1px solid var(--separator);
-      border-radius: 12px;
-    }
-
-    .detection-card {
-      margin-bottom: 14px;
-      padding: 10px 30px 10px 12px;
-      border-radius: 12px;
-      background: var(--card);
-    }
-
-    .detection-card button {
-      color: var(--action-text);
-      background: var(--action-fill);
-    }
-
-    .detection-card .dismiss {
-      color: var(--secondary);
-      background: transparent;
     }
 
     .metric-context-target {
@@ -1218,36 +850,204 @@
     .metric-reorder-handle {
       position: absolute;
       top: 50%;
-      left: -7px;
+      left: -8px;
       z-index: 2;
       display: grid;
-      width: 18px;
+      width: 24px;
       height: 24px;
       padding: 0;
       border: 0;
-      border-radius: 8px;
-      color: var(--tertiary);
-      background: color-mix(in srgb, var(--card) 88%, transparent);
-      opacity: 0;
+      color: var(--muted);
       cursor: grab;
+      opacity: 0;
       transform: translateY(-50%);
+      place-items: center;
+      transition: opacity var(--motion-measured);
+    }
+
+    .metric-context-target:hover > .metric-reorder-handle,
+    .metric-reorder-handle:focus-visible {
+      opacity: 0.64;
+    }
+
+    .demand-divider {
+      display: grid;
+      width: 100%;
+      height: 36px;
+      padding: 0;
+      border: 0;
+      border-top: 0.5px solid var(--rule);
+      color: var(--muted);
+      cursor: pointer;
       place-items: center;
     }
 
-    .metric-context-target:hover > .metric-reorder-handle {
-      opacity: 0.82;
+    .demand-metrics {
+      overflow: hidden;
+    }
+
+    .hint-card,
+    .detection-card {
+      position: relative;
+      display: grid;
+      grid-template-columns: 24px minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 12px;
+      margin: 0 0 24px;
+      padding: 12px 0;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+    }
+
+    .hint-card__icon {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      color: var(--ink);
+      place-items: center;
+    }
+
+    .hint-card > div,
+    .detection-card > div {
+      display: flex;
+      min-width: 0;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .hint-card strong,
+    .detection-card strong {
+      color: var(--ink);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 20px;
+    }
+
+    .hint-card span,
+    .detection-card span {
+      color: var(--body);
+      font-size: 13px;
+      font-weight: 400;
+      line-height: 20px;
+    }
+
+    .update-actions {
+      display: flex;
+      grid-column: 2 / -1;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .update-release-action,
+    .detection-card button:not(.dismiss) {
+      padding: 0;
+      border: 0;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .update-release-action:hover,
+    .detection-card button:not(.dismiss):hover {
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .hint-card__dismiss,
+    .detection-card .dismiss {
+      display: grid;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      color: var(--muted);
+      cursor: pointer;
+      place-items: center;
+    }
+
+    .update-notes {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 16px;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .update-notes summary {
+      width: fit-content;
+      color: var(--ink);
+      cursor: pointer;
+    }
+
+    .update-notes p {
+      max-height: 80px;
+      margin: 8px 0 0;
+      overflow-y: auto;
+      white-space: pre-line;
+    }
+
+    .update-error {
+      display: flex;
+      gap: 4px;
+      margin-top: 8px;
+      padding: 8px 0 0;
+      border-top: 0.5px solid var(--rule);
+      color: var(--critical);
+      flex-direction: column;
+    }
+
+    .update-error strong,
+    .update-error small {
+      color: inherit;
+      font-size: 11px;
+      font-weight: 400;
+      line-height: 16px;
+    }
+
+    .update-progress {
+      height: 4px;
+      margin-top: 8px;
+      overflow: hidden;
+      background: var(--rule-faint);
+    }
+
+    .update-progress span {
+      display: block;
+      min-width: 8%;
+      height: 100%;
+      background: var(--ink);
+      transition: width var(--motion-measured);
+    }
+
+    .detection-card {
+      grid-template-columns: minmax(0, 1fr) auto 24px;
+    }
+
+    .empty-dashboard {
+      display: flex;
+      min-height: 80px;
+      align-items: center;
+      justify-content: center;
+      padding: 24px 0;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+      color: var(--body);
+      font-size: 13px;
+      line-height: 20px;
+      text-align: center;
     }
 
     .context-menu {
       position: fixed;
       z-index: 80;
-      width: 190px;
-      padding: 4px;
-      border: 1px solid var(--separator);
-      border-radius: 10px;
-      background: color-mix(in srgb, var(--tray) 97%, transparent);
-      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
-      animation: menu-in var(--motion-snap) both;
+      width: 192px;
+      padding: 8px 0;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
     }
 
     .context-menu:focus {
@@ -1257,34 +1057,34 @@
     .context-menu button {
       display: flex;
       width: 100%;
+      height: 36px;
       align-items: center;
       gap: 8px;
-      padding: 6px 8px;
+      padding: 0;
       border: 0;
-      border-radius: 6px;
-      color: var(--text);
-      background: transparent;
-      font-size: 11px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 400;
       text-align: left;
     }
 
     .context-menu button.danger {
-      color: var(--meter-critical);
-    }
-
-    .context-menu button:not(:disabled):hover,
-    .context-menu button:not(:disabled):focus-visible {
-      outline: none;
-      background: var(--button-hover);
+      color: var(--critical);
     }
 
     .context-menu button:disabled {
-      opacity: 0.45;
+      opacity: 0.4;
     }
 
     @keyframes spin {
       to {
         transform: rotate(360deg);
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .provider-refreshing {
+        animation: none;
       }
     }
   }

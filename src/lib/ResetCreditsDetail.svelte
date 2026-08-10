@@ -144,6 +144,7 @@
                   <span>Immediately reset your usage limits. This can't be undone.</span>
                   <div>
                     <button
+                      data-cta="primary"
                       class="reset-confirm-primary"
                       type="button"
                       disabled={pendingExpiry !== null}
@@ -195,20 +196,18 @@
       right: 8px;
       z-index: 100;
       box-sizing: border-box;
-      width: 250px;
+      width: 252px;
       max-height: calc(100vh - 16px);
       overflow: hidden;
-      border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
-      border-radius: 11px;
-      color: var(--text);
-      background: var(--tray);
-      box-shadow: var(--hard-shadow);
-      animation: reset-detail-in var(--motion-snap) both;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+      color: var(--ink);
+      animation: reset-detail-in var(--motion-measured) both;
     }
 
     .reset-detail-body {
       max-height: calc(100vh - 16px);
-      padding: 14px;
+      padding: 12px 0;
       overflow-y: auto;
     }
 
@@ -218,41 +217,41 @@
 
     .reset-result {
       margin-bottom: 8px;
-      padding: 7px 8px;
-      border-radius: 7px;
-      color: var(--text);
-      background: var(--card-hover);
-      font-size: 10px;
+      padding: 8px 0;
+      border-bottom: 0.5px solid var(--rule);
+      color: var(--ink);
+      font-size: 11px;
     }
 
     .reset-result-error {
-      color: var(--error);
-      background: var(--error-bg);
+      color: var(--critical);
     }
 
     .reset-entry-shell {
       display: grid;
-      grid-template-columns: 18px minmax(0, 1fr);
-      gap: 10px;
+      grid-template-columns: 16px minmax(0, 1fr);
+      gap: 8px;
     }
 
     .reset-entry-content {
       min-width: 0;
-      padding: 3px 0;
+      padding: 4px 0;
     }
 
     .reset-entry {
       display: flex;
-      height: 30px;
+      height: 36px;
       align-items: center;
       justify-content: space-between;
       gap: 8px;
       font-size: 11px;
-      line-height: 14px;
+      line-height: 16px;
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     .reset-entry > span {
       overflow: hidden;
+      color: var(--ink);
       font-weight: 500;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -263,45 +262,38 @@
       display: flex;
       align-items: center;
       justify-content: flex-end;
+      gap: 8px;
     }
 
     .reset-trailing > small {
-      color: var(--secondary);
+      color: var(--muted);
       font: inherit;
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums lining-nums;
       white-space: nowrap;
     }
 
     .reset-use,
     .reset-confirm button {
-      min-height: 22px;
-      padding: 2px 8px;
-      border: 1px solid var(--separator);
-      border-radius: 999px;
-      color: var(--text);
-      background: var(--card);
+      min-height: 28px;
+      padding: 0;
+      border: 0;
+      color: var(--ink);
       font: inherit;
-      font-size: 10px;
+      font-size: 12px;
+      font-weight: 500;
       cursor: default;
+      text-decoration: none;
     }
 
     .reset-use {
-      position: absolute;
-      right: 0;
-      transform: scaleX(0);
-      transform-origin: right;
-      transition: transform var(--motion-switch);
+      position: static;
     }
 
-    .reset-entry:hover .reset-trailing > small,
-    .reset-entry:focus-within .reset-trailing > small {
-      visibility: hidden;
-    }
-
-    .reset-entry:hover .reset-use,
-    .reset-entry:focus-within .reset-use {
-      transform: scaleX(1);
+    .reset-use:hover,
+    .reset-confirm button:not([data-cta='primary']):hover {
+      text-decoration: underline;
+      text-underline-offset: 4px;
     }
 
     .reset-use:disabled,
@@ -312,17 +304,17 @@
     .reset-confirm {
       display: grid;
       gap: 8px;
-      margin: 1px 0 5px;
-      padding: 10px;
-      border-radius: 8px;
-      background: color-mix(in srgb, var(--text) 4%, transparent);
-      font-size: 10px;
-      animation: reset-confirm-in var(--motion-snap) both;
+      margin: 4px 0;
+      padding: 8px 0;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+      font-size: 11px;
+      animation: reset-confirm-in var(--motion-measured) both;
     }
 
     .reset-confirm > span {
-      color: var(--secondary);
-      line-height: 14px;
+      color: var(--body);
+      line-height: 1.5;
     }
 
     .reset-confirm > div {
@@ -335,44 +327,21 @@
     }
 
     .reset-confirm .reset-confirm-primary {
-      position: relative;
-      overflow: hidden;
-      border-color: color-mix(in srgb, var(--action-text) 24%, transparent);
-      color: var(--action-text);
-      background: var(--action-fill);
-      font-weight: 600;
-    }
-
-    .reset-confirm-primary::before {
-      position: absolute;
-      background: var(--action-hover);
-      content: '';
-      inset: 0;
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform var(--motion-switch);
-    }
-
-    .reset-confirm-primary > span {
-      position: relative;
-    }
-
-    .reset-confirm-primary:hover:not(:disabled)::before {
-      transform: scaleX(1);
+      padding: 0 12px;
     }
 
     .reset-rail {
       display: grid;
       height: 100%;
-      grid-template-rows: 8px 18px 1fr;
+      grid-template-rows: 8px 16px 1fr;
       justify-items: center;
       align-items: center;
     }
 
     .reset-rail > i {
-      width: 1px;
+      width: 0;
       height: 100%;
-      background: var(--separator);
+      border-left: 0.5px solid var(--rule);
     }
 
     .reset-rail > .reset-rail-hidden {
@@ -381,25 +350,23 @@
 
     .reset-node {
       display: grid;
-      width: 18px;
-      height: 18px;
+      width: 16px;
+      height: 16px;
       place-items: center;
-      border-radius: 50%;
-      color: var(--tray);
-      background: var(--text);
-      font-family: var(--font-mono);
+      color: var(--muted);
+      font-family: var(--font-ui);
       font-size: 11px;
-      font-weight: 600;
+      font-weight: 500;
       line-height: 1;
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     .reset-node--warning {
-      color: #141414;
-      background: var(--meter-warning);
+      color: var(--warning);
     }
 
     .reset-node--critical {
-      background: var(--meter-critical);
+      color: var(--critical);
     }
 
     .reset-empty {
@@ -407,32 +374,29 @@
       justify-items: center;
       gap: 4px;
       padding: 12px 4px 8px;
-      color: var(--secondary);
+      color: var(--muted);
       font-size: 11px;
-      line-height: 15px;
+      line-height: 1.5;
       text-align: center;
     }
 
     .reset-empty strong {
-      color: var(--text);
-      font-weight: 600;
+      color: var(--ink);
+      font-weight: 500;
     }
 
     @keyframes reset-detail-in {
       from {
-        transform: translateY(-6px);
+        opacity: 0;
+        transform: translateY(-4px);
       }
     }
 
     @keyframes reset-confirm-in {
       from {
-        transform: translateY(-6px);
+        opacity: 0;
+        transform: translateY(-4px);
       }
-    }
-
-    :root[data-density='compact'] .reset-entry {
-      height: 26px;
-      font-size: 10px;
     }
   }
 </style>

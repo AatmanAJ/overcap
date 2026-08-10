@@ -7,7 +7,7 @@
   import NotificationThresholdControls from './NotificationThresholdControls.svelte';
   import ProviderApiKeySection from './ProviderApiKeySection.svelte';
   import ProviderNameSection from './ProviderNameSection.svelte';
-  import { reorderFlip } from './motion';
+  import { measuredMotion } from './motion';
   import { pointerReorder } from './pointerReorder';
 
   interface Props {
@@ -78,20 +78,7 @@
     if (!provider || !metricDefinition(metric.id)?.pinnable) return;
     if (!metric.pinned && provider.metrics.filter((item) => item.pinned).length >= 2) {
       showMessage('Up to 2 stars per provider', 'denied');
-      if (!reducedMotion) {
-        button.animate?.(
-          [
-            { transform: 'translateX(0)' },
-            { transform: 'translateX(5px)' },
-            { transform: 'translateX(-5px)' },
-            { transform: 'translateX(5px)' },
-            { transform: 'translateX(-5px)' },
-            { transform: 'translateX(5px)' },
-            { transform: 'translateX(0)' },
-          ],
-          { duration: 400, delay: 100 },
-        );
-      }
+      button.focus();
       return;
     }
     showMessage(metric.pinned ? 'Removed from menu bar' : 'Starred for menu bar', 'success');
@@ -139,11 +126,11 @@
 {#if provider}
   <section
     class="screen customize-detail"
-    aria-label={`Customize ${providerDisplayName(provider.id)}`}
+    aria-label={`Customise ${providerDisplayName(provider.id)}`}
   >
     <ProviderNameSection {settings} {provider} {catalog} onChange={onNameChange} />
     <div class="metric-section provider-threshold-section">
-      <h2>Alerts</h2>
+      <h2 class="section-label">Alerts</h2>
       <div class="provider-threshold-card">
         <label class="provider-threshold-toggle">
           <span
@@ -176,7 +163,9 @@
         role="group"
         aria-label={section === 'alwaysVisible' ? 'Always Visible metrics' : 'On Demand metrics'}
       >
-        <h2>{section === 'alwaysVisible' ? 'Always Visible' : 'On Demand'}</h2>
+        <h2 class="section-label">
+          {section === 'alwaysVisible' ? 'Always visible' : 'On demand'}
+        </h2>
         <div class="metric-list" role="list">
           {#if sectionMetrics.length === 0}
             <div
@@ -212,7 +201,7 @@
                 onStart: onReorderStart,
                 onEnd: onReorderEnd,
               }}
-              animate:flip={reorderFlip(reducedMotion)}
+              animate:flip={measuredMotion(reducedMotion)}
             >
               <span
                 class="reorder-grip"
@@ -237,7 +226,7 @@
                     onclick={(event) => togglePin(metric, event.currentTarget)}
                     ><Icon
                       name={metric.pinned ? 'star-filled' : 'star'}
-                      size={15}
+                      size={16}
                       strokeWidth={1.7}
                     /></button
                   >{/if}
@@ -267,7 +256,7 @@
       <div class:denied={messageKind === 'denied'} class="customization-pill" role="status">
         <Icon
           name={messageKind === 'denied' ? 'about' : 'check'}
-          size={15}
+          size={16}
           strokeWidth={2.2}
         />{message}
       </div>
@@ -277,50 +266,49 @@
 
 <style>
   .provider-threshold-section {
-    margin-bottom: 14px;
+    margin-bottom: 24px;
   }
 
   .provider-threshold-card {
-    overflow: hidden;
-    border: 1px solid var(--surface-border);
-    border-radius: 12px;
-    background: var(--card);
+    border-bottom: 0.5px solid var(--rule);
   }
 
   .provider-threshold-toggle {
     display: flex;
-    min-height: 42px;
+    min-height: 36px;
     align-items: center;
     justify-content: space-between;
     gap: 12px;
-    padding: 8px 11px;
+    padding: 0;
   }
 
   .provider-threshold-toggle > span {
     display: grid;
     min-width: 0;
-    gap: 1px;
+    gap: 4px;
   }
 
   .provider-threshold-toggle b {
-    font-size: 11px;
-    font-weight: 600;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 400;
   }
 
   .provider-threshold-toggle small {
-    color: var(--secondary);
-    font-family: var(--font-mono);
-    font-size: 9px;
+    color: var(--muted);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-variant-numeric: tabular-nums lining-nums;
   }
 
   :global {
     .customize-metric-row {
       display: flex;
-      min-height: 42px;
+      height: 36px;
       align-items: center;
-      gap: 10px;
-      padding: 9px 12px;
-      border-top: 1px solid var(--separator);
+      gap: 8px;
+      padding: 0;
+      border-top: 0.5px solid var(--rule);
     }
 
     .customize-metric-row:first-child {
@@ -336,49 +324,51 @@
       min-width: 0;
       flex: 1;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
       font-size: 12px;
     }
 
     .pin-button.pinned {
-      color: var(--text);
+      color: var(--ink);
     }
 
     .metric-section {
       margin-top: 0;
-      margin-bottom: 14px;
+      margin-bottom: 24px;
     }
 
     .customize-metric-name {
       min-width: 0;
       flex: 1;
       overflow: hidden;
-      font-size: 13px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 400;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .customize-metric-pin-slot {
       display: grid;
-      width: 25px;
-      height: 25px;
-      flex: 0 0 25px;
+      width: 24px;
+      height: 24px;
+      flex: 0 0 24px;
       place-items: center;
     }
 
     .customize-metric-row > .switch {
       display: block;
-      flex: 0 0 28px;
+      flex: 0 0 32px;
     }
 
     .empty-drop-zone {
       display: grid;
-      height: 30px;
-      margin: 8px;
-      border: 1px dashed var(--separator);
-      border-radius: 8px;
-      color: var(--tertiary);
-      font-size: 10px;
+      height: 36px;
+      margin: 0;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+      color: var(--muted);
+      font-size: 11px;
       place-items: center;
     }
 
@@ -390,29 +380,33 @@
       width: max-content;
       max-width: calc(100% - 16px);
       align-items: center;
-      gap: 6px;
+      gap: 8px;
       margin: 8px auto 0;
-      padding: 7px 10px;
-      border: 1px solid var(--separator);
-      border-radius: 999px;
-      color: var(--text);
-      background: color-mix(in srgb, var(--tray) 96%, transparent);
-      box-shadow: 2px 2px 0 color-mix(in srgb, var(--text) 24%, transparent);
-      font-size: 10px;
-      animation: detail-in var(--motion-snap) both;
+      padding: 8px 0;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+      color: var(--ink);
+      font-size: 11px;
+      animation: customization-status-in var(--motion-measured) both;
     }
 
     .customization-pill .symbol-icon {
-      color: var(--secondary);
+      color: var(--muted);
     }
 
     .customization-pill.denied {
       color: var(--warning);
-      animation: detail-in var(--motion-snap) both;
     }
 
     .customization-pill.denied .symbol-icon {
       color: var(--warning);
+    }
+
+    @keyframes customization-status-in {
+      from {
+        opacity: 0;
+        transform: translateY(4px);
+      }
     }
   }
 </style>

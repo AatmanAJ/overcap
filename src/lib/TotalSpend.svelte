@@ -1,18 +1,15 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import Icon from './Icon.svelte';
-  import { formatSpendValue, totalSpendRingCenter } from './metricFormat';
+  import { formatSpendValue } from './metricFormat';
   import SelectMenu from './SelectMenu.svelte';
   import type { ProviderCatalogIndex } from './metrics';
-  import { TOTAL_SPEND_GEOMETRY } from './shareCard';
-  import { ringSectorPath, spendRingArcs } from './spendRing';
   import {
     emptySpendMessage,
     projectMonthlySpend,
     projectSpend,
     type SpendProjection,
   } from './totalSpend';
-  import { providerFamily } from './providerIconPaths';
   import type { AppSettings, UsageHistory } from './types';
 
   interface Props {
@@ -30,10 +27,6 @@
   );
   const monthlySpend = $derived(projectMonthlySpend(providers, now));
   const providerNames = $derived(providers.map((provider) => providerDisplayName(provider.id)));
-  const ringSegments = $derived(spendRingArcs(projection.slices));
-  const periodIndex = $derived(
-    settings.totalSpendPeriod === 'today' ? 0 : settings.totalSpendPeriod === 'yesterday' ? 1 : 2,
-  );
   let shareCopied = $state(false);
   let shareTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -44,18 +37,6 @@
   function display(value: number | null) {
     if (value === null) return '—';
     return formatSpendValue(value, settings.totalSpendMetric);
-  }
-  function ringCenter(value: number | null) {
-    if (value === null) return { primary: '—', unit: '' };
-    return totalSpendRingCenter(value, settings.totalSpendMetric);
-  }
-  function centerTooltip(value: number | null) {
-    if (value === null) return undefined;
-    const exact = formatSpendValue(value, settings.totalSpendMetric, 'full');
-    if (projection.costEstimated && settings.totalSpendMetric !== 'tokens') {
-      return `${exact} · Estimated locally, so it may be off`;
-    }
-    return exact;
   }
   function metricTitle() {
     if (settings.totalSpendMetric === 'tokens') return 'Tokens';
@@ -73,16 +54,12 @@
   }
 </script>
 
-<section
-  class="total-spend-section"
-  aria-label="Total Spend"
-  data-total-spend
-  style={`--total-card-padding-x:${TOTAL_SPEND_GEOMETRY.cardPaddingX}px;--total-card-padding-y:${TOTAL_SPEND_GEOMETRY.cardPaddingY}px;--total-switcher-height:${TOTAL_SPEND_GEOMETRY.switcherHeight}px;--total-period-size:${TOTAL_SPEND_GEOMETRY.periodFontSize}px;--total-body-gap:${TOTAL_SPEND_GEOMETRY.bodyGap}px;--total-legend-gap:${TOTAL_SPEND_GEOMETRY.legendGap}px;--total-ring-size:${TOTAL_SPEND_GEOMETRY.ringDiameter}px;--total-center-size:${TOTAL_SPEND_GEOMETRY.centerFontSize}px;--total-center-unit-size:${TOTAL_SPEND_GEOMETRY.centerUnitFontSize}px;--total-legend-size:${TOTAL_SPEND_GEOMETRY.legendFontSize}px;`}
->
-  <div class="total-card__header">
-    <div class="total-card__title">
+<section class="total-spend-section" aria-labelledby="total-spend-title" data-total-spend>
+  <header class="total-spend-header">
+    <h2 class="section-label" id="total-spend-title">Total spend</h2>
+    <div class="total-spend-actions">
       <SelectMenu
-        label="Total Spend Metric"
+        label="Total spend metric"
         value={settings.totalSpendMetric}
         variant="title"
         options={[
@@ -93,416 +70,200 @@
         onChange={(value) => patch({ totalSpendMetric: value as AppSettings['totalSpendMetric'] })}
       />
       <span
-        class="icon-button icon-button--plain total-card__info"
+        class="total-spend-info"
         data-tooltip={`Only includes ${providerNames.join(' and ')}.`}
         aria-label={`Only includes ${providerNames.join(' and ')}`}
-        role="img"><Icon name="about" size={13} strokeWidth={1.9} /></span
+        role="img"><Icon name="about" size={12} strokeWidth={2} /></span
+      >
+      <button
+        class="total-spend-share"
+        type="button"
+        aria-label={`Share ${metricTitle()} receipt`}
+        data-tooltip="Share receipt"
+        onclick={share}
+        ><Icon name={shareCopied ? 'check' : 'share'} size={16} strokeWidth={2} /></button
       >
     </div>
-    <button
-      class="icon-button icon-button--plain total-card__share"
-      type="button"
-      aria-label={`Share ${metricTitle()} receipt`}
-      data-tooltip="Share receipt"
-      onclick={share}
-      ><Icon name={shareCopied ? 'check' : 'share'} size={14} strokeWidth={1.8} /></button
-    >
+  </header>
+
+  <div class="period-switcher" aria-label="Total spend period">
+    {#each [['today', 'Today'], ['yesterday', 'Yesterday'], ['last30Days', '30 days']] as option (option[0])}
+      <button
+        class:active={settings.totalSpendPeriod === option[0]}
+        type="button"
+        aria-pressed={settings.totalSpendPeriod === option[0]}
+        onclick={() => patch({ totalSpendPeriod: option[0] as AppSettings['totalSpendPeriod'] })}
+        >{option[1]}</button
+      >
+    {/each}
   </div>
-  <div class="total-card">
-    <div class="period-switcher" aria-label="Total Spend period">
-      <span
-        class="period-switcher__selection"
-        style={`transform: translateX(${periodIndex * 100}%)`}
-        aria-hidden="true"
-      ></span>
-      {#each [['today', 'Today'], ['yesterday', 'Yesterday'], ['last30Days', '30 Days']] as option (option[0])}
-        <button
-          class:active={settings.totalSpendPeriod === option[0]}
-          type="button"
-          onclick={() => patch({ totalSpendPeriod: option[0] as AppSettings['totalSpendPeriod'] })}
-          >{option[1]}</button
-        >
+
+  {#if projection.centerValue === null}
+    <p class="total-spend-empty">{emptySpendMessage(settings.totalSpendMetric)}</p>
+  {:else}
+    <div class="total-spend-figure" data-figure>{display(projection.centerValue)}</div>
+    <div class="spend-breakdown" aria-label={`${metricTitle()} by provider`}>
+      {#each projection.slices as provider, index (provider.id)}
+        <div class:first={index === 0} class="spend-row">
+          <span>{providerDisplayName(provider.id)}</span>
+          <strong data-figure>{display(provider.value)}</strong>
+        </div>
       {/each}
     </div>
-    {#if projection.centerValue === null}
-      <div class="total-card__empty">
-        <span>{emptySpendMessage(settings.totalSpendMetric)}</span>
-      </div>
-    {:else}
-      <div class="total-card__body">
-        <div class="spend-ring">
-          <svg
-            viewBox={`0 0 ${TOTAL_SPEND_GEOMETRY.ringDiameter} ${TOTAL_SPEND_GEOMETRY.ringDiameter}`}
-            shape-rendering="geometricPrecision"
-            aria-hidden="true"
-          >
-            {#each ringSegments as segment (segment.id)}
-              <path
-                class="spend-ring__segment"
-                d={ringSectorPath(segment, TOTAL_SPEND_GEOMETRY)}
-                style={`--segment-color: var(--provider-${providerFamily(segment.id)}, var(--provider))`}
-              />
-            {/each}
-          </svg>
-          <div class="spend-ring__label" data-tooltip={centerTooltip(projection.centerValue)}>
-            <strong>{ringCenter(projection.centerValue).primary}</strong><span
-              >{ringCenter(projection.centerValue).unit}</span
-            >
-          </div>
-        </div>
-        <div class="spend-legend">
-          {#each projection.slices as provider (provider.id)}
-            <span
-              ><i
-                style={`background: var(--provider-${providerFamily(provider.id)}, var(--provider))`}
-              ></i>{providerDisplayName(provider.id)}</span
-            ><strong>{display(provider.value)}</strong>
-          {/each}
-        </div>
-      </div>
-    {/if}
-    {#if monthlySpend !== null}
-      <p class="total-card__monthly-projection">
-        on pace for ~{formatSpendValue(monthlySpend, 'cost')} this month
-      </p>
-    {/if}
-  </div>
+  {/if}
+
+  {#if monthlySpend !== null}
+    <p class="total-spend-projection" data-figure>
+      on pace for ~{formatSpendValue(monthlySpend, 'cost')} this month
+    </p>
+  {/if}
 </section>
 
 <style>
   :global {
-    .total-card {
-      margin-bottom: 12px;
-      padding: 10px 11px;
-      border-radius: 12px;
-      background: var(--card);
+    .total-spend-section {
+      display: grid;
+      gap: 8px;
+      margin: 0;
+      color: var(--body);
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
-    .total-card__header,
-    .total-card__body,
-    .trend-heading {
+    .total-spend-header,
+    .total-spend-actions,
+    .period-switcher,
+    .spend-row {
       display: flex;
       align-items: center;
+    }
+
+    .total-spend-header {
+      min-height: 24px;
       justify-content: space-between;
+      gap: 12px;
+      margin-bottom: 4px;
+    }
+
+    .total-spend-header .section-label {
+      margin: 0;
+    }
+
+    .total-spend-actions {
       gap: 8px;
     }
 
-    .period-switcher {
-      position: relative;
-      display: flex;
-      padding: 2px;
-      border-radius: 7px;
-      background: var(--meter-track);
+    .total-spend-actions .select-menu {
+      min-width: 80px;
     }
 
-    .period-switcher button {
-      position: relative;
-      z-index: 1;
-      padding: 3px 6px;
+    .total-spend-actions .select-menu__trigger {
+      min-height: 24px;
+      padding: 0;
       border: 0;
-      border-radius: 5px;
-      color: var(--secondary);
-      background: transparent;
-      font-size: 9px;
-      cursor: pointer;
+      font-size: 12px;
     }
 
-    .period-switcher button.active {
-      color: var(--text);
-      background: transparent;
-      box-shadow: none;
-    }
-
-    .period-switcher__selection {
-      position: absolute;
-      top: 3px;
-      bottom: 3px;
-      left: 3px;
-      width: calc((100% - 6px) / 3);
-      border-radius: 999px;
-      background: var(--tray);
-      box-shadow: 1px 1px 0 color-mix(in srgb, var(--text) 24%, transparent);
-      transition: transform var(--motion-snap);
-    }
-
-    .total-card__body {
-      justify-content: flex-start;
-      padding-top: 10px;
-    }
-
-    .spend-ring {
-      position: relative;
+    .total-spend-info,
+    .total-spend-share {
       display: grid;
-      width: 74px;
-      height: 74px;
-      flex: 0 0 74px;
+      width: 24px;
+      height: 24px;
+      padding: 0;
+      border: 0;
+      color: var(--muted);
       place-items: center;
     }
 
-    .spend-ring svg {
-      position: absolute;
-      width: 100%;
-      height: 100%;
-      overflow: visible;
+    .total-spend-info {
+      cursor: help;
     }
 
-    .spend-ring__segment {
-      fill: var(--segment-color);
-      transition: fill var(--motion-snap);
+    .total-spend-share {
+      cursor: pointer;
     }
 
-    .spend-ring__label {
-      position: relative;
-      z-index: 1;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
+    .period-switcher {
+      height: 36px;
+      gap: 12px;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
     }
 
-    .spend-ring strong {
-      max-width: 48px;
+    .period-switcher button {
+      min-height: 28px;
+      padding: 0;
+      border: 0;
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 500;
+      text-decoration: none;
+    }
+
+    .period-switcher button.active {
+      color: var(--ink);
+      text-decoration: underline;
+      text-underline-offset: 4px;
+    }
+
+    .total-spend-figure {
       overflow: hidden;
-      font-family: var(--font-mono);
-      font-size: 13px;
+      color: var(--ink);
+      font-size: 52px;
+      font-weight: 500;
+      line-height: 1;
+      letter-spacing: -0.04em;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
-    .spend-ring span,
-    .spend-legend small {
-      color: var(--secondary);
-      font-family: var(--font-mono);
-      font-size: 8px;
-    }
-
-    .spend-legend {
+    .spend-breakdown {
       display: grid;
-      flex: 1;
-      grid-template-columns: 1fr auto;
-      gap: 2px 8px;
-      font-family: var(--font-mono);
-      font-size: 11px;
     }
 
-    .spend-legend span i {
-      display: inline-block;
-      width: 7px;
-      height: 7px;
-      margin-right: 5px;
-      border-radius: 50%;
-      background: var(--provider);
+    .spend-row {
+      height: 36px;
+      justify-content: space-between;
+      gap: 12px;
+      border-top: 0.5px solid var(--rule);
+      font-size: 12px;
     }
 
-    .spend-legend small {
-      grid-column: 1 / -1;
+    .spend-row.first {
+      border-top: 0;
     }
 
-    .icon-button {
-      display: grid;
-      width: 30px;
-      height: 30px;
-      margin-left: 0;
-      padding: 0;
-      border: 0;
-      border-radius: 50%;
-      color: var(--secondary);
-      background: transparent;
-      cursor: default;
-      place-items: center;
-    }
-
-    .icon-button:hover,
-    .icon-button:focus-visible {
-      color: var(--text);
-      background: var(--button-hover);
-    }
-
-    .icon-button:focus-visible {
-      outline: 2px solid color-mix(in srgb, var(--text) 65%, transparent);
-      outline-offset: 2px;
-    }
-
-    @media (prefers-reduced-motion: no-preference) {
-      .icon-button {
-        transition:
-          color 120ms ease,
-          background-color 120ms ease;
-      }
-    }
-
-    .total-spend-section {
-      margin-bottom: 0;
-    }
-
-    .total-card__header {
-      min-height: 24px;
-      margin-bottom: 4px;
-      padding: 0 4px 2px;
-    }
-
-    .total-card__title {
-      display: flex;
+    .spend-row span {
       min-width: 0;
-      align-items: center;
-      gap: 4px;
+      overflow: hidden;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      text-overflow: ellipsis;
+      white-space: nowrap;
     }
 
-    .select-menu--title {
-      min-width: 0;
-    }
-
-    .select-menu--title .select-menu__trigger {
-      min-height: 24px;
-      gap: 4px;
-      padding: 0;
-      border: 0;
-      background: transparent;
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .select-menu--title .select-menu__trigger:hover,
-    .select-menu--title .select-menu__trigger[aria-expanded='true'] {
-      color: var(--text);
-      background: transparent;
-    }
-
-    .select-menu__list--title {
-      min-width: 138px;
-      transform-origin: top left;
-    }
-
-    .select-menu__list--title.select-menu__list--above {
-      transform-origin: bottom left;
-    }
-
-    .total-card__header .icon-button--plain {
-      width: 20px;
-      height: 20px;
-      flex: 0 0 20px;
-      color: var(--secondary);
-      cursor: pointer;
-    }
-
-    .total-card__header .total-card__info {
-      width: 16px;
-      height: 20px;
-      flex-basis: 16px;
-      cursor: help;
-    }
-
-    .total-card {
-      margin: 0;
-      padding: var(--total-card-padding-y) var(--total-card-padding-x);
-    }
-
-    .period-switcher {
-      width: 100%;
-      height: var(--total-switcher-height);
-      padding: 3px;
-      background: var(--meter-track);
-    }
-
-    .period-switcher button {
-      min-height: 0;
-      flex: 1;
-      padding: 0 12px;
-      font-size: var(--total-period-size);
-      font-weight: 500;
-    }
-
-    .period-switcher button.active {
-      font-weight: 600;
-    }
-
-    .total-card__body {
-      gap: var(--total-legend-gap);
-      padding-top: var(--total-body-gap);
-    }
-
-    .spend-ring {
-      width: var(--total-ring-size);
-      height: var(--total-ring-size);
-      flex-basis: var(--total-ring-size);
-      padding: 0;
-    }
-
-    .spend-ring strong {
-      max-width: 68px;
-      font-size: var(--total-center-size);
-    }
-
-    .spend-ring span {
-      font-size: var(--total-center-unit-size);
-    }
-
-    .spend-legend {
-      align-content: center;
-      gap: 7px 8px;
-      font-size: var(--total-legend-size);
-    }
-
-    .spend-legend span i {
-      width: 8px;
-      height: 8px;
-      margin-right: 7px;
-    }
-
-    .spend-legend strong {
-      color: var(--secondary);
-      font-weight: 500;
+    .spend-row strong {
+      flex: 0 0 auto;
+      color: var(--muted);
+      font-weight: 400;
       text-align: right;
     }
 
-    .total-card__empty {
-      display: flex;
-      min-height: 76px;
-      align-items: center;
-      justify-content: center;
-      flex-direction: column;
-      gap: 8px;
-      color: var(--secondary);
+    .total-spend-empty {
+      margin: 0;
+      padding: 24px 0;
+      color: var(--body);
+      font-size: 13px;
+      line-height: 1.5;
+      text-align: center;
+    }
+
+    .total-spend-projection {
+      margin: 0;
+      color: var(--muted);
       font-size: 11px;
-      text-align: center;
-    }
-
-    .total-card__monthly-projection {
-      margin: 8px 0 0;
-      color: var(--secondary);
-      font-family: var(--font-mono);
-      font-size: 9px;
-      font-variant-numeric: tabular-nums;
-      line-height: 13px;
-      text-align: center;
-    }
-
-    :root[data-density='compact'] .total-card {
-      padding: 10px 12px;
-    }
-
-    :root[data-density='compact'] .period-switcher button {
-      min-height: 21px;
-      padding: 3px 10px;
-    }
-
-    :root[data-density='compact'] .total-card__body {
-      gap: 14px;
-      padding-top: 8px;
-    }
-
-    :root[data-density='compact'] .spend-ring {
-      width: 88px;
-      height: 88px;
-      flex-basis: 88px;
-    }
-
-    :root[data-density='compact'] .spend-ring strong {
-      max-width: 58px;
-    }
-
-    :root[data-density='compact'] .total-card__empty {
-      min-height: 64px;
+      line-height: 1.5;
+      font-variant-numeric: tabular-nums lining-nums;
     }
   }
 </style>

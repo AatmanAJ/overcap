@@ -1,6 +1,6 @@
 import { currentMonitor, getCurrentWindow } from '@tauri-apps/api/window';
 import { fitPanelToContent } from './backend';
-import { snapMotion } from './motion';
+import { measuredMotion } from './motion';
 import { panelTargetHeight, screenPanelHeight, shouldDeferPanelFit } from './panelSizing';
 
 export type AppScreen = 'dashboard' | 'customize' | 'settings' | `provider:${string}`;
@@ -50,7 +50,7 @@ export function createWindowController(options: WindowControllerOptions) {
       scheduleFit();
       return;
     }
-    const duration = snapMotion(false).duration;
+    const duration = measuredMotion(false).duration;
     contentMorphTimer = window.setTimeout(() => {
       contentMorphActive = false;
       scheduleFit();
@@ -133,7 +133,7 @@ export function createWindowController(options: WindowControllerOptions) {
     if (Math.abs(current - target) < 1) return;
 
     const started = performance.now();
-    const motion = snapMotion(false);
+    const motion = measuredMotion(false);
     const animate = (time: number) => {
       if (generation !== resizeGeneration || !options.automatic()) return;
       const progress = Math.min(1, (time - started) / motion.duration);

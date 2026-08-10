@@ -108,10 +108,10 @@
 
 {#if supported}
   <section class="api-key-section" aria-label={`${providerName} API Key`}>
-    <h2>API Key</h2>
+    <h2 class="section-label">API key</h2>
     <div class="api-key-card">
       <div class="api-key-summary">
-        <ProviderIcon {providerId} size={18} />
+        <ProviderIcon {providerId} size={20} />
         <span class="api-key-provider">{providerName}</span>
         <i class:missing={status === 'notSet'} aria-hidden="true"></i>
         <button type="button" onclick={toggleOpen}
@@ -141,11 +141,12 @@
                   aria-label={revealInput ? 'Hide API key' : 'Show API key'}
                   onclick={() => (revealInput = !revealInput)}
                 >
-                  <Icon name={revealInput ? 'eye-off' : 'eye'} size={15} />
+                  <Icon name={revealInput ? 'eye-off' : 'eye'} size={16} />
                 </button>
               </div>
               <div class="api-key-actions">
                 <button
+                  data-cta="primary"
                   class="primary"
                   type="button"
                   disabled={!apiKey.trim() || saving}
@@ -194,63 +195,54 @@
 
 <style>
   .api-key-section {
-    margin-bottom: 14px;
-  }
-
-  .api-key-section h2 {
-    margin: 0 8px 5px;
-    color: var(--secondary);
-    font-size: 11px;
-    font-weight: 600;
-  }
-
-  .api-key-card {
-    overflow: hidden;
-    border-radius: 12px;
-    background: var(--card);
+    margin-bottom: 24px;
   }
 
   .api-key-summary {
     display: flex;
-    min-height: 42px;
+    min-height: 36px;
     align-items: center;
-    gap: 10px;
-    padding: 8px 12px;
+    gap: 8px;
+    padding: 0;
   }
 
   .api-key-provider {
     min-width: 0;
     flex: 1;
-    font-size: 13px;
-    font-weight: 600;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 400;
   }
 
   .api-key-summary i {
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: var(--secondary);
+    width: 0;
+    height: 8px;
+    border-left: 2px solid var(--ink);
   }
 
   .api-key-summary i.missing {
-    background: var(--meter-critical);
+    border-color: var(--critical);
   }
 
   button {
-    padding: 4px 8px;
+    padding: 0;
     border: 0;
-    border-radius: 6px;
-    color: var(--text);
-    background: var(--button-hover);
-    font-size: 10px;
+    color: var(--ink);
+    font-size: 12px;
+    font-weight: 500;
+    text-decoration: none;
+  }
+
+  button:not([data-cta='primary']):hover {
+    text-decoration: underline;
+    text-underline-offset: 4px;
   }
 
   .api-key-editor {
     display: grid;
-    gap: 9px;
-    padding: 11px 12px 12px;
-    border-top: 1px solid var(--separator);
-    background: color-mix(in srgb, var(--card) 75%, var(--tray));
+    gap: 12px;
+    padding: 12px 0;
+    border-top: 0.5px solid var(--rule);
   }
 
   .api-key-input {
@@ -261,13 +253,12 @@
 
   .api-key-input input {
     min-width: 0;
-    height: 28px;
+    height: 36px;
     flex: 1;
-    padding: 4px 8px;
-    border: 1px solid var(--separator);
-    border-radius: 7px;
-    color: var(--text);
-    background: var(--tray);
+    padding: 0;
+    border: 0;
+    border-bottom: 0.5px solid var(--rule);
+    color: var(--ink);
     font: inherit;
     font-size: 11px;
     outline: none;
@@ -275,40 +266,34 @@
 
   .api-key-source-field:disabled {
     opacity: 1;
-    color: var(--secondary);
-    -webkit-text-fill-color: var(--secondary);
+    color: var(--muted);
+    -webkit-text-fill-color: var(--muted);
   }
 
   .api-key-input input:focus {
-    border-color: color-mix(in srgb, var(--text) 65%, transparent);
-    outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
-    outline-offset: 1px;
+    border-color: var(--ink);
+    outline: 0;
   }
 
   .api-key-input .field-icon {
     display: grid;
-    width: 26px;
-    height: 26px;
+    width: 28px;
+    height: 28px;
     padding: 0;
-    color: var(--secondary);
-    background: transparent;
+    color: var(--muted);
     place-items: center;
-  }
-
-  .api-key-input .field-icon:hover:not(:disabled) {
-    background: var(--button-hover);
   }
 
   .api-key-actions {
     display: flex;
     justify-self: start;
     align-items: center;
-    gap: 7px;
+    gap: 8px;
   }
 
   .api-key-actions button {
-    min-height: 26px;
-    padding: 5px 10px;
+    min-height: 28px;
+    padding: 0;
   }
 
   .api-key-readonly {
@@ -316,58 +301,33 @@
   }
 
   .api-key-actions .primary {
-    position: relative;
     min-width: 56px;
     padding-inline: 12px;
-    overflow: hidden;
-    border-radius: 999px;
-    color: var(--action-text);
-    background: var(--action-fill);
-    font-weight: 600;
-  }
-
-  .api-key-actions .primary::before {
-    position: absolute;
-    background: var(--action-hover);
-    content: '';
-    inset: 0;
-    transform: scaleX(0);
-    transform-origin: left;
-    transition: transform var(--motion-switch);
-  }
-
-  .api-key-actions .primary > span {
-    position: relative;
-  }
-
-  .api-key-actions .primary:hover:not(:disabled)::before {
-    transform: scaleX(1);
   }
 
   .api-key-readonly .clear-icon {
-    width: 18px;
-    height: 18px;
-    flex: 0 0 18px;
+    width: 20px;
+    height: 20px;
+    flex: 0 0 20px;
     padding: 0;
   }
 
   .api-key-override {
     display: flex;
     align-items: center;
-    gap: 7px;
-    color: var(--secondary);
-    font-size: 10px;
+    gap: 8px;
+    color: var(--muted);
+    font-size: 11px;
   }
 
   .api-key-error {
-    padding: 6px 7px;
-    border-radius: 7px;
-    color: var(--error);
-    background: var(--error-bg);
-    font-size: 10px;
+    padding: 8px 0;
+    border-top: 0.5px solid var(--rule);
+    color: var(--critical);
+    font-size: 11px;
   }
 
   .availability-error {
-    margin: 0 12px 11px;
+    margin: 0 0 12px;
   }
 </style>

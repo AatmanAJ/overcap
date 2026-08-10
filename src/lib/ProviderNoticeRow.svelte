@@ -24,13 +24,11 @@
     .provider-notice-row {
       display: flex;
       align-items: center;
-      gap: 9px;
-      margin: 6px 8px;
-      padding: 8px 9px;
-      border: 1px solid color-mix(in srgb, var(--warning) 18%, transparent);
-      border-radius: 9px;
+      gap: 8px;
+      margin: 0;
+      padding: 12px 0;
+      border-top: 0.5px solid var(--rule);
       color: var(--warning);
-      background: color-mix(in srgb, var(--warning-bg) 72%, transparent);
     }
 
     .provider-notice-icon {
@@ -38,40 +36,27 @@
       width: 24px;
       height: 24px;
       flex: 0 0 24px;
-      border-radius: 7px;
-      background: color-mix(in srgb, var(--warning) 12%, transparent);
       place-items: center;
     }
 
     .provider-notice-copy {
       display: grid;
       min-width: 0;
-      gap: 1px;
+      gap: 4px;
     }
 
     .provider-notice-copy strong {
-      color: var(--text);
-      font-size: 11px;
-      font-weight: 600;
-      line-height: 14px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
     }
 
     .provider-notice-copy small {
-      color: var(--secondary);
-      font-size: 10px;
-      line-height: 13px;
+      color: var(--body);
+      font-size: 11px;
+      line-height: 1.5;
       overflow-wrap: anywhere;
-    }
-
-    :root[data-density='compact'] .provider-notice-row {
-      margin: 4px 8px;
-      padding: 5px 8px;
-    }
-
-    :root[data-density='compact'] .provider-notice-icon {
-      width: 20px;
-      height: 20px;
-      flex-basis: 20px;
     }
   }
 </style>

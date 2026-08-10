@@ -4,7 +4,7 @@
   import type { ProviderCatalogIndex } from './metrics';
   import Icon from './Icon.svelte';
   import ProviderIcon from './ProviderIcon.svelte';
-  import { reorderFlip } from './motion';
+  import { measuredMotion } from './motion';
   import { pointerReorder } from './pointerReorder';
 
   interface Props {
@@ -49,7 +49,7 @@
   }
 </script>
 
-<section class="screen customize-screen" aria-label="Customize">
+<section class="screen customize-screen" aria-label="Customise">
   <div class="customize-list" role="list">
     {#each settings.providers.filter( (provider) => catalog.provider(provider.id) ) as provider (provider.id)}
       <div
@@ -69,7 +69,7 @@
           onStart: onReorderStart,
           onEnd: onReorderEnd,
         }}
-        animate:flip={reorderFlip(reducedMotion)}
+        animate:flip={measuredMotion(reducedMotion)}
       >
         <span
           class="reorder-grip"
@@ -101,17 +101,17 @@
         <button
           class="chevron"
           type="button"
-          aria-label={`Customize ${provider.id}`}
+          aria-label={`Customise ${provider.id}`}
           onclick={() => onOpen(provider.id)}
-          ><Icon name="chevron-right" size={13} strokeWidth={2.2} /></button
+          ><Icon name="chevron-right" size={12} strokeWidth={2} /></button
         >
       </div>
     {/each}
   </div>
   <button class="screen-cross-link" type="button" aria-label="Settings" onclick={onSettings}>
-    <Icon name="gear" size={17} />
+    <Icon name="gear" size={16} />
     <span><b>Settings</b><small>Notifications, appearance and more</small></span>
-    <Icon name="chevron-right" size={13} strokeWidth={2.2} />
+    <Icon name="chevron-right" size={12} strokeWidth={2} />
   </button>
 </section>
 
@@ -119,11 +119,11 @@
   :global {
     .provider-list-row {
       display: flex;
-      min-height: 52px;
+      height: 36px;
       align-items: center;
-      gap: 5px;
-      padding: 5px 7px;
-      border-top: 1px solid var(--separator);
+      gap: 8px;
+      padding: 0;
+      border-top: 0.5px solid var(--rule);
     }
 
     .provider-list-row:first-child {
@@ -136,14 +136,14 @@
 
     .reorder-grip {
       position: relative;
-      color: var(--tertiary);
+      color: var(--muted);
       cursor: grab;
       font-size: 16px;
     }
 
     .reorder-grip::after {
       position: absolute;
-      inset: -10px -8px;
+      inset: -8px;
       content: '';
     }
 
@@ -153,11 +153,10 @@
       flex: 1;
       align-items: center;
       flex-direction: row;
-      gap: 10px;
-      padding: 4px;
+      gap: 8px;
+      padding: 0;
       border: 0;
-      color: var(--text);
-      background: none;
+      color: var(--ink);
       text-align: left;
     }
 
@@ -168,45 +167,18 @@
     }
 
     .provider-list-main b {
-      font-size: 13px;
+      font-size: 12px;
+      font-weight: 400;
     }
 
     .provider-list-main small {
-      color: var(--secondary);
-      font-size: 9px;
-    }
-
-    .provider-list-row {
-      min-height: 42px;
-      gap: 10px;
-      padding: 9px 12px;
-      border-top-color: var(--separator);
-    }
-
-    .provider-list-row > .provider-icon {
-      color: var(--text);
-    }
-
-    .provider-list-main b {
-      font-size: 14px;
-      font-weight: 600;
+      color: var(--muted);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     .provider-list-main small {
       font-size: 11px;
-    }
-
-    .switch input {
-      position: absolute;
-    }
-
-    .switch span {
-      width: 28px;
-      height: 16px;
-    }
-
-    .chevron {
-      font-size: 18px;
     }
   }
 </style>

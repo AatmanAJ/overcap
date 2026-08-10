@@ -75,7 +75,7 @@ describe('Overcap update lifecycle', () => {
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Check for updates…' }));
     await waitFor(() => expect(mocks.invoke).toHaveBeenCalledWith('check_for_updates'));
     expect(await screen.findByText('Overcap 0.1.0 is up to date.')).toBeInTheDocument();
     expect(document.querySelector('.settings-update-status')).toBeNull();
@@ -85,7 +85,7 @@ describe('Overcap update lifecycle', () => {
         settings: expect.objectContaining({ lastUpdateCheckAt: expect.any(String) }),
       }),
     );
-    await fireEvent.click(screen.getByRole('combobox', { name: 'Icon Style' }));
+    await fireEvent.click(screen.getByRole('combobox', { name: 'Icon style' }));
     await fireEvent.click(screen.getByRole('option', { name: 'Bars' }));
     await waitFor(() =>
       expect(mocks.invoke).toHaveBeenCalledWith(
@@ -103,7 +103,7 @@ describe('Overcap update lifecycle', () => {
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    expect(screen.queryByRole('combobox', { name: 'Icon Style' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('combobox', { name: 'Icon style' })).not.toBeInTheDocument();
   });
 
   it('surfaces an available update on the dashboard and allows it to be dismissed', async () => {
@@ -129,7 +129,7 @@ describe('Overcap update lifecycle', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Check for updates…' }));
     const updateBanner = await screen.findByRole('region', { name: 'New build ready' });
     expect(updateBanner).toHaveTextContent('New build ready.');
     expect(updateBanner).toHaveTextContent('Restart to switch.');
@@ -165,7 +165,7 @@ describe('Overcap update lifecycle', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Check for updates…' }));
     await fireEvent.click(await screen.findByRole('button', { name: 'Download from GitHub' }));
     expect(mocks.invoke).toHaveBeenCalledWith('open_update_page');
   });
@@ -198,8 +198,8 @@ describe('Overcap update lifecycle', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
-    await fireEvent.click(await screen.findByRole('button', { name: 'Install Update' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Check for updates…' }));
+    await fireEvent.click(await screen.findByRole('button', { name: 'Install update' }));
     expect(mocks.invoke).toHaveBeenCalledWith('install_update');
 
     progressListener?.({
@@ -250,8 +250,8 @@ describe('Overcap update lifecycle', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
-    await fireEvent.click(await screen.findByRole('button', { name: 'Install Update' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Check for updates…' }));
+    await fireEvent.click(await screen.findByRole('button', { name: 'Install update' }));
 
     expect(await screen.findByRole('alert')).toHaveTextContent(
       'GitHub refused the update download.',
@@ -259,8 +259,8 @@ describe('Overcap update lifecycle', () => {
     expect(screen.getByRole('alert')).toHaveTextContent(
       'Try again or download it from the release page.',
     );
-    expect(screen.getByRole('button', { name: 'Try Again' })).toBeInTheDocument();
-    await fireEvent.click(screen.getByRole('button', { name: 'View Release' }));
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole('button', { name: 'View release' }));
     expect(mocks.invoke).toHaveBeenCalledWith('open_update_page');
   });
 });

@@ -26,54 +26,34 @@
 <style>
   :global {
     .status-row {
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 6px 14px;
-      font-size: 12px;
-      line-height: 15px;
-    }
-
-    .status-row > span:first-child {
-      color: color-mix(in srgb, var(--text) 88%, var(--card));
-      font-weight: 600;
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     .status-badge {
-      max-width: 58%;
+      max-width: 60%;
       overflow: hidden;
-      padding: 2px 7px;
-      border-radius: 999px;
-      color: var(--secondary);
-      background: var(--button-hover);
-      font-weight: 600;
+      padding: 0;
+      color: var(--muted);
+      font-weight: 400;
+      text-align: right;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .status-badge--positive {
-      color: var(--text);
-      background: var(--button-hover);
+      color: var(--ink);
     }
 
     .status-badge--warning {
-      color: var(--meter-warning);
-      background: color-mix(in srgb, var(--meter-warning) 12%, transparent);
+      color: var(--warning);
     }
 
     .status-badge--danger {
-      color: var(--meter-critical);
-      background: color-mix(in srgb, var(--meter-critical) 12%, transparent);
+      color: var(--critical);
     }
 
     .status-reading {
-      color: var(--secondary);
-    }
-
-    :root[data-density='compact'] .status-row {
-      padding: 3px 14px;
-      font-size: 11px;
+      color: var(--muted);
     }
   }
 </style>

@@ -84,9 +84,11 @@ describe('quota pacing presentation', () => {
     );
   });
 
-  it('frames the even-pace tick in the selected remaining mode', () => {
+  it('omits the retired pace tick while preserving the selected remaining mode', () => {
     const { container } = show(quota(30, 0.25));
-    expect(container.querySelector('.meter__pace')).toHaveStyle('--pace-percent: 75%');
+    expect(container.querySelector('.meter__pace')).not.toBeInTheDocument();
+    expect(container.querySelector('.meter__fill')).toHaveStyle('--fill-percent: 70%');
+    expect(screen.getByRole('button', { name: '70% left' })).toBeInTheDocument();
   });
 
   it('shows an unused rolling session as not started without pacing decoration', () => {

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import {
   hasKnownCap,
+  heroBarPresentation,
   heroGaugeStatus,
   selectHeroGaugeMetric,
   type HeroGaugeProvider,
@@ -186,5 +187,15 @@ describe('hero gauge selection', () => {
     expect(calm && heroGaugeStatus(calm)).toBe('Room to breathe.');
     expect(tight && heroGaugeStatus(tight)).toBe('Getting tight.');
     expect(projected && heroGaugeStatus(projected)).toBe('Cap in sight.');
+  });
+});
+
+describe('hero bar presentation', () => {
+  it('marks the next threshold and cuts directly between semantic fill colours', () => {
+    expect(heroBarPresentation(79.9)).toEqual({ tone: 'accent', activeThreshold: 80 });
+    expect(heroBarPresentation(80)).toEqual({ tone: 'warning', activeThreshold: 95 });
+    expect(heroBarPresentation(94.9)).toEqual({ tone: 'warning', activeThreshold: 95 });
+    expect(heroBarPresentation(95)).toEqual({ tone: 'critical', activeThreshold: 100 });
+    expect(heroBarPresentation(100)).toEqual({ tone: 'critical', activeThreshold: 100 });
   });
 });

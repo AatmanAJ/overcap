@@ -84,21 +84,19 @@
       box-sizing: border-box;
       width: 280px;
       max-height: calc(100vh - 16px);
-      padding: 14px;
+      padding: 16px 0;
       overflow-y: auto;
-      border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
-      border-radius: 12px;
-      color: var(--text);
-      background: var(--tray);
-      box-shadow: var(--hard-shadow);
-      animation: model-detail-in var(--motion-snap) both;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+      color: var(--ink);
+      animation: model-detail-in var(--motion-measured) both;
     }
 
     .model-usage-detail h3 {
       margin: 0 0 8px;
       font-size: 13px;
-      font-weight: 600;
-      line-height: 17px;
+      font-weight: 500;
+      line-height: 1.5;
     }
 
     .model-usage-list {
@@ -106,9 +104,16 @@
     }
 
     .model-usage-row {
+      position: relative;
       display: grid;
-      gap: 2px;
-      padding: 6px 0;
+      min-height: 36px;
+      gap: 0;
+      padding: 4px 0;
+      border-top: 0.5px solid var(--rule);
+    }
+
+    .model-usage-row:first-child {
+      border-top: 0;
     }
 
     .model-usage-primary,
@@ -118,68 +123,56 @@
       justify-content: space-between;
       gap: 8px;
       font-size: 11px;
-      line-height: 14px;
+      line-height: 16px;
     }
 
     .model-usage-primary strong {
       overflow: hidden;
-      font-weight: 600;
+      color: var(--ink);
+      font-weight: 500;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .model-usage-primary span,
     .model-usage-secondary span {
-      font-family: var(--font-mono);
-      font-variant-numeric: tabular-nums;
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums lining-nums;
       white-space: nowrap;
     }
 
     .model-usage-secondary {
-      color: var(--secondary);
+      color: var(--muted);
     }
 
     .model-usage-meter {
-      height: 5px;
-      margin-top: 2px;
+      height: 2px;
+      margin-top: 4px;
       overflow: hidden;
-      border-radius: 999px;
-      background: var(--meter-track);
+      background: var(--rule-faint);
     }
 
     .model-usage-meter i {
       display: block;
       height: 100%;
-      border-radius: inherit;
-      background: var(--secondary);
+      background: var(--muted);
     }
 
     .model-usage-detail > p {
       margin: 8px 0 0;
-      color: var(--secondary);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      line-height: 13px;
+      color: var(--muted);
+      font-family: var(--font-ui);
+      font-size: 11px;
+      font-variant-numeric: tabular-nums lining-nums;
+      line-height: 1.5;
       text-align: center;
     }
 
     @keyframes model-detail-in {
       from {
-        transform: translateY(-6px);
+        opacity: 0;
+        transform: translateY(-4px);
       }
-    }
-
-    :root[data-density='compact'] .model-usage-detail h3 {
-      font-size: 12px;
-    }
-
-    :root[data-density='compact'] .model-usage-primary,
-    :root[data-density='compact'] .model-usage-secondary {
-      font-size: 10px;
-    }
-
-    :root[data-density='compact'] .model-usage-row {
-      padding: 4px 0;
     }
   }
 </style>

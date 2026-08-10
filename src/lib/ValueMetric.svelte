@@ -109,6 +109,7 @@
   {#if showsResetDetail}
     <button
       type="button"
+      data-figure
       class="value-reading value-reading--interactive"
       aria-expanded={detailOpen}
       aria-label={`${label}: ${reading}`}
@@ -126,19 +127,19 @@
           class="value-estimate"
           data-tooltip="Estimated locally, so it may differ from billed usage."
           aria-label="Estimated value"
-          role="img"><Icon name="about" size={11} strokeWidth={1.9} /></span
+          role="img"><Icon name="about" size={12} strokeWidth={2} /></span
         >
       {/if}
     </button>
   {:else}
-    <span class="value-reading" data-tooltip={tooltip}>
+    <span class="value-reading" data-figure data-tooltip={tooltip}>
       {reading}
       {#if hasEstimatedValue}
         <span
           class="value-estimate"
           data-tooltip="Estimated locally, so it may differ from billed usage."
           aria-label="Estimated value"
-          role="img"><Icon name="about" size={11} strokeWidth={1.9} /></span
+          role="img"><Icon name="about" size={12} strokeWidth={2} /></span
         >
       {/if}
     </span>
@@ -161,72 +162,48 @@
 
 <style>
   :global {
-    .value-row {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 8px;
-      padding: 6px 14px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 15px;
-    }
-
-    .value-row > span:first-child {
-      color: color-mix(in srgb, var(--text) 88%, var(--card));
-      font-weight: 600;
-    }
-
     .value-reading {
       display: inline-flex;
       align-items: center;
-      gap: 5px;
+      gap: 4px;
+      color: var(--muted);
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums lining-nums;
       text-align: right;
     }
 
     .value-estimate {
       display: inline-flex;
-      color: var(--secondary);
+      color: var(--muted);
     }
 
     .value-reading--interactive {
       padding: 0;
       border: 0;
-      border-radius: 6px;
       color: inherit;
-      background: none;
       font: inherit;
       cursor: default;
       outline: none;
-      transition: background-color var(--motion-switch);
     }
 
-    .value-reading--interactive:hover,
     .value-reading--interactive:focus-visible,
     .value-reading--interactive[aria-expanded='true'] {
-      background: var(--button-hover);
-      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
-      outline-offset: 3px;
+      outline: 1px solid color-mix(in srgb, var(--ink) 64%, transparent);
+      outline-offset: 4px;
     }
 
     .expiry-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: var(--secondary);
+      width: 0;
+      height: 8px;
+      border-left: 2px solid var(--muted);
     }
 
     .expiry-dot--warning {
-      background: var(--meter-warning);
+      border-color: var(--warning);
     }
 
     .expiry-dot--critical {
-      background: var(--meter-critical);
-    }
-
-    :root[data-density='compact'] .value-row {
-      padding: 3px 14px;
-      font-size: 11px;
+      border-color: var(--critical);
     }
   }
 </style>

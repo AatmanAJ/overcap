@@ -80,11 +80,12 @@
         class="usage-label-warning"
         data-tooltip={unknownModelTooltip(period.unknownModels)}
         aria-label="This period used a model with unknown pricing"
-        ><Icon name="warning" size={10} strokeWidth={2.2} /></i
+        ><Icon name="warning" size={12} strokeWidth={2} /></i
       >{/if}</span
   >
   <button
     type="button"
+    data-figure
     class:usage-reading-interactive={period?.modelBreakdown?.models.length}
     data-tooltip={valueTooltip(period)}
     disabled={!period?.modelBreakdown?.models.length}
@@ -107,34 +108,19 @@
 
 <style>
   :global {
-    .usage-row {
-      padding: 6px 14px;
-      font-family: var(--font-mono);
-      font-size: 12px;
-      line-height: 15px;
-    }
-
-    .usage-row--condensed {
-      padding-top: 2px;
-    }
-
     .usage-row span {
-      color: color-mix(in srgb, var(--text) 88%, var(--card));
-      font-weight: 600;
-    }
-
-    .usage-row strong,
-    .usage-row > button {
-      font-weight: 500;
-      text-align: right;
+      color: var(--ink);
+      font-weight: 400;
     }
 
     .usage-row > button {
       padding: 0;
       border: 0;
-      color: inherit;
-      background: none;
+      color: var(--muted);
       font: inherit;
+      font-family: var(--font-ui);
+      font-variant-numeric: tabular-nums lining-nums;
+      text-align: right;
     }
 
     .usage-row > button:disabled {
@@ -142,38 +128,27 @@
     }
 
     .usage-reading-interactive {
-      padding: 0 1px;
-      border-radius: 6px;
+      padding: 0;
       outline: none;
       cursor: default;
-      transition: background-color var(--motion-switch);
     }
 
-    .usage-reading-interactive:hover,
     .usage-reading-interactive:focus-visible {
-      background: var(--button-hover);
-      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
-      outline-offset: 3px;
+      outline: 1px solid color-mix(in srgb, var(--ink) 64%, transparent);
+      outline-offset: 4px;
     }
 
     .usage-label-warning {
       display: inline-block;
       margin-left: 4px;
-      color: var(--meter-warning);
-      font-style: normal;
-      font-size: 9px;
-      transform: translateY(-1px);
+      color: var(--warning);
+      font-size: 11px;
     }
 
     .usage-divider {
-      height: 1px;
-      margin: 3px 0 5px;
-      background: var(--separator);
-    }
-
-    :root[data-density='compact'] .usage-row {
-      padding: 3px 14px;
-      font-size: 11px;
+      height: 0;
+      margin: 4px 0;
+      border-top: 0.5px solid var(--rule);
     }
   }
 </style>

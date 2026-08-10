@@ -2,10 +2,10 @@
   <rect x="32" y="32" width="960" height="960" rx="224" fill="#c7ff69" />
   <path
     d="M224 668C188 490 254 312 397 222C512 150 657 166 756 256C850 342 878 494 820 632"
-    stroke="#141414"
+    stroke="#16171a"
     stroke-width="72"
     stroke-linecap="round"
   />
-  <path d="M512 650L616 300" stroke="#141414" stroke-width="64" stroke-linecap="round" />
-  <circle cx="512" cy="650" r="54" fill="#141414" />
+  <path d="M512 650L616 300" stroke="#16171a" stroke-width="64" stroke-linecap="round" />
+  <circle cx="512" cy="650" r="54" fill="#16171a" />
 </svg>

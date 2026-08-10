@@ -176,7 +176,7 @@ describe('pointer reorder integrations', () => {
     expect(hiddenSession).toMatchObject({ enabled: false, pinned: true });
   });
 
-  it('shakes the denied star control while preserving the two-star cap', async () => {
+  it('keeps the denied star still while preserving the two-star cap', async () => {
     const onChange = vi.fn();
     render(CustomizeProviderDetail, {
       settings,
@@ -195,7 +195,8 @@ describe('pointer reorder integrations', () => {
     await fireEvent.click(button);
 
     expect(onChange).not.toHaveBeenCalled();
-    expect(animate).toHaveBeenCalledOnce();
+    expect(animate).not.toHaveBeenCalled();
+    expect(button).toHaveAccessibleName('Pin Today');
     expect(screen.getByRole('status')).toHaveTextContent('Up to 2 stars per provider');
   });
 

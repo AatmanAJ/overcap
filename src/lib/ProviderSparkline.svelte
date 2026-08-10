@@ -21,7 +21,7 @@
     aria-label="Token usage over the last 7 days"
   >
     <polyline class="provider-sparkline__line" points={chart.polyline} fill="none"></polyline>
-    <circle class="provider-sparkline__current" cx={chart.current.x} cy={chart.current.y} r="1.5"
+    <circle class="provider-sparkline__current" cx={chart.current.x} cy={chart.current.y} r="1.25"
     ></circle>
   </svg>
 {/if}
@@ -30,21 +30,21 @@
   .provider-sparkline {
     display: block;
     width: 56px;
-    height: 16px;
+    height: 14px;
     flex: 0 0 56px;
     overflow: visible;
   }
 
   .provider-sparkline__line {
     fill: none;
-    stroke: var(--secondary);
-    stroke-width: 1.5px;
+    stroke: var(--muted);
+    stroke-width: 1px;
     stroke-linecap: round;
     stroke-linejoin: round;
     vector-effect: non-scaling-stroke;
   }
 
   .provider-sparkline__current {
-    fill: var(--spark-current);
+    fill: var(--accent);
   }
 </style>

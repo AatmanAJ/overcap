@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import appSource from '../App.svelte?raw';
-import { snapMotion } from './motion';
+import { measuredMotion } from './motion';
 import { horizontalPageTransition, shouldSlideBetweenScreens } from './pageTransition';
 
 describe('page transition', () => {
@@ -8,37 +8,40 @@ describe('page transition', () => {
     return document.createElement('div');
   }
 
-  it('moves the incoming page by exactly 6px without fading content', () => {
+  it('moves the incoming page by exactly 4px while fading it in', () => {
     const transition = horizontalPageTransition(page(), {
       direction: 1,
-      ...snapMotion(false),
+      ...measuredMotion(false),
     });
-    expect(transition.duration).toBe(160);
-    expect(transition.css?.(0, 1)).toContain('translate3d(6px, 0, 0)');
+    expect(transition.duration).toBe(200);
+    expect(transition.css?.(0, 1)).toContain('translate3d(4px, 0, 0)');
+    expect(transition.css?.(0, 1)).toContain('opacity: 0');
     expect(transition.css?.(1, 0)).toContain('translate3d(0px, 0, 0)');
-    expect(transition.css?.(0.5, 0.5)).not.toContain('opacity');
+    expect(transition.css?.(1, 0)).toContain('opacity: 1');
   });
 
   it('honors reverse navigation direction', () => {
     const transition = horizontalPageTransition(page(), {
       direction: -1,
-      ...snapMotion(false),
+      ...measuredMotion(false),
     });
-    expect(transition.css?.(0, 1)).toContain('translate3d(-6px, 0, 0)');
+    expect(transition.css?.(0, 1)).toContain('translate3d(-4px, 0, 0)');
   });
 
   it('jumps to the settled transform under reduced motion', () => {
     const transition = horizontalPageTransition(page(), {
       direction: 1,
-      ...snapMotion(true),
+      ...measuredMotion(true),
     });
     expect(transition.duration).toBe(0);
     expect(transition.css?.(0, 1)).toContain('translate3d(0px, 0, 0)');
+    expect(transition.css?.(0, 1)).toContain('opacity: 1');
   });
 
-  it('hard-cuts the outgoing keyed screen instead of retaining it for an outro', () => {
+  it('uses the same measured translate-and-opacity profile for incoming and outgoing screens', () => {
     expect(appSource).toContain('in:horizontalPageTransition');
-    expect(appSource).not.toContain('out:horizontalPageTransition');
+    expect(appSource).toContain('out:horizontalPageTransition');
+    expect(appSource).toContain('direction: -slideDirection');
   });
 
   it('slides every navigation inside the stable user-sized panel', () => {

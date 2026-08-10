@@ -7,7 +7,7 @@ interface PageTransitionOptions {
 }
 
 type AppScreen = 'dashboard' | 'customize' | 'settings' | `provider:${string}`;
-const PAGE_SLIDE_DISTANCE_PX = 6;
+const PAGE_SLIDE_DISTANCE_PX = 4;
 
 export function shouldSlideBetweenScreens(from: AppScreen, to: AppScreen) {
   return from !== to;
@@ -23,7 +23,7 @@ export function horizontalPageTransition(
     easing,
     css: (progress) => {
       const settledProgress = duration === 0 ? 1 : progress;
-      return `transform: translate3d(${(1 - settledProgress) * distance}px, 0, 0);`;
+      return `transform: translate3d(${(1 - settledProgress) * distance}px, 0, 0); opacity: ${settledProgress};`;
     },
   };
 }

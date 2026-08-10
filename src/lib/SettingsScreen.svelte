@@ -51,7 +51,7 @@
       ? 'Reveal in Finder'
       : platform === 'windows'
         ? 'Reveal in File Explorer'
-        : 'Open Containing Folder',
+        : 'Open containing folder',
   );
   const anyNotificationEnabled = $derived(
     settings.notifications.almostOut ||
@@ -127,30 +127,30 @@
     </p>{/if}
 
   {#if settingsView.platformSummary}<div class="settings-section">
-      <h2>Linux</h2>
+      <h2 class="section-label">Linux</h2>
       <div class="setting-row">
         <span><b>Desktop Integration</b><small>{settingsView.platformSummary}</small></span>
       </div>
     </div>{/if}
 
   <div class="settings-section">
-    <h2>General</h2>
+    <h2 class="section-label">General</h2>
     <label class="setting-row"
-      ><span><b>Show Total Spend</b></span><input
+      ><span><b>Show total spend</b></span><input
         type="checkbox"
         checked={settings.showTotalSpend}
         onchange={(event) => patch({ showTotalSpend: event.currentTarget.checked })}
       /></label
     >
     <label class="setting-row"
-      ><span><b>Launch at Login</b></span><input
+      ><span><b>Launch at login</b></span><input
         type="checkbox"
         checked={settings.launchAtLogin}
         onchange={(event) => patch({ launchAtLogin: event.currentTarget.checked })}
       /></label
     >
     <div class="setting-row">
-      <span><b>Global Shortcut</b></span>
+      <span><b>Global shortcut</b></span>
       <div class="shortcut-field">
         <button
           class:recording
@@ -158,23 +158,23 @@
           data-tooltip="Open Overcap from anywhere"
           onclick={() => (recording = !recording)}
           onkeydown={record}
-          >{recording ? 'Type Shortcut…' : (settings.globalShortcut ?? 'Record Shortcut')}</button
+          >{recording ? 'Type shortcut…' : (settings.globalShortcut ?? 'Record shortcut')}</button
         >{#if settings.globalShortcut}<button
             type="button"
             aria-label="Clear global shortcut"
             onclick={() => patch({ globalShortcut: null })}
-            ><Icon name="close" size={10} strokeWidth={2.2} /></button
+            ><Icon name="close" size={12} strokeWidth={2} /></button
           >{/if}
       </div>
     </div>
   </div>
 
   <div class="settings-section">
-    <h2>Appearance</h2>
+    <h2 class="section-label">Appearance</h2>
     {#if platform === 'macos'}
       <div class="setting-row">
-        <span><b>Icon Style</b></span><SelectMenu
-          label="Icon Style"
+        <span><b>Icon style</b></span><SelectMenu
+          label="Icon style"
           value={settings.menuBarStyle}
           options={[
             { value: 'text', label: 'Text' },
@@ -209,8 +209,8 @@
     </div>
     {#if settingsView.trayAvailable}
       <div class="setting-row">
-        <span><b>Window Mode</b></span><SelectMenu
-          label="Window Mode"
+        <span><b>Window mode</b></span><SelectMenu
+          label="Window mode"
           value={settings.windowMode}
           options={[
             { value: 'popup', label: 'Tray Popup' },
@@ -221,8 +221,8 @@
       </div>
     {/if}
     <div class="setting-row">
-      <span><b>Panel Height</b></span><SelectMenu
-        label="Panel Height"
+      <span><b>Panel height</b></span><SelectMenu
+        label="Panel height"
         value={panelHeightMode}
         options={[
           { value: 'automatic', label: 'Automatic' },
@@ -232,8 +232,8 @@
       />
     </div>
     <div class="setting-row">
-      <span><b>Time Format</b></span><SelectMenu
-        label="Time Format"
+      <span><b>Time format</b></span><SelectMenu
+        label="Time format"
         value={settings.timeFormat}
         options={[
           { value: 'system', label: 'Auto' },
@@ -246,10 +246,10 @@
   </div>
 
   <div class="settings-section">
-    <h2>Usage Display</h2>
+    <h2 class="section-label">Usage display</h2>
     <div class="setting-row">
-      <span><b>Show Usage As</b></span><SelectMenu
-        label="Show Usage As"
+      <span><b>Show usage as</b></span><SelectMenu
+        label="Show usage as"
         value={settings.usageDisplay}
         options={[
           { value: 'left', label: 'Left' },
@@ -259,8 +259,8 @@
       />
     </div>
     <div class="setting-row">
-      <span><b>Reset Times</b></span><SelectMenu
-        label="Reset Times"
+      <span><b>Reset times</b></span><SelectMenu
+        label="Reset times"
         value={settings.resetDisplay}
         options={[
           { value: 'countdown', label: 'Countdown' },
@@ -271,7 +271,7 @@
     </div>
     <label class="setting-row"
       ><span
-        ><b>Always Show Pacing</b><i
+        ><b>Always show pacing</b><i
           class="setting-info"
           data-tooltip="Show how you're pacing on every metric, not just ones near their limit"
           aria-label="Show how you're pacing on every metric, not just ones near their limit"
@@ -286,11 +286,11 @@
   </div>
 
   <div class="settings-section">
-    <h2>
+    <h2 class="section-label">
       Notifications {#if notificationsNeedAttention}<span
           class="permission-warning"
           aria-label="Notification permission needed"
-          ><Icon name="warning" size={10} strokeWidth={2} /></span
+          ><Icon name="warning" size={12} strokeWidth={2} /></span
         >{/if}
     </h2>
     <NotificationThresholdControls
@@ -355,13 +355,14 @@
             ></span
           >
           <button
-            class="secondary-button notification-primary"
+            data-cta="primary"
+            class="notification-primary"
             type="button"
             onclick={settingsView.notificationPermission === 'denied'
               ? onOpenNotificationSettings
               : onRequestNotifications}
             ><span
-              >{settingsView.notificationPermission === 'denied' ? 'Open Settings' : 'Allow'}</span
+              >{settingsView.notificationPermission === 'denied' ? 'Open settings' : 'Allow'}</span
             ></button
           >
         </div>
@@ -370,10 +371,10 @@
   </div>
 
   <div class="settings-section">
-    <h2>Advanced</h2>
+    <h2 class="section-label">Advanced</h2>
     <div class="setting-row">
-      <span><b>Log Level</b></span><SelectMenu
-        label="Log Level"
+      <span><b>Log level</b></span><SelectMenu
+        label="Log level"
         value={settings.logLevel}
         options={[
           { value: 'error', label: 'Error' },
@@ -386,7 +387,7 @@
     </div>
     <div class="setting-row setting-row--button">
       <button class="secondary-button settings-wide-button" type="button" onclick={copyLogPath}
-        >Copy Log Path</button
+        >Copy log path</button
       >
     </div>
     <div class="setting-row setting-row--button">
@@ -400,9 +401,9 @@
   </div>
 
   <div class="settings-section">
-    <h2>Updates</h2>
+    <h2 class="section-label">Updates</h2>
     <label class="setting-row"
-      ><span><b>Check for Updates Automatically</b></span><input
+      ><span><b>Check for updates automatically</b></span><input
         type="checkbox"
         checked={settings.autoCheckUpdates}
         onchange={(event) => patch({ autoCheckUpdates: event.currentTarget.checked })}
@@ -413,7 +414,7 @@
         type="button"
         class="secondary-button settings-wide-button"
         disabled={checkingUpdate}
-        onclick={onCheckForUpdates}>{checkingUpdate ? 'Checking…' : 'Check for Updates…'}</button
+        onclick={onCheckForUpdates}>{checkingUpdate ? 'Checking…' : 'Check for updates…'}</button
       >
     </div>
     {#if updateError}<div class="settings-update-error" role="alert">
@@ -421,36 +422,39 @@
       </div>{/if}
   </div>
 
-  <button class="screen-cross-link" type="button" aria-label="Customize" onclick={onCustomize}>
-    <Icon name="sliders" size={17} />
-    <span><b>Customize</b><small>Choose what's visible and where</small></span>
-    <Icon name="chevron-right" size={13} strokeWidth={2.2} />
+  <button class="screen-cross-link" type="button" aria-label="Customise" onclick={onCustomize}>
+    <Icon name="sliders" size={16} />
+    <span><b>Customise</b><small>Choose what's visible and where</small></span>
+    <Icon name="chevron-right" size={12} strokeWidth={2} />
   </button>
   <button class="screen-cross-link" type="button" aria-label="About Overcap" onclick={onAbout}>
-    <Icon name="about" size={17} />
+    <Icon name="about" size={16} />
     <span><b>About Overcap</b><small>Version, credits and product links</small></span>
-    <Icon name="chevron-right" size={13} strokeWidth={2.2} />
+    <Icon name="chevron-right" size={12} strokeWidth={2} />
   </button>
 </section>
 
 <style>
   :global {
     .settings-section {
-      margin-bottom: 10px;
+      margin: 0;
+      overflow: visible;
     }
 
     .setting-row {
       display: flex;
-      min-height: 40px;
+      min-height: 36px;
       align-items: center;
       justify-content: space-between;
-      gap: 10px;
-      padding: 6px 10px;
-      border-top: 1px solid var(--separator);
-      font-size: 11px;
+      gap: 12px;
+      padding: 0;
+      border-top: 0.5px solid var(--rule);
+      color: var(--body);
+      font-size: 12px;
     }
 
-    .settings-section h2 + .setting-row {
+    .settings-section > .section-label + .setting-row,
+    .settings-section > .section-label + .threshold-controls {
       border-top: 0;
     }
 
@@ -458,48 +462,55 @@
       display: flex;
       min-width: 0;
       flex-direction: column;
-      gap: 1px;
+      gap: 4px;
     }
 
     .setting-row b {
-      font-weight: 500;
+      color: var(--ink);
+      font-weight: 400;
     }
 
     .setting-row small {
-      color: var(--secondary);
-      font-size: 9px;
-      line-height: 12px;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
+      font-variant-numeric: tabular-nums lining-nums;
+    }
+
+    .setting-row .select-menu__trigger {
+      font-size: 12px;
     }
 
     input[type='checkbox'] {
-      width: 15px;
-      height: 15px;
-      accent-color: var(--text);
+      width: 16px;
+      height: 16px;
+      flex: 0 0 auto;
+      margin: 0;
+      accent-color: var(--ink);
+      cursor: pointer;
     }
 
     .shortcut-field {
       display: flex;
       align-items: center;
-      gap: 3px;
+      gap: 4px;
     }
 
     .shortcut-field button {
-      max-width: 115px;
-      padding: 4px 7px;
+      max-width: 116px;
+      padding: 0;
       overflow: hidden;
-      border: 1px solid var(--separator);
-      border-radius: 6px;
-      color: var(--secondary);
-      background: var(--tray);
-      font-family: var(--font-mono);
+      border: 0;
+      color: var(--muted);
+      font-family: var(--font-ui);
       font-size: 12px;
+      font-variant-numeric: tabular-nums lining-nums;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .shortcut-field button.recording {
-      border-color: color-mix(in srgb, var(--text) 65%, transparent);
-      color: var(--text);
+      color: var(--ink);
     }
 
     .shortcut-field button[aria-label='Clear global shortcut'] {
@@ -507,177 +518,86 @@
       width: 24px;
       height: 24px;
       padding: 0;
-      color: var(--secondary);
-      font-family: inherit;
+      color: var(--muted);
       place-items: center;
-    }
-
-    .shortcut-field button[aria-label='Clear global shortcut']:hover,
-    .shortcut-field button[aria-label='Clear global shortcut']:focus-visible {
-      outline: none;
-      color: var(--text);
-      background: var(--button-hover);
     }
 
     .secondary-button {
       flex: 0 0 auto;
-      padding: 4px 8px;
-      border: 1px solid var(--separator);
-      border-radius: 6px;
-      color: var(--text);
-      background: var(--tray);
+      padding: 0;
+      border: 0;
+      color: var(--ink);
       font-size: 12px;
       font-weight: 500;
+      text-decoration: none;
+    }
+
+    .secondary-button:hover {
+      text-decoration: underline;
+      text-underline-offset: 4px;
     }
 
     .secondary-button:disabled {
-      opacity: 0.55;
+      opacity: 0.56;
     }
 
     .permission-warning {
       display: inline-grid;
-      width: 13px;
-      height: 13px;
-      margin-left: 3px;
-      border-radius: 50%;
-      color: #141414;
-      background: var(--warning);
-      font-size: 8px;
+      width: 12px;
+      height: 12px;
+      margin-left: 4px;
+      color: var(--warning);
       place-items: center;
     }
 
     .settings-note,
     .version-row {
       margin: 0;
-      padding: 6px 10px 9px;
+      padding: 8px 0;
+      border-top: 0.5px solid var(--rule);
       color: var(--warning);
-      font-size: 9px;
+      font-size: 11px;
+      font-variant-numeric: tabular-nums lining-nums;
     }
 
     .version-row {
-      padding: 3px 0 8px;
-      color: var(--tertiary);
+      color: var(--muted);
       text-align: center;
-    }
-
-    .settings-section {
-      margin-bottom: 14px;
-      overflow: visible;
-      background: transparent;
-    }
-
-    .settings-section > .setting-row {
-      border-top: 0;
-      background: var(--card);
-    }
-
-    .settings-section > h2 + .setting-row {
-      border-radius: 12px 12px 0 0;
-    }
-
-    .settings-section > .setting-row:last-child,
-    .settings-section > .settings-note:last-child {
-      border-radius: 0 0 12px 12px;
-    }
-
-    .settings-section > h2 + .setting-row:last-child {
-      border-radius: 12px;
-    }
-
-    .setting-row {
-      min-height: 40px;
-      padding: 9px 12px;
-      border: 0;
-      font-size: 13px;
-    }
-
-    .setting-row b {
-      font-weight: 400;
-    }
-
-    .setting-row .select-menu__trigger {
-      font-size: 13px;
-    }
-
-    .setting-row small {
-      font-size: 10px;
-      line-height: 12px;
-    }
-
-    input[type='checkbox'] {
-      width: 28px;
-      height: 16px;
-      flex: 0 0 auto;
-      margin: 0;
-      appearance: none;
-      border-radius: 9px;
-      background: var(--meter-track);
-      cursor: pointer;
-      transition: background-color var(--motion-switch);
-    }
-
-    input[type='checkbox']::after {
-      display: block;
-      width: 12px;
-      height: 12px;
-      margin: 2px;
-      border-radius: 50%;
-      background: var(--tray);
-      content: '';
-      transition: transform var(--motion-switch);
-    }
-
-    input[type='checkbox']:checked {
-      background: var(--text);
-    }
-
-    input[type='checkbox']:checked::after {
-      transform: translateX(12px);
-    }
-
-    .version-row {
-      font-size: 10px;
     }
 
     .setting-row > span:has(.setting-info) {
       align-items: center;
       flex-direction: row;
-      gap: 6px;
+      gap: 8px;
     }
 
     .setting-info {
       display: inline-grid;
       flex: 0 0 auto;
-      color: var(--secondary);
-      font-style: normal;
+      color: var(--muted);
       place-items: center;
     }
 
     .setting-row--button {
-      display: block;
+      display: flex;
+      justify-content: flex-start;
     }
 
     .settings-wide-button {
-      width: 100%;
+      width: auto;
       min-height: 28px;
       font-size: 12px;
     }
 
-    .settings-note.log-action-error {
-      background: var(--card);
-    }
-
     .notification-actions {
-      padding: 8px 12px 10px;
-      border-top: 1px solid var(--separator);
-      border-radius: 0 0 12px 12px;
-      background: var(--card);
+      padding: 8px 0;
+      border-top: 0.5px solid var(--rule);
     }
 
     .notification-attention {
       display: flex;
       align-items: center;
-      gap: 10px;
+      gap: 12px;
       color: var(--warning);
     }
 
@@ -686,83 +606,48 @@
       min-width: 0;
       flex: 1;
       flex-direction: column;
-      gap: 2px;
+      gap: 4px;
     }
 
     .notification-attention b {
-      font-size: 11px;
-      font-weight: 600;
-      line-height: 13px;
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
     }
 
     .notification-attention small {
-      color: var(--secondary);
-      font-size: 9px;
-      line-height: 12px;
-    }
-
-    .notification-attention .secondary-button {
-      flex: 0 0 auto;
+      color: var(--muted);
+      font-size: 11px;
+      line-height: 1.5;
     }
 
     .notification-attention .notification-primary {
-      position: relative;
-      overflow: hidden;
-      border-color: color-mix(in srgb, var(--action-text) 24%, transparent);
-      border-radius: 999px;
-      color: var(--action-text);
-      background: var(--action-fill);
-    }
-
-    .notification-primary::before {
-      position: absolute;
-      background: var(--action-hover);
-      content: '';
-      inset: 0;
-      transform: scaleX(0);
-      transform-origin: left;
-      transition: transform var(--motion-switch);
-    }
-
-    .notification-primary > span {
-      position: relative;
-    }
-
-    .notification-primary:hover::before {
-      transform: scaleX(1);
+      flex: 0 0 auto;
+      padding: 0 12px;
     }
 
     .settings-update-error {
       display: flex;
       flex-direction: column;
-      gap: 2px;
-      margin: 0 12px 8px;
-      padding: 8px;
-      border-radius: 8px;
-      color: var(--error);
-      background: var(--error-bg);
+      gap: 4px;
+      margin: 8px 0 0;
+      padding: 8px 0;
+      border-top: 0.5px solid var(--rule);
+      border-bottom: 0.5px solid var(--rule);
+      color: var(--critical);
     }
 
     .settings-update-error b {
-      font-size: 11px;
-      line-height: 14px;
+      font-size: 12px;
+      font-weight: 500;
+      line-height: 16px;
     }
 
     .settings-update-error small {
-      color: var(--error);
-      font-size: 9px;
-      line-height: 12px;
-    }
-
-    :root[data-density='compact'] .setting-row {
-      gap: 8px;
-      padding-right: 10px;
-      padding-left: 10px;
-    }
-
-    :root[data-density='compact'] .screen-cross-link {
-      min-height: 42px;
-      margin-top: 8px;
+      color: var(--critical);
+      font-size: 11px;
+      line-height: 1.5;
     }
   }
 </style>

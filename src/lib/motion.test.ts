@@ -1,23 +1,16 @@
 import { describe, expect, it } from 'vitest';
-import {
-  reorderFlip,
-  SNAP_DURATION_MS,
-  snapEasing,
-  snapMotion,
-  snapScale,
-  snapSlide,
-} from './motion';
+import { measuredEasing, measuredMotion, measuredReveal, MEASURED_DURATION_MS } from './motion';
 
 describe('shared motion profile', () => {
-  it('matches cubic-bezier(0.2, 0, 0, 1) without overshoot', () => {
-    expect(snapEasing(0)).toBe(0);
-    expect(snapEasing(0.25)).toBeCloseTo(0.60722, 5);
-    expect(snapEasing(0.5)).toBeCloseTo(0.877834, 5);
-    expect(snapEasing(1)).toBe(1);
+  it('matches cubic-bezier(0.4, 0, 0.2, 1) without overshoot', () => {
+    expect(measuredEasing(0)).toBe(0);
+    expect(measuredEasing(0.25)).toBeCloseTo(0.236587, 5);
+    expect(measuredEasing(0.5)).toBeCloseTo(0.775561, 5);
+    expect(measuredEasing(1)).toBe(1);
 
     let previous = 0;
     for (let step = 0; step <= 100; step += 1) {
-      const value = snapEasing(step / 100);
+      const value = measuredEasing(step / 100);
       expect(Number.isFinite(value)).toBe(true);
       expect(value).toBeGreaterThanOrEqual(previous);
       expect(value).toBeGreaterThanOrEqual(0);
@@ -26,25 +19,13 @@ describe('shared motion profile', () => {
     }
   });
 
-  it('uses the 160ms snap and jumps immediately for reduced motion', () => {
-    expect(snapMotion(false)).toEqual({ duration: SNAP_DURATION_MS, easing: snapEasing });
-    expect(snapMotion(true)).toEqual({ duration: 0, easing: snapEasing });
-    expect(SNAP_DURATION_MS).toBe(160);
-    expect(reorderFlip).toBe(snapMotion);
-  });
-
-  it('scales with transforms only and settles reduced motion at the final state', () => {
-    const element = document.createElement('div');
-    element.style.transform = 'translateX(2px)';
-
-    const animated = snapScale(element, { reducedMotion: false, start: 0.95 });
-    expect(animated.css?.(0, 1)).toContain('translateX(2px) scale(0.95)');
-    expect(animated.css?.(1, 0)).toContain('translateX(2px) scale(1)');
-    expect(animated.css?.(0.5, 0.5)).not.toContain('opacity');
-
-    const reduced = snapScale(element, { reducedMotion: true, start: 0.95 });
-    expect(reduced.duration).toBe(0);
-    expect(reduced.css?.(0, 1)).toContain('translateX(2px) scale(1)');
+  it('uses the 200ms measured profile and jumps immediately for reduced motion', () => {
+    expect(measuredMotion(false)).toEqual({
+      duration: MEASURED_DURATION_MS,
+      easing: measuredEasing,
+    });
+    expect(measuredMotion(true)).toEqual({ duration: 0, easing: measuredEasing });
+    expect(MEASURED_DURATION_MS).toBe(200);
   });
 
   it('reveals height without Svelte slide opacity and settles reduced motion immediately', () => {
@@ -59,12 +40,12 @@ describe('shared motion profile', () => {
       borderBottomWidth: '2px',
     });
 
-    const animated = snapSlide(element, { reducedMotion: false });
+    const animated = measuredReveal(element, { reducedMotion: false });
     expect(animated.css?.(0, 1)).toContain('height: 0px');
     expect(animated.css?.(1, 0)).toContain('height: 40px');
     expect(animated.css?.(0.5, 0.5)).not.toContain('opacity');
 
-    const reduced = snapSlide(element, { reducedMotion: true });
+    const reduced = measuredReveal(element, { reducedMotion: true });
     expect(reduced.duration).toBe(0);
     expect(reduced.css?.(0, 1)).toContain('height: 40px');
   });
