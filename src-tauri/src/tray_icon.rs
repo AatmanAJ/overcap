@@ -301,9 +301,9 @@ mod tests {
                 .map(|pixel| u64::from(pixel[3]))
                 .sum::<u64>()
         };
-        let blue_pixels = |rgba: &[u8]| {
+        let healthy_pixels = |rgba: &[u8]| {
             rgba.chunks_exact(4)
-                .filter(|pixel| pixel[2] > pixel[0] && pixel[2] > pixel[1] && pixel[3] > 200)
+                .filter(|pixel| pixel[1] > pixel[0] && pixel[1] > pixel[2] && pixel[3] > 200)
                 .count()
         };
         let red_pixels = |rgba: &[u8]| {
@@ -314,7 +314,7 @@ mod tests {
         assert!(alpha_weight(&empty) < alpha_weight(&quarter));
         assert!(alpha_weight(&quarter) < alpha_weight(&half));
         assert!(alpha_weight(&half) < alpha_weight(&full));
-        assert!(blue_pixels(&full) > 0);
+        assert!(healthy_pixels(&full) > 0);
         assert!(red_pixels(&depleted) > 0);
     }
 }
