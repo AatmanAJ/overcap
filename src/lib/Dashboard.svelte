@@ -430,6 +430,7 @@
 {#if settings.showTotalSpend && providerUsage.length > 0}
   <TotalSpend
     providers={providerUsage}
+    {now}
     {settings}
     {catalog}
     onChange={onSettingsChange}

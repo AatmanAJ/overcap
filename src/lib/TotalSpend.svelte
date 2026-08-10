@@ -6,22 +6,29 @@
   import type { ProviderCatalogIndex } from './metrics';
   import { TOTAL_SPEND_GEOMETRY } from './shareCard';
   import { ringSectorPath, spendRingArcs } from './spendRing';
-  import { emptySpendMessage, projectSpend, type SpendProjection } from './totalSpend';
+  import {
+    emptySpendMessage,
+    projectMonthlySpend,
+    projectSpend,
+    type SpendProjection,
+  } from './totalSpend';
   import { providerFamily } from './providerIconPaths';
   import type { AppSettings, UsageHistory } from './types';
 
   interface Props {
     providers: Array<{ id: string; usage: UsageHistory }>;
+    now: number;
     settings: AppSettings;
     catalog: ProviderCatalogIndex;
     onChange: (settings: AppSettings) => void;
     onShare: (projection: SpendProjection) => boolean | Promise<boolean>;
   }
-  let { providers, settings, catalog, onChange, onShare }: Props = $props();
+  let { providers, now, settings, catalog, onChange, onShare }: Props = $props();
   const providerDisplayName = (id: string) => catalog.displayName(id, settings.providerNames);
   const projection = $derived(
     projectSpend(providers, settings.totalSpendPeriod, settings.totalSpendMetric),
   );
+  const monthlySpend = $derived(projectMonthlySpend(providers, now));
   const providerNames = $derived(providers.map((provider) => providerDisplayName(provider.id)));
   const ringSegments = $derived(spendRingArcs(projection.slices));
   const periodIndex = $derived(
@@ -153,6 +160,11 @@
           {/each}
         </div>
       </div>
+    {/if}
+    {#if monthlySpend !== null}
+      <p class="total-card__monthly-projection">
+        on pace for ~{formatSpendValue(monthlySpend, 'cost')} this month
+      </p>
     {/if}
   </div>
 </section>
@@ -452,6 +464,16 @@
       gap: 8px;
       color: var(--secondary);
       font-size: 11px;
+      text-align: center;
+    }
+
+    .total-card__monthly-projection {
+      margin: 8px 0 0;
+      color: var(--secondary);
+      font-family: var(--font-mono);
+      font-size: 9px;
+      font-variant-numeric: tabular-nums;
+      line-height: 13px;
       text-align: center;
     }
 
