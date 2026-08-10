@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { formatLimit, formatReset, paceTooltip, projectPace } from './pacing';
+import { formatLimit, formatReset, paceProjectionLine, paceTooltip, projectPace } from './pacing';
 import type { QuotaWindow } from './types';
 
 const now = new Date('2026-07-10T12:00:00Z').getTime();
@@ -49,6 +49,36 @@ describe('quota pacing', () => {
     expect(projection.severity).toBe('level');
     expect(projection.projectedUsedPercent).toBeNull();
     expect(projection.runOutAt).toBeNull();
+  });
+
+  it('projects a cap crossing as a stable hours-and-minutes deadline', () => {
+    const projection = projectPace(
+      quota(40, 1 / 3, {
+        periodSeconds: 15_000,
+        resetsAt: new Date(now + 10_000_000).toISOString(),
+      }),
+      now,
+    );
+
+    expect(projection.runOutAt).toBe(now + 7_500_000);
+    expect(paceProjectionLine(projection, now)).toBe('caps in ~2h 05m at this pace');
+  });
+
+  it('reports when the current pace clears the reset', () => {
+    expect(paceProjectionLine(projectPace(quota(30, 0.5), now), now)).toBe(
+      'clears the reset at this pace',
+    );
+  });
+
+  it('hides projections for sparse, invalid, and zero-rate windows', () => {
+    expect(paceProjectionLine(projectPace(quota(1, 0.009), now), now)).toBeNull();
+    expect(
+      paceProjectionLine(projectPace(quota(30, 0.5, { periodSeconds: 0 }), now), now),
+    ).toBeNull();
+    expect(
+      paceProjectionLine(projectPace(quota(30, 0.5, { resetsAt: 'not-a-date' }), now), now),
+    ).toBeNull();
+    expect(paceProjectionLine(projectPace(quota(0, 0.5), now), now)).toBeNull();
   });
 
   it('keeps an unused rolling session untracked until it starts', () => {

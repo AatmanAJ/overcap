@@ -45,10 +45,13 @@ describe('quota pacing presentation', () => {
     const { container } = show(quota(60), onToggleReset);
     const warning = screen.getByRole('button', { name: 'Limit in 56m' });
     expect(container.querySelector('.pace-warning__icon')).toBeInTheDocument();
-    expect(warning).toHaveAttribute('data-tooltip', '~20% over limit at reset');
+    expect(warning).toHaveAttribute(
+      'data-tooltip',
+      '~20% over limit at reset\ncaps in ~56m at this pace',
+    );
     expect(container.querySelector('.meter-shell')).toHaveAttribute(
       'data-tooltip',
-      '~20% over limit at reset',
+      '~20% over limit at reset\ncaps in ~56m at this pace',
     );
     expect(container.querySelector('.meter__fill')).toHaveStyle('--fill-percent: 40%');
     expect(screen.getByRole('button', { name: '40% left' })).toHaveAttribute(
@@ -69,13 +72,16 @@ describe('quota pacing presentation', () => {
     expect(screen.queryByText(/Limit in/)).not.toBeInTheDocument();
     expect(container.querySelector('.pace-warning')).toHaveAttribute(
       'data-tooltip',
-      '~100% used at reset',
+      '~100% used at reset\nclears the reset at this pace',
     );
   });
 
   it('shows the rounded spare copy and projected-use tooltip when close', () => {
     show(quota(46));
-    expect(screen.getByText('~8% spare')).toHaveAttribute('data-tooltip', '~92% used at reset');
+    expect(screen.getByText('~8% spare')).toHaveAttribute(
+      'data-tooltip',
+      '~92% used at reset\nclears the reset at this pace',
+    );
   });
 
   it('frames the even-pace tick in the selected remaining mode', () => {

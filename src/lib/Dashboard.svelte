@@ -12,6 +12,7 @@
   import TotalSpend from './TotalSpend.svelte';
   import type { SpendProjection } from './totalSpend';
   import type { ProviderCatalogIndex } from './metrics';
+  import { paceProjectionLine } from './pacing';
   import { canRenameProvider } from './providerNames';
   import { selectHeroGaugeMetric } from './heroGauge';
   import type {
@@ -152,6 +153,9 @@
       }),
       now,
     ),
+  );
+  const heroProjectionText = $derived(
+    heroSelection ? paceProjectionLine(heroSelection.pace, now) : null,
   );
 
   function updateProvider(next: ProviderLayout, customization = true) {
@@ -333,7 +337,7 @@
 />
 
 {#if heroSelection}
-  <HeroGauge selection={heroSelection} {reducedMotion} />
+  <HeroGauge selection={heroSelection} {reducedMotion} projectionText={heroProjectionText} />
 {/if}
 
 {#if updateStatus?.available && updateStatus.version !== settings.dismissedUpdateVersion}

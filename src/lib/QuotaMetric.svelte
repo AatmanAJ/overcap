@@ -4,6 +4,7 @@
     formatLimit,
     formatReset,
     isFreshSessionWindow,
+    paceProjectionLine,
     paceTooltip,
     projectPace,
   } from './pacing';
@@ -85,6 +86,10 @@
   const freshSession = $derived(isFreshSessionWindow(quota, now, isSessionWindow));
   const pace = $derived(projectPace(quota, now, isSessionWindow));
   const paceDetail = $derived(paceTooltip(pace));
+  const projectionLine = $derived(paceProjectionLine(pace, now));
+  const paceTooltipDetail = $derived(
+    [paceDetail, projectionLine].filter((line): line is string => Boolean(line)).join('\n') || null,
+  );
   const roundedUsed = $derived(Math.round(used));
   const severity = $derived(
     pace.severity === 'level'
@@ -153,7 +158,7 @@
           <button
             type="button"
             class="pace-warning"
-            data-tooltip={paceDetail ?? undefined}
+            data-tooltip={paceTooltipDetail ?? undefined}
             aria-label={paceLabel}
             onclick={onToggleReset}
             ><span class="pace-warning__icon"
@@ -163,7 +168,7 @@
         {:else}
           <span
             class="pace-warning"
-            data-tooltip={paceDetail ?? undefined}
+            data-tooltip={paceTooltipDetail ?? undefined}
             aria-label={pace.severity === 'spent' ? 'Limit reached' : 'Will reach limit'}
             ><span class="pace-warning__icon"
               ><Icon name="flame-filled" size={11} strokeWidth={1.8} /></span
@@ -171,14 +176,15 @@
           >
         {/if}
       {:else if paceLabel}
-        <span data-tooltip={pace.severity === 'close' ? (paceDetail ?? undefined) : undefined}
+        <span
+          data-tooltip={pace.severity === 'close' ? (paceTooltipDetail ?? undefined) : undefined}
           >{paceLabel}</span
         >
       {/if}
     {/if}
   </div>
 
-  <div class="meter-shell" data-tooltip={paceDetail ?? undefined}>
+  <div class="meter-shell" data-tooltip={paceTooltipDetail ?? undefined}>
     <div
       class="meter meter--{severity}"
       role="progressbar"

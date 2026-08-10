@@ -71,6 +71,35 @@ export function paceTooltip(value: PaceProjection) {
   return `~${Math.max(1, Math.round(projected - 100))}% over limit at reset`;
 }
 
+/**
+ * Turns an already-calculated quota pace into the short product-facing
+ * projection shared by quota tooltips and the hero gauge.
+ *
+ * A zero/unknown burn rate, a young window, or an invalid reset all arrive as
+ * an unprojected pace and intentionally produce no copy. That keeps the UI
+ * quiet instead of manufacturing a deadline from sparse data.
+ */
+export function paceProjectionLine(value: PaceProjection, now: number): string | null {
+  const projected = value.projectedUsedPercent;
+  if (
+    value.severity === 'level' ||
+    value.severity === 'spent' ||
+    projected === null ||
+    !Number.isFinite(projected) ||
+    projected <= 0
+  ) {
+    return null;
+  }
+
+  if (value.runOutAt !== null) {
+    const remaining = value.runOutAt - now;
+    if (!Number.isFinite(remaining) || remaining <= 0) return null;
+    return `caps in ~${formatProjectionDuration(remaining)} at this pace`;
+  }
+
+  return projected <= 100 ? 'clears the reset at this pace' : null;
+}
+
 type TimeFormat = 'system' | 'twelveHour' | 'twentyFourHour';
 
 export function formatReset(
@@ -134,6 +163,16 @@ function formatDuration(milliseconds: number) {
   const remainder = minutes % 60;
   if (days > 0) return `${days}d ${hours}h`;
   if (hours > 0) return remainder > 0 ? `${hours}h ${remainder}m` : `${hours}h`;
+  return `${remainder}m`;
+}
+
+function formatProjectionDuration(milliseconds: number) {
+  const minutes = Math.max(1, Math.ceil(milliseconds / 60_000));
+  const days = Math.floor(minutes / 1_440);
+  const hours = Math.floor((minutes % 1_440) / 60);
+  const remainder = minutes % 60;
+  if (days > 0) return hours > 0 ? `${days}d ${String(hours).padStart(2, '0')}h` : `${days}d`;
+  if (hours > 0) return `${hours}h ${String(remainder).padStart(2, '0')}m`;
   return `${remainder}m`;
 }
 
