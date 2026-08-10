@@ -34,7 +34,7 @@ function mockInvoke(implementation: InvokeImplementation) {
   });
 }
 
-describe('OpenQuota update lifecycle', () => {
+describe('Overcap update lifecycle', () => {
   beforeEach(() => {
     mocks.currentMonitor.mockResolvedValue({
       scaleFactor: 1,
@@ -57,7 +57,7 @@ describe('OpenQuota update lifecycle', () => {
           version: null,
           body: null,
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       return Promise.reject(new Error(`unexpected command ${command}`));
     });
@@ -77,7 +77,7 @@ describe('OpenQuota update lifecycle', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
     await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
     await waitFor(() => expect(mocks.invoke).toHaveBeenCalledWith('check_for_updates'));
-    expect(await screen.findByText('OpenQuota 0.1.0 is up to date.')).toBeInTheDocument();
+    expect(await screen.findByText('Overcap 0.1.0 is up to date.')).toBeInTheDocument();
     expect(document.querySelector('.settings-update-status')).toBeNull();
     expect(mocks.invoke).toHaveBeenCalledWith(
       'save_app_settings',
@@ -122,7 +122,7 @@ describe('OpenQuota update lifecycle', () => {
           version: '0.2.0',
           body: 'New release',
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       return Promise.resolve();
     });
@@ -131,7 +131,7 @@ describe('OpenQuota update lifecycle', () => {
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Check for Updates…' }));
     expect(await screen.findByRole('region', { name: 'Update Available' })).toHaveTextContent(
-      'OpenQuota 0.2.0 is ready to download.',
+      'Overcap 0.2.0 is ready to download.',
     );
     expect(screen.getByText('New release')).toBeInTheDocument();
     await fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }));
@@ -156,7 +156,7 @@ describe('OpenQuota update lifecycle', () => {
           version: '0.2.0',
           body: null,
           installable: false,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       if (command === 'open_update_page') return Promise.resolve();
       return Promise.resolve();
@@ -188,7 +188,7 @@ describe('OpenQuota update lifecycle', () => {
           version: '0.2.0',
           body: 'Safer updates',
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       if (command === 'install_update') return Promise.resolve();
       return Promise.resolve();
@@ -233,7 +233,7 @@ describe('OpenQuota update lifecycle', () => {
           version: '0.2.0',
           body: null,
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       if (command === 'install_update')
         return Promise.reject({

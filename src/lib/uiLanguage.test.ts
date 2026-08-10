@@ -84,7 +84,7 @@ describe('native UI language contract', () => {
   });
 
   it('keeps dashboard onboarding, empty state, and menus on the shared wording', () => {
-    expect(dashboard).toContain('Welcome to OpenQuota');
+    expect(dashboard).toContain('Welcome to Overcap');
     expect(dashboard).toContain('Open Customize');
     expect(dashboard).toContain('Turn on Customize to choose what to show.');
     expect(dashboard).toContain('Customize…');

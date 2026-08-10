@@ -5,7 +5,7 @@ use crate::{
 
 use super::ZaiError;
 
-const CONFIG_PATHS: &[&str] = &["~/.config/openquota/zai.json", "~/.config/zai/key.json"];
+const CONFIG_PATHS: &[&str] = &["~/.config/overcap/zai.json", "~/.config/zai/key.json"];
 const ENVIRONMENT_NAMES: &[&str] = &["ZAI_API_KEY", "GLM_API_KEY"];
 
 #[derive(Clone)]

@@ -300,7 +300,7 @@ impl SettingsService {
         let mut current = self
             .settings
             .write()
-            .map_err(|_| "OpenQuota settings are temporarily unavailable.".to_owned())?;
+            .map_err(|_| "Overcap settings are temporarily unavailable.".to_owned())?;
         let enabled_before = enabled_provider_set(&current);
         let detected = current
             .providers
@@ -309,13 +309,13 @@ impl SettingsService {
             .map(|provider| provider.id.clone())
             .collect::<HashSet<_>>();
         let persisted_accounts = persisted_account_provider_ids(&self.storage)
-            .map_err(|_| "OpenQuota account settings could not be loaded.".to_owned())?;
+            .map_err(|_| "Overcap account settings could not be loaded.".to_owned())?;
         normalize_with_persisted_accounts(&self.registry, settings, &detected, &persisted_accounts);
         if expected_account_revision != Some(self.account_revision.load(Ordering::SeqCst)) {
             let active_provider_ids = self
                 .active_account_identities
                 .read()
-                .map_err(|_| "OpenQuota account names are temporarily unavailable.".to_owned())?
+                .map_err(|_| "Overcap account names are temporarily unavailable.".to_owned())?
                 .keys()
                 .cloned()
                 .collect::<Vec<_>>();
@@ -329,10 +329,10 @@ impl SettingsService {
         }
         let account_updates = self
             .active_account_name_updates(settings)
-            .map_err(|_| "OpenQuota account names could not be saved.".to_owned())?;
+            .map_err(|_| "Overcap account names could not be saved.".to_owned())?;
         self.storage
             .save_settings_with_account_updates(settings, &account_updates)
-            .map_err(|_| "OpenQuota settings could not be saved.".to_owned())?;
+            .map_err(|_| "Overcap settings could not be saved.".to_owned())?;
         let enablement_changed = enabled_provider_set(settings) != enabled_before;
         current.clone_from(settings);
         if enablement_changed {
@@ -366,7 +366,7 @@ impl SettingsService {
         let mut current = self
             .settings
             .write()
-            .map_err(|_| "OpenQuota settings are temporarily unavailable.".to_owned())?;
+            .map_err(|_| "Overcap settings are temporarily unavailable.".to_owned())?;
         let enabled_before = enabled_provider_set(&current);
         let detected_before = detected_provider_set(&current);
         let credential_revision_matches =
@@ -387,7 +387,7 @@ impl SettingsService {
             }
         }
         let persisted_accounts = persisted_account_provider_ids(&self.storage)
-            .map_err(|_| "OpenQuota account settings could not be loaded.".to_owned())?;
+            .map_err(|_| "Overcap account settings could not be loaded.".to_owned())?;
         normalize_with_persisted_accounts(
             &self.registry,
             &mut next,
@@ -426,7 +426,7 @@ impl SettingsService {
 
         self.storage
             .save_settings(&next)
-            .map_err(|_| "OpenQuota settings could not be saved.".to_owned())?;
+            .map_err(|_| "Overcap settings could not be saved.".to_owned())?;
         let newly_enabled_provider_ids = next
             .providers
             .iter()
@@ -481,7 +481,7 @@ impl SettingsService {
         let mut current = self
             .settings
             .write()
-            .map_err(|_| "OpenQuota settings are temporarily unavailable.".to_owned())?;
+            .map_err(|_| "Overcap settings are temporarily unavailable.".to_owned())?;
         let enabled_before = enabled_provider_set(&current);
         let provider = current
             .providers
@@ -494,7 +494,7 @@ impl SettingsService {
         }
         self.storage
             .save_settings(&current)
-            .map_err(|_| "OpenQuota settings could not be saved.".to_owned())?;
+            .map_err(|_| "Overcap settings could not be saved.".to_owned())?;
         if enabled_provider_set(&current) != enabled_before {
             self.enablement_revision.fetch_add(1, Ordering::SeqCst);
         }
@@ -970,7 +970,7 @@ mod tests {
     #[test]
     fn deferred_first_run_replaces_fallback_with_detected_providers() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let (service, plan) = SettingsService::new_deferred(storage, catalog()).unwrap();
         assert_eq!(enabled_ids(&service.get()), ["claude", "codex", "cursor"]);
 
@@ -994,7 +994,7 @@ mod tests {
     #[test]
     fn deferred_first_run_keeps_fallback_when_nothing_is_detected() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let (service, plan) = SettingsService::new_deferred(storage, catalog()).unwrap();
 
         let outcome = service
@@ -1011,7 +1011,7 @@ mod tests {
     #[test]
     fn unknown_first_run_probes_preserve_the_fallback_enablement() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let (service, plan) = SettingsService::new_deferred(storage, catalog()).unwrap();
         let unknown = ["claude", "codex", "cursor", "antigravity", "openrouter"]
             .into_iter()
@@ -1034,7 +1034,7 @@ mod tests {
     #[test]
     fn unknown_reset_probe_preserves_existing_detection_and_enablement() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service =
             SettingsService::new_for_test(storage, catalog(), &HashSet::from(["codex".to_owned()]))
                 .unwrap();
@@ -1065,7 +1065,7 @@ mod tests {
     #[test]
     fn definitive_reset_absence_restores_the_fallback_set() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service = SettingsService::new_for_test(
             storage,
             catalog(),
@@ -1092,7 +1092,7 @@ mod tests {
     #[test]
     fn unknown_existing_detection_does_not_enable_the_fallback_set() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service =
             SettingsService::new_for_test(storage, catalog(), &HashSet::from(["codex".to_owned()]))
                 .unwrap();
@@ -1114,7 +1114,7 @@ mod tests {
     #[test]
     fn user_enablement_change_wins_over_a_running_detection_pass() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let (service, plan) = SettingsService::new_deferred(storage, catalog()).unwrap();
         let mut changed = service.get();
         changed
@@ -1144,7 +1144,7 @@ mod tests {
     #[test]
     fn deferred_new_provider_is_auto_enabled_only_once() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let registry = catalog();
         let mut saved = default_settings(&registry, &HashSet::from(["codex".to_owned()]));
         saved.known_provider_ids.retain(|id| id != "antigravity");
@@ -1194,7 +1194,7 @@ mod tests {
     #[test]
     fn account_name_and_rename_availability_survive_a_restart() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         storage
             .save_provider_account_record("claude", "identity-a", "claude", "{}")
             .unwrap();
@@ -1226,7 +1226,7 @@ mod tests {
     #[test]
     fn codex_names_follow_accounts_when_the_active_login_changes() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service = SettingsService::new_for_test(
             storage.clone(),
             catalog(),
@@ -1294,7 +1294,7 @@ mod tests {
     #[test]
     fn account_revision_only_changes_when_the_active_identity_changes() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service =
             SettingsService::new_for_test(storage, catalog(), &HashSet::from(["codex".to_owned()]))
                 .unwrap();
@@ -1317,7 +1317,7 @@ mod tests {
     #[test]
     fn stale_settings_save_cannot_move_a_name_to_the_new_active_account() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service =
             SettingsService::new_for_test(storage, catalog(), &HashSet::from(["codex".to_owned()]))
                 .unwrap();
@@ -1365,7 +1365,7 @@ mod tests {
     #[test]
     fn codex_name_migration_keeps_the_original_accounts_name_after_an_offline_swap() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         storage
             .save_provider_account_record("codex", "aaaaaaaa11111111", "codex", "{}")
             .unwrap();
@@ -1399,7 +1399,7 @@ mod tests {
     #[test]
     fn unrelated_toggle_does_not_cancel_new_provider_detection() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let registry = catalog();
         let mut saved = default_settings(&registry, &HashSet::from(["claude".to_owned()]));
         saved.known_provider_ids.retain(|id| id != "antigravity");
@@ -1559,7 +1559,7 @@ mod tests {
     #[test]
     fn layout_and_preferences_survive_a_service_restart() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let detected = HashSet::from(["codex".to_owned(), "antigravity".to_owned()]);
         let catalog = catalog();
         let first =
@@ -1824,7 +1824,7 @@ mod tests {
     #[test]
     fn invalid_saved_settings_are_not_overwritten_with_defaults() {
         let directory = tempdir().unwrap();
-        let database_path = directory.path().join("openquota.db");
+        let database_path = directory.path().join("overcap.db");
         let connection = rusqlite::Connection::open(&database_path).unwrap();
         connection
             .execute_batch(
@@ -1856,7 +1856,7 @@ mod tests {
     #[test]
     fn provider_reset_uses_the_backend_catalog_and_preserves_provider_state() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let detected = HashSet::from(["codex".to_owned()]);
         let catalog = catalog();
         let service = SettingsService::new_for_test(storage, catalog.clone(), &detected).unwrap();
@@ -1894,7 +1894,7 @@ mod tests {
     #[test]
     fn api_key_save_marks_and_enables_provider_while_delete_only_clears_detection() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service = SettingsService::new_for_test(storage, catalog(), &HashSet::new()).unwrap();
 
         let saved = service
@@ -1923,7 +1923,7 @@ mod tests {
     #[test]
     fn stale_absent_probe_cannot_undo_an_api_key_save_for_a_detected_provider() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service = SettingsService::new_for_test(
             storage,
             catalog(),
@@ -1953,7 +1953,7 @@ mod tests {
     #[test]
     fn stale_detected_probe_cannot_undo_an_api_key_delete() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let service = SettingsService::new_for_test(
             storage,
             catalog(),

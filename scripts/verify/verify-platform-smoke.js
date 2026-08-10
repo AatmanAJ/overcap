@@ -100,7 +100,7 @@ for (const [source, content, contracts] of [
     [
       '*-setup.exe',
       'RUNNER_TEMP is required for the Windows installer smoke test',
-      'Refusing to disturb an existing OpenQuota installation',
+      'Refusing to disturb an existing Overcap installation',
       '@(\'/S\', "/D=$installRoot")',
       'Start-Sleep -Seconds 8',
       'Expected Windows GUI subsystem (2)',
@@ -108,7 +108,7 @@ for (const [source, content, contracts] of [
       'remained installed after the NSIS uninstall smoke test',
     ],
   ],
-  ['macOS', macos, ['hdiutil attach', 'OpenQuota.app/Contents/MacOS/openquota', 'sleep 8']],
+  ['macOS', macos, ['hdiutil attach', 'Overcap.app/Contents/MacOS/overcap', 'sleep 8']],
   [
     'Linux packages',
     linuxPackages,
@@ -117,7 +117,7 @@ for (const [source, content, contracts] of [
       '--appimage-extract',
       "-name 'libwayland-client.so*'",
       'dpkg-deb --field',
-      'test "${package_name}" = \'open-quota\'',
+      'test "${package_name}" = \'overcap\'',
       'sudo apt-get install --yes',
       'sudo apt-get remove --yes',
       'linux-x11.sh',
@@ -134,7 +134,7 @@ for (const [source, content, contracts] of [
       'sha256sum --check --strict',
     ],
   ],
-  ['Linux X11', linuxX11, ['xvfb-run', 'openbox', 'xdotool search --name "^OpenQuota$"']],
+  ['Linux X11', linuxX11, ['xvfb-run', 'openbox', 'xdotool search --name "^Overcap$"']],
   ['Linux Wayland', linuxWayland, ['weston --backend=headless-backend.so', 'sleep 8']],
 ]) {
   for (const contract of contracts) {
@@ -156,8 +156,8 @@ for (const deferredPlatformSigningContract of [
   'WINDOWS_CERTIFICATE',
   'APPLE_CERTIFICATE',
   'APPLE_ID',
-  'OPENQUOTA_REQUIRE_AUTHENTICODE',
-  'OPENQUOTA_REQUIRE_NOTARIZATION',
+  'OVERCAP_REQUIRE_AUTHENTICODE',
+  'OVERCAP_REQUIRE_NOTARIZATION',
   'tauri.windows-signing.conf.json',
 ]) {
   if (

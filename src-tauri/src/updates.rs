@@ -13,7 +13,7 @@ use tokio::sync::Mutex;
 
 use crate::child_process::background_command;
 
-const RELEASE_URL: &str = "https://github.com/deviffyy/OpenQuota/releases/latest";
+const RELEASE_URL: &str = "https://github.com/AJ-Base44/overcap/releases/latest";
 
 #[derive(Default)]
 pub struct UpdateCoordinator {
@@ -121,14 +121,14 @@ fn classify_updater_error(error: &UpdaterError, operation: &'static str) -> Upda
     if matches!(error, UpdaterError::Reqwest(_) | UpdaterError::Network(_)) {
         return UpdateFailure::new(
             "network",
-            format!("OpenQuota could not {operation} because the network request failed."),
+            format!("Overcap could not {operation} because the network request failed."),
             "Check your connection or proxy, then try again.",
             true,
         );
     }
     UpdateFailure::new(
         "update_failed",
-        format!("OpenQuota could not {operation}."),
+        format!("Overcap could not {operation}."),
         "Try again or use the release page to download the installer manually.",
         true,
     )
@@ -262,7 +262,7 @@ pub async fn install_update(
         .ok_or_else(|| {
             UpdateFailure::new(
                 "up_to_date",
-                "OpenQuota is already up to date.",
+                "Overcap is already up to date.",
                 "No action is needed.",
                 false,
             )
@@ -308,7 +308,7 @@ pub fn open_update_page() -> Result<(), String> {
         .args(arguments)
         .spawn()
         .map(|_| ())
-        .map_err(|error| format!("The OpenQuota download page could not be opened: {error}"))
+        .map_err(|error| format!("The Overcap download page could not be opened: {error}"))
 }
 
 #[cfg(test)]

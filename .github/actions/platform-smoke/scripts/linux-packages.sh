@@ -20,7 +20,7 @@ appimage="${appimages[0]}"
 deb="${debs[0]}"
 chmod +x "${appimage}"
 
-extraction_directory="$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/openquota-appimage.XXXXXX")"
+extraction_directory="$(mktemp -d "${RUNNER_TEMP:-${TMPDIR:-/tmp}}/overcap-appimage.XXXXXX")"
 installed=false
 cleanup() {
   rm -rf "${extraction_directory}"
@@ -50,7 +50,7 @@ unset APPIMAGE_EXTRACT_AND_RUN
 package_name="$(dpkg-deb --field "${deb}" Package)"
 package_architecture="$(dpkg-deb --field "${deb}" Architecture)"
 runner_architecture="$(dpkg --print-architecture)"
-test "${package_name}" = 'open-quota' || {
+test "${package_name}" = 'overcap' || {
   echo "Unexpected Debian package name: ${package_name}" >&2
   exit 1
 }
@@ -66,7 +66,7 @@ fi
 
 sudo apt-get install --yes "${deb}"
 installed=true
-installed_binary="$(dpkg-query --listfiles "${package_name}" | grep -E '/(usr/)?bin/openquota$' | head -n 1)"
+installed_binary="$(dpkg-query --listfiles "${package_name}" | grep -E '/(usr/)?bin/overcap$' | head -n 1)"
 test -n "${installed_binary}"
 test -x "${installed_binary}"
 bash "${script_directory}/linux-wayland.sh" "${installed_binary}"

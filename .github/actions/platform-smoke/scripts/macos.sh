@@ -6,9 +6,9 @@ test -d "${bundle_directory}"
 dmg="$(find "${bundle_directory}" -name '*.dmg' -print -quit)"
 test -n "${dmg}"
 
-home="$(mktemp -d "${RUNNER_TEMP}/openquota-macos-home.XXXXXX")"
-mount_dir="$(mktemp -d "${RUNNER_TEMP}/openquota-macos-dmg.XXXXXX")"
-log="${RUNNER_TEMP}/openquota-macos-${RANDOM}.log"
+home="$(mktemp -d "${RUNNER_TEMP}/overcap-macos-home.XXXXXX")"
+mount_dir="$(mktemp -d "${RUNNER_TEMP}/overcap-macos-dmg.XXXXXX")"
+log="${RUNNER_TEMP}/overcap-macos-${RANDOM}.log"
 app_pid=''
 mounted=false
 cleanup() {
@@ -25,7 +25,7 @@ trap cleanup EXIT
 export HOME="${home}"
 hdiutil attach "${dmg}" -mountpoint "${mount_dir}" -nobrowse -readonly >/dev/null
 mounted=true
-binary="${mount_dir}/OpenQuota.app/Contents/MacOS/openquota"
+binary="${mount_dir}/Overcap.app/Contents/MacOS/overcap"
 test -x "${binary}"
 "${binary}" >"${log}" 2>&1 &
 app_pid=$!

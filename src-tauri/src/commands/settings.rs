@@ -70,7 +70,7 @@ pub async fn save_app_settings(
                 settings.global_shortcut.as_deref(),
                 previous.global_shortcut.as_deref(),
             );
-            return Err("OpenQuota window is unavailable.".to_owned());
+            return Err("Overcap window is unavailable.".to_owned());
         };
         if let Err(error) = crate::window::apply_window_mode(&window, settings.window_mode, true) {
             if autostart_changed {
@@ -282,13 +282,13 @@ pub fn open_log_folder(app: AppHandle) -> Result<(), String> {
         app.opener()
             .open_path(parent.to_string_lossy(), None::<&str>)
     } else {
-        return Err("The OpenQuota log folder is unavailable.".to_owned());
+        return Err("The Overcap log folder is unavailable.".to_owned());
     };
     result
         .inspect(|_| crate::app_debug!("config", "log folder opened"))
         .map_err(|_| {
             crate::app_warn!("config", "log folder could not be opened");
-            "The OpenQuota log folder could not be opened.".to_owned()
+            "The Overcap log folder could not be opened.".to_owned()
         })
 }
 

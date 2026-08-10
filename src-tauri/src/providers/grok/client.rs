@@ -51,7 +51,7 @@ impl GrokClient {
         let client = Client::builder()
             .connect_timeout(Duration::from_secs(8))
             .timeout(timeout)
-            .user_agent(concat!("OpenQuota/", env!("CARGO_PKG_VERSION")))
+            .user_agent(concat!("Overcap/", env!("CARGO_PKG_VERSION")))
             .build()
             .map_err(|_| GrokError::ConnectionFailed)?;
         Ok(Self {

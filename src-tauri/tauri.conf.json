@@ -1,8 +1,8 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
-  "productName": "OpenQuota",
-  "version": "0.4.1",
-  "identifier": "io.github.deviffyy.openquota",
+  "productName": "Overcap",
+  "version": "0.1.0",
+  "identifier": "dev.overcap.app",
   "build": {
     "beforeDevCommand": "corepack pnpm dev",
     "devUrl": "http://127.0.0.1:1420",
@@ -13,7 +13,7 @@
     "windows": [
       {
         "label": "main",
-        "title": "OpenQuota",
+        "title": "Overcap",
         "width": 320,
         "height": 800,
         "minWidth": 320,
@@ -36,6 +36,7 @@
   },
   "bundle": {
     "active": true,
+    "publisher": "AIWITHAJ",
     "targets": "all",
     "icon": [
       "icons/32x32.png",
@@ -60,8 +61,8 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDQ1MDJGRUM1QUY2QzgyRDQKUldUVWdteXZ4ZjRDUlFveldMMVAzOHNqcnhJNkdzVVo5YXpnSU5ZWk4zR3VkRUFTQVY3VWV6REgK",
-      "endpoints": ["https://github.com/deviffyy/OpenQuota/releases/latest/download/latest.json"]
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY0QzUyQjlBNTRFNTM1NzgKUldSNE5lVlVtaXZGWkFpaVc5V3pueGVyV080YVNiS1h4TkJIY0NmQ2ZvQmlhL1krWlA5MWRkTDcK",
+      "endpoints": ["https://github.com/AJ-Base44/overcap/releases/latest/download/latest.json"]
     }
   }
 }

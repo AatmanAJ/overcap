@@ -28,7 +28,7 @@ pub fn init(path: PathBuf, level: LogLevel) {
     }
     let mut sink = LogFile::new(path, DEFAULT_MAX_BYTES);
     if let Err(error) = sink.open() {
-        eprintln!("OpenQuota file log disabled: {error}");
+        eprintln!("Overcap file log disabled: {error}");
     }
     let _ = LOGGER.set(AppLogger {
         sink: Mutex::new(sink),
@@ -62,11 +62,11 @@ pub fn emit(level: LogLevel, tag: &str, arguments: fmt::Arguments<'_>) {
         return;
     };
     let Ok(mut sink) = logger.sink.lock() else {
-        eprintln!("OpenQuota file log disabled: lock unavailable");
+        eprintln!("Overcap file log disabled: lock unavailable");
         return;
     };
     if let Err(error) = sink.append(&line) {
-        eprintln!("OpenQuota file log disabled: {error}");
+        eprintln!("Overcap file log disabled: {error}");
     }
 }
 
@@ -88,7 +88,7 @@ pub fn log_path() -> PathBuf {
 }
 
 pub fn default_log_path() -> PathBuf {
-    default_log_directory().join("OpenQuota.log")
+    default_log_directory().join("Overcap.log")
 }
 
 fn default_log_directory() -> PathBuf {
@@ -97,7 +97,7 @@ fn default_log_directory() -> PathBuf {
         return std::env::var_os("LOCALAPPDATA")
             .map(PathBuf::from)
             .unwrap_or_else(std::env::temp_dir)
-            .join("OpenQuota")
+            .join("Overcap")
             .join("logs");
     }
     #[cfg(target_os = "macos")]
@@ -106,7 +106,7 @@ fn default_log_directory() -> PathBuf {
             .unwrap_or_else(std::env::temp_dir)
             .join("Library")
             .join("Logs")
-            .join("OpenQuota");
+            .join("Overcap");
     }
     #[cfg(all(unix, not(target_os = "macos")))]
     {
@@ -114,11 +114,11 @@ fn default_log_directory() -> PathBuf {
             .map(PathBuf::from)
             .or_else(|| home_directory().map(|home| home.join(".local").join("state")))
             .unwrap_or_else(std::env::temp_dir)
-            .join("openquota")
+            .join("overcap")
             .join("logs");
     }
     #[allow(unreachable_code)]
-    std::env::temp_dir().join("OpenQuota").join("logs")
+    std::env::temp_dir().join("Overcap").join("logs")
 }
 
 #[cfg(not(target_os = "windows"))]
@@ -278,7 +278,7 @@ fn archive_path(path: &Path) -> PathBuf {
     let stem = path
         .file_stem()
         .and_then(|value| value.to_str())
-        .unwrap_or("OpenQuota");
+        .unwrap_or("Overcap");
     let extension = path.extension().and_then(|value| value.to_str());
     let name = extension
         .map(|extension| format!("{stem}.1.{extension}"))
@@ -610,7 +610,7 @@ mod tests {
     #[test]
     fn append_writes_grep_friendly_lines() {
         let directory = tempdir().unwrap();
-        let path = directory.path().join("OpenQuota.log");
+        let path = directory.path().join("Overcap.log");
         let mut sink = LogFile::new(path.clone(), 1_000);
         sink.open().unwrap();
         sink.append("2026-01-01T00:00:00.000Z [INFO] [config] hello")
@@ -638,7 +638,7 @@ mod tests {
         let path = default_log_path();
         assert_eq!(
             path.file_name().and_then(|value| value.to_str()),
-            Some("OpenQuota.log")
+            Some("Overcap.log")
         );
         #[cfg(not(target_os = "macos"))]
         assert_eq!(
@@ -652,20 +652,20 @@ mod tests {
             path.parent()
                 .and_then(Path::file_name)
                 .and_then(|value| value.to_str()),
-            Some("OpenQuota")
+            Some("Overcap")
         );
         #[cfg(target_os = "macos")]
-        assert!(path.to_string_lossy().contains("Library/Logs/OpenQuota"));
+        assert!(path.to_string_lossy().contains("Library/Logs/Overcap"));
         #[cfg(target_os = "windows")]
-        assert!(path.to_string_lossy().contains("OpenQuota\\logs"));
+        assert!(path.to_string_lossy().contains("Overcap\\logs"));
         #[cfg(all(unix, not(target_os = "macos")))]
-        assert!(path.to_string_lossy().contains("openquota/logs"));
+        assert!(path.to_string_lossy().contains("overcap/logs"));
     }
 
     #[test]
     fn rotation_keeps_one_archive_and_trims_oversize_on_open() {
         let directory = tempdir().unwrap();
-        let path = directory.path().join("OpenQuota.log");
+        let path = directory.path().join("Overcap.log");
         let mut sink = LogFile::new(path.clone(), 200);
         sink.open().unwrap();
         let line = "a".repeat(80);
@@ -673,7 +673,7 @@ mod tests {
             sink.append(&line).unwrap();
         }
         assert!(sink.archive_path().exists());
-        assert!(!directory.path().join("OpenQuota.2.log").exists());
+        assert!(!directory.path().join("Overcap.2.log").exists());
 
         drop(sink);
         fs::write(&path, vec![b'x'; 250]).unwrap();
@@ -688,7 +688,7 @@ mod tests {
         let directory = tempdir().unwrap();
         let blocked_parent = directory.path().join("not-a-directory");
         fs::write(&blocked_parent, b"file").unwrap();
-        let mut sink = LogFile::new(blocked_parent.join("OpenQuota.log"), 200);
+        let mut sink = LogFile::new(blocked_parent.join("Overcap.log"), 200);
         assert!(sink.open().is_err());
         assert!(sink.append("ignored after disable").is_ok());
     }

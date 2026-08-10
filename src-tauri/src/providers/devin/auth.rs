@@ -105,10 +105,10 @@ pub(super) struct DevinAuthStore {
 impl DevinAuthStore {
     pub fn new() -> Self {
         let directories = PlatformDirectories::from_environment();
-        let credential_paths = environment_path("OPENQUOTA_DEVIN_CREDENTIALS_FILE")
+        let credential_paths = environment_path("OVERCAP_DEVIN_CREDENTIALS_FILE")
             .map(|path| vec![path])
             .unwrap_or_else(|| credential_paths(HostPlatform::current(), &directories));
-        let state_db_paths = environment_path("OPENQUOTA_DEVIN_STATE_DB")
+        let state_db_paths = environment_path("OVERCAP_DEVIN_STATE_DB")
             .map(|path| vec![path])
             .unwrap_or_else(|| state_db_paths(HostPlatform::current(), &directories));
         Self {

@@ -3,23 +3,23 @@ set -euo pipefail
 
 binary="$(realpath "${1:?Linux release binary is required}")"
 test -x "${binary}"
-export OPENQUOTA_SMOKE_BINARY="${binary}"
+export OVERCAP_SMOKE_BINARY="${binary}"
 
 dbus-run-session -- bash -euo pipefail -c '
   export HOME
-  HOME="$(mktemp -d "${RUNNER_TEMP}/openquota-wayland-home.XXXXXX")"
+  HOME="$(mktemp -d "${RUNNER_TEMP}/overcap-wayland-home.XXXXXX")"
   export XDG_CONFIG_HOME="${HOME}/xdg"
   export XDG_CURRENT_DESKTOP="KDE"
   export XDG_RUNTIME_DIR
-  XDG_RUNTIME_DIR="$(mktemp -d "${RUNNER_TEMP}/openquota-wayland-runtime.XXXXXX")"
+  XDG_RUNTIME_DIR="$(mktemp -d "${RUNNER_TEMP}/overcap-wayland-runtime.XXXXXX")"
   export XDG_SESSION_TYPE="wayland"
-  export OPENQUOTA_LINUX_TRAY_HOST="unavailable"
+  export OVERCAP_LINUX_TRAY_HOST="unavailable"
   export GDK_BACKEND="wayland"
-  export WAYLAND_DISPLAY="openquota-wayland"
+  export WAYLAND_DISPLAY="overcap-wayland"
   mkdir -p "${XDG_CONFIG_HOME}"
   chmod 700 "${XDG_RUNTIME_DIR}"
-  app_log="${RUNNER_TEMP}/openquota-wayland-app-${RANDOM}.log"
-  weston_log="${RUNNER_TEMP}/openquota-weston-${RANDOM}.log"
+  app_log="${RUNNER_TEMP}/overcap-wayland-app-${RANDOM}.log"
+  weston_log="${RUNNER_TEMP}/overcap-weston-${RANDOM}.log"
   weston --backend=headless-backend.so --socket="${WAYLAND_DISPLAY}" --idle-time=0 \
     --log="${weston_log}" &
   weston_pid=$!
@@ -47,7 +47,7 @@ dbus-run-session -- bash -euo pipefail -c '
     cat "${weston_log}"
     exit 1
   fi
-  "${OPENQUOTA_SMOKE_BINARY}" >"${app_log}" 2>&1 &
+  "${OVERCAP_SMOKE_BINARY}" >"${app_log}" 2>&1 &
   app_pid=$!
   sleep 8
   if ! kill -0 "${app_pid}" 2>/dev/null; then

@@ -153,7 +153,7 @@ pub enum CodexError {
     ConnectionFailed,
     #[error("Local Codex usage logs could not be processed.")]
     LocalUsage,
-    #[error("OpenQuota cache is unavailable.")]
+    #[error("Overcap cache is unavailable.")]
     Storage,
 }
 
@@ -448,7 +448,7 @@ mod account_tests {
     #[test]
     fn cache_identity_tracks_the_launch_resolved_account() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let pricing = Arc::new(PricingStore::new(directory.path().join("pricing")).unwrap());
         let provider = CodexProvider {
             account_identity: Some("account-a".into()),

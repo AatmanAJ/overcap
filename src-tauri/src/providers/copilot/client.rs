@@ -118,10 +118,7 @@ impl CopilotClient {
             .get(url)
             .header("Authorization", format!("token {token}"))
             .header("Accept", "application/vnd.github+json")
-            .header(
-                "User-Agent",
-                concat!("OpenQuota/", env!("CARGO_PKG_VERSION")),
-            )
+            .header("User-Agent", concat!("Overcap/", env!("CARGO_PKG_VERSION")))
             .header("X-GitHub-Api-Version", "2022-11-28")
             .timeout(timeout)
             .send()

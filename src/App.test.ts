@@ -59,7 +59,7 @@ function mockInvoke(
   });
 }
 
-describe('OpenQuota dashboard', () => {
+describe('Overcap dashboard', () => {
   beforeEach(() => {
     mocks.currentMonitor.mockResolvedValue({
       scaleFactor: 1,
@@ -95,7 +95,7 @@ describe('OpenQuota dashboard', () => {
       if (command === 'set_panel_height_manual') return Promise.resolve();
       if (command === 'begin_panel_resize') return Promise.resolve('bottom');
       if (command === 'lock_panel_resize_axis') return Promise.resolve();
-      if (command === 'get_log_path') return Promise.resolve('C:\\OpenQuota\\logs\\OpenQuota.log');
+      if (command === 'get_log_path') return Promise.resolve('C:\\Overcap\\logs\\Overcap.log');
       if (command === 'open_log_folder') return Promise.resolve();
       if (command === 'dismiss_main_window') return Promise.resolve();
       if (command === 'check_for_updates')
@@ -105,7 +105,7 @@ describe('OpenQuota dashboard', () => {
           version: null,
           body: null,
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       return Promise.reject(new Error(`unexpected command ${command}`));
     });
@@ -126,7 +126,7 @@ describe('OpenQuota dashboard', () => {
       'data-tooltip',
       '$3.84 · Estimated locally, so it may be off',
     );
-    expect(screen.getByText(`OpenQuota ${import.meta.env.APP_VERSION}`)).toBeInTheDocument();
+    expect(screen.getByText(`Overcap ${import.meta.env.APP_VERSION}`)).toBeInTheDocument();
     expect(container.querySelector('.floating-chrome')).not.toBeInTheDocument();
   });
 
@@ -188,7 +188,7 @@ describe('OpenQuota dashboard', () => {
       await screen.findByText('Plus');
       const dragSurface = container.querySelector<HTMLElement>('.floating-chrome__drag');
       expect(dragSurface).toBeInTheDocument();
-      expect(screen.getByRole('button', { name: 'Hide OpenQuota' })).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Hide Overcap' })).toBeInTheDocument();
       expect(screen.getByRole('separator', { name: 'Resize panel height' })).toHaveClass(
         'panel-resize-dragger--bottom',
       );
@@ -316,7 +316,7 @@ describe('OpenQuota dashboard', () => {
           version: null,
           body: null,
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       return Promise.resolve(multiProviderSettings);
     });
@@ -375,7 +375,7 @@ describe('OpenQuota dashboard', () => {
           version: null,
           body: null,
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       return Promise.resolve();
     });
@@ -761,9 +761,7 @@ describe('OpenQuota dashboard', () => {
     );
 
     await fireEvent.click(screen.getByRole('button', { name: 'Copy Log Path' }));
-    await waitFor(() =>
-      expect(writeText).toHaveBeenCalledWith('C:\\OpenQuota\\logs\\OpenQuota.log'),
-    );
+    await waitFor(() => expect(writeText).toHaveBeenCalledWith('C:\\Overcap\\logs\\Overcap.log'));
     expect(mocks.invoke).toHaveBeenCalledWith('get_log_path');
     expect(screen.getByRole('status')).toHaveTextContent('Log path copied');
 
@@ -816,13 +814,13 @@ describe('OpenQuota dashboard', () => {
           version: null,
           body: null,
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       return Promise.resolve();
     });
     render(App);
     await screen.findByText('Plus');
-    expect(screen.getByRole('button', { name: 'Close OpenQuota' })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Close Overcap' })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Keep Window Open' })).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Return to Tray Popup' })).not.toBeInTheDocument();
     await fireEvent.click(screen.getByLabelText('Open options'));
@@ -1208,7 +1206,7 @@ describe('OpenQuota dashboard', () => {
     );
     expect(within(provider).getByRole('region', { name: 'Codex usage' })).toBe(card);
     expect(provider.querySelector('.provider-status-slot')).not.toHaveClass('active');
-    expect(screen.getByText('OpenQuota could not start a provider refresh.')).toBeInTheDocument();
+    expect(screen.getByText('Overcap could not start a provider refresh.')).toBeInTheDocument();
   });
 
   it('shows platform-correct Ctrl shortcuts and handles Ctrl+Q', async () => {
@@ -1322,7 +1320,7 @@ describe('OpenQuota dashboard', () => {
     render(App);
     await screen.findByText('Plus');
     const event = new MouseEvent('contextmenu', { bubbles: true, cancelable: true });
-    screen.getByLabelText('OpenQuota usage dashboard').dispatchEvent(event);
+    screen.getByLabelText('Overcap usage dashboard').dispatchEvent(event);
     expect(event.defaultPrevented).toBe(true);
   });
 
@@ -1408,13 +1406,13 @@ describe('OpenQuota dashboard', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'About OpenQuota' }));
-    expect(screen.getByRole('dialog', { name: 'About OpenQuota' })).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole('button', { name: 'About Overcap' }));
+    expect(screen.getByRole('dialog', { name: 'About Overcap' })).toBeInTheDocument();
     const close = screen.getByRole('button', { name: 'Close About' });
     expect(close.querySelector('svg')).not.toBeNull();
     expect(close).not.toHaveTextContent('×');
     await fireEvent.click(close);
-    expect(screen.queryByRole('dialog', { name: 'About OpenQuota' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: 'About Overcap' })).not.toBeInTheDocument();
   });
 
   it('matches provider context-menu and Customize to Settings navigation behavior', async () => {

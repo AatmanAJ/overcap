@@ -218,7 +218,7 @@ pub fn run() {
             app.manage(desktop_integration.clone());
 
             let app_data_dir = app.path().app_data_dir()?;
-            let database_path = app_data_dir.join("openquota.db");
+            let database_path = app_data_dir.join("overcap.db");
             let storage = Arc::new(Storage::open(&database_path)?);
             provider_environment::initialize(storage.load_provider_environment()?);
             provider_environment::refresh_for_next_launch(storage.clone());
@@ -256,7 +256,7 @@ pub fn run() {
             logging::set_level(settings.get().log_level);
             app_info!(
                 "config",
-                "OpenQuota v{} starting (level={}, log=OpenQuota.log)",
+                "Overcap v{} starting (level={}, log=Overcap.log)",
                 app.package_info().version,
                 logging::current_level().log_label()
             );
@@ -286,38 +286,31 @@ pub fn run() {
                     let settings_item =
                         MenuItem::with_id(app, "settings", "Settings", true, Some("CmdOrCtrl+,"))?;
                     let separator = PredefinedMenuItem::separator(app)?;
-                    let quit = MenuItem::with_id(
-                        app,
-                        "quit",
-                        "Quit OpenQuota",
-                        true,
-                        Some("CmdOrCtrl+Q"),
-                    )?;
+                    let quit =
+                        MenuItem::with_id(app, "quit", "Quit Overcap", true, Some("CmdOrCtrl+Q"))?;
                     Menu::with_items(app, &[&settings_item, &separator, &quit])?
                 };
                 #[cfg(not(target_os = "macos"))]
                 let menu = {
-                    let open =
-                        MenuItem::with_id(app, "open", "Open OpenQuota", true, None::<&str>)?;
+                    let open = MenuItem::with_id(app, "open", "Open Overcap", true, None::<&str>)?;
                     let customize =
                         MenuItem::with_id(app, "customize", "Customize…", true, None::<&str>)?;
                     let settings_item =
                         MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
                     let separator = PredefinedMenuItem::separator(app)?;
-                    let quit =
-                        MenuItem::with_id(app, "quit", "Quit OpenQuota", true, None::<&str>)?;
+                    let quit = MenuItem::with_id(app, "quit", "Quit Overcap", true, None::<&str>)?;
                     Menu::with_items(app, &[&open, &customize, &settings_item, &separator, &quit])?
                 };
 
-                let tray = TrayIconBuilder::with_id("openquota-tray")
+                let tray = TrayIconBuilder::with_id("overcap-tray")
                     .icon(
                         app.default_window_icon()
-                            .expect("OpenQuota requires a bundled application icon")
+                            .expect("Overcap requires a bundled application icon")
                             .clone(),
                     )
                     .menu(&menu);
                 #[cfg(not(target_os = "linux"))]
-                let tray = tray.tooltip("OpenQuota").show_menu_on_left_click(false);
+                let tray = tray.tooltip("Overcap").show_menu_on_left_click(false);
                 let tray = tray.on_menu_event(|app, event| match event.id.as_ref() {
                     "open" => {
                         app.state::<PopupDismissGuard>().cancel_pending();
@@ -376,7 +369,7 @@ pub fn run() {
                 credential_detection_plan,
             );
             refresh_loop::spawn(app.handle().clone(), service, settings, notifications);
-            app_info!("lifecycle", "OpenQuota startup completed");
+            app_info!("lifecycle", "Overcap startup completed");
 
             Ok(())
         })
@@ -412,5 +405,5 @@ pub fn run() {
         ])
         .on_window_event(handle_window_event)
         .run(tauri::generate_context!())
-        .expect("error while running OpenQuota");
+        .expect("error while running Overcap");
 }

@@ -30,7 +30,7 @@ const FAILURE_RETRY_INTERVAL: TimeDelta = TimeDelta::minutes(30);
 const LITELLM_URL: &str =
     "https://raw.githubusercontent.com/BerriAI/litellm/main/model_prices_and_context_window.json";
 const MODELS_DEV_URL: &str = "https://models.dev/api.json";
-const SUPPLEMENT_URL: &str = "https://raw.githubusercontent.com/deviffyy/OpenQuota/main/src-tauri/resources/pricing_supplement.json";
+const SUPPLEMENT_URL: &str = "https://raw.githubusercontent.com/AJ-Base44/overcap/main/src-tauri/resources/pricing_supplement.json";
 
 #[derive(Debug, Clone, Copy, Hash, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
@@ -109,7 +109,7 @@ impl ReqwestPricingHttpClient {
         Ok(Self {
             client: Client::builder()
                 .timeout(Duration::from_secs(30))
-                .user_agent("OpenQuota pricing refresh")
+                .user_agent("Overcap pricing refresh")
                 .build()?,
         })
     }

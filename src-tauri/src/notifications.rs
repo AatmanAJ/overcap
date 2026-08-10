@@ -88,9 +88,9 @@ fn deliver(app: &AppHandle, alerts: &[PaceAlert]) -> Vec<PaceAlert> {
 
 fn show(app: &AppHandle, title: &str, body: &str) -> Result<(), String> {
     let mut notification = notify_rust::Notification::new();
-    notification.summary(title).body(body).appname("OpenQuota");
+    notification.summary(title).body(body).appname("Overcap");
     #[cfg(any(target_os = "linux", target_os = "macos"))]
-    notification.action("default", "Open OpenQuota");
+    notification.action("default", "Open Overcap");
     #[cfg(target_os = "windows")]
     notification.app_id(&app.config().identifier);
     #[cfg(target_os = "macos")]

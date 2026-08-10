@@ -152,7 +152,7 @@
         <button
           class:recording
           type="button"
-          data-tooltip="Open OpenQuota from anywhere"
+          data-tooltip="Open Overcap from anywhere"
           onclick={() => (recording = !recording)}
           onkeydown={record}
           >{recording ? 'Type Shortcut…' : (settings.globalShortcut ?? 'Record Shortcut')}</button
@@ -338,7 +338,7 @@
                 : 'Permission is required'}</b
             ><small
               >{settingsView.notificationPermission === 'denied'
-                ? 'Enable OpenQuota notifications in system settings.'
+                ? 'Enable Overcap notifications in system settings.'
                 : 'Allow notifications to receive the alerts selected above.'}</small
             ></span
           >

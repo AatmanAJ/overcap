@@ -1,5 +1,5 @@
 {
-  "$comment": "OpenQuota pricing supplement. Prices models that no public catalog carries, supplies fast-variant multipliers the catalogs omit, and maps provider log model slugs to canonical pricing keys (LiteLLM keys, models.dev ids, or entries in this file). The raw main-branch file is refreshed by installed apps, so merged corrections arrive without an app release. Rates are USD per million tokens.",
+  "$comment": "Overcap pricing supplement. Prices models that no public catalog carries, supplies fast-variant multipliers the catalogs omit, and maps provider log model slugs to canonical pricing keys (LiteLLM keys, models.dev ids, or entries in this file). The raw main-branch file is refreshed by installed apps, so merged corrections arrive without an app release. Rates are USD per million tokens.",
   "updated_at": "2026-07-14",
   "pricing": {
     "auto": {

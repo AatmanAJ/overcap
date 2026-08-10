@@ -88,8 +88,8 @@ fn process_value(name: &str) -> Option<String> {
 
 #[cfg(unix)]
 fn capture_login_shell_snapshot() -> Option<HashMap<String, String>> {
-    const BEGIN: &str = "__OPENQUOTA_ENV_BEGIN__";
-    const END: &str = "__OPENQUOTA_ENV_END__";
+    const BEGIN: &str = "__OVERCAP_ENV_BEGIN__";
+    const END: &str = "__OVERCAP_ENV_END__";
 
     let shell = process_value("SHELL").unwrap_or_else(|| {
         if cfg!(target_os = "macos") {

@@ -73,7 +73,7 @@ pub(crate) fn definition() -> ProviderDefinition {
 #[derive(Debug, Error, PartialEq, Eq)]
 pub(super) enum ZaiError {
     #[error(
-        "Add a Z.ai API key in Customize, set ZAI_API_KEY, or configure ~/.config/openquota/zai.json."
+        "Add a Z.ai API key in Customize, set ZAI_API_KEY, or configure ~/.config/overcap/zai.json."
     )]
     MissingKey,
     #[error("The Z.ai API key is invalid. Check it at z.ai/manage-apikey/apikey-list.")]

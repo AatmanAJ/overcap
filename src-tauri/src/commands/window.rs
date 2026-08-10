@@ -27,7 +27,7 @@ pub fn dismiss_main_window(app: AppHandle) {
 pub fn get_panel_resize_edge(app: AppHandle) -> Result<PanelResizeEdge, String> {
     let window = app
         .get_webview_window(MAIN_WINDOW)
-        .ok_or("OpenQuota window is unavailable.")?;
+        .ok_or("Overcap window is unavailable.")?;
     panel_resize_edge(&window)
 }
 
@@ -40,7 +40,7 @@ pub fn get_panel_height_mode(app: AppHandle) -> PanelHeightMode {
 pub fn fit_panel_to_content(app: AppHandle, height: u32) -> Result<bool, String> {
     let window = app
         .get_webview_window(MAIN_WINDOW)
-        .ok_or("OpenQuota window is unavailable.")?;
+        .ok_or("Overcap window is unavailable.")?;
     fit_native_panel_to_content(&window, height.max(1))
 }
 
@@ -54,7 +54,7 @@ pub fn set_panel_height_automatic(app: AppHandle) -> Result<(), String> {
 pub fn set_panel_height_manual(app: AppHandle) -> Result<(), String> {
     let window = app
         .get_webview_window(MAIN_WINDOW)
-        .ok_or("OpenQuota window is unavailable.")?;
+        .ok_or("Overcap window is unavailable.")?;
     set_manual_panel_height(&window)
 }
 
@@ -62,7 +62,7 @@ pub fn set_panel_height_manual(app: AppHandle) -> Result<(), String> {
 pub fn begin_panel_resize(app: AppHandle) -> Result<PanelResizeEdge, String> {
     let window = app
         .get_webview_window(MAIN_WINDOW)
-        .ok_or("OpenQuota window is unavailable.")?;
+        .ok_or("Overcap window is unavailable.")?;
     prepare_native_panel_resize(&window)
 }
 
@@ -70,7 +70,7 @@ pub fn begin_panel_resize(app: AppHandle) -> Result<PanelResizeEdge, String> {
 pub fn lock_panel_resize_axis(app: AppHandle) -> Result<(), String> {
     let window = app
         .get_webview_window(MAIN_WINDOW)
-        .ok_or("OpenQuota window is unavailable.")?;
+        .ok_or("Overcap window is unavailable.")?;
     lock_native_panel_resize_axis(&window)
 }
 

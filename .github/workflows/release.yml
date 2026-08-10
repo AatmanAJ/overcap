@@ -154,9 +154,9 @@ jobs:
               --repo "$GITHUB_REPOSITORY" \
               --draft \
               --verify-tag \
-              --title "OpenQuota ${RELEASE_TAG#v}" \
+              --title "Overcap ${RELEASE_TAG#v}" \
               --generate-notes \
-              --notes $'OpenQuota desktop release for Windows and Linux on x64/ARM64, plus a macOS Universal build.\n\nAutomatic updates are cryptographically signed. Linux in-app updates are supported by AppImage builds; Debian packages update through the package installer.'
+              --notes $'Overcap desktop release for Windows and Linux on x64/ARM64, plus a macOS Universal build.\n\nAutomatic updates are cryptographically signed. Linux in-app updates are supported by AppImage builds; Debian packages update through the package installer.'
           fi
           release_id="$(gh release view "$RELEASE_TAG" --repo "$GITHUB_REPOSITORY" --json databaseId --jq '.databaseId')"
           test -n "$release_id"

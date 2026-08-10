@@ -123,10 +123,10 @@ impl PanelResizeSession {
         let _guard = self
             .persistence
             .lock()
-            .map_err(|_| "OpenQuota panel state is unavailable.")?;
+            .map_err(|_| "Overcap panel state is unavailable.")?;
         self.storage
             .save_panel_height(height)
-            .map_err(|_| "OpenQuota panel state could not be saved.".to_owned())?;
+            .map_err(|_| "Overcap panel state could not be saved.".to_owned())?;
         self.generation.fetch_add(1, Ordering::SeqCst);
         self.automatic.store(false, Ordering::SeqCst);
         Ok(())
@@ -165,10 +165,10 @@ impl PanelResizeSession {
         let _guard = self
             .persistence
             .lock()
-            .map_err(|_| "OpenQuota panel state is unavailable.")?;
+            .map_err(|_| "Overcap panel state is unavailable.")?;
         self.storage
             .clear_panel_height()
-            .map_err(|_| "OpenQuota panel state could not be saved.".to_owned())?;
+            .map_err(|_| "Overcap panel state could not be saved.".to_owned())?;
         self.generation.fetch_add(1, Ordering::SeqCst);
         self.automatic.store(true, Ordering::SeqCst);
         Ok(())
@@ -299,7 +299,7 @@ pub fn apply_window_mode(
     finish_native_panel_resize(window);
     if set_window_chrome(window, floating).is_err() {
         let _ = set_window_chrome(window, previous_floating);
-        return Err("OpenQuota window mode could not be changed.".to_owned());
+        return Err("Overcap window mode could not be changed.".to_owned());
     }
 
     integration.apply_window_mode(mode);
@@ -321,7 +321,7 @@ pub fn apply_window_mode(
         window
             .show()
             .and_then(|_| window.set_focus())
-            .map_err(|_| "OpenQuota window could not be shown.".to_owned())
+            .map_err(|_| "Overcap window could not be shown.".to_owned())
     };
     if result.is_err() {
         integration.set_floating(previous_floating);
@@ -421,14 +421,14 @@ fn anchored_vertical_frame(
 pub fn panel_resize_edge(window: &WebviewWindow) -> Result<PanelResizeEdge, String> {
     let position = window
         .outer_position()
-        .map_err(|_| "OpenQuota window position is unavailable.")?;
+        .map_err(|_| "Overcap window position is unavailable.")?;
     let size = window
         .outer_size()
-        .map_err(|_| "OpenQuota window size is unavailable.")?;
+        .map_err(|_| "Overcap window size is unavailable.")?;
     let monitor = window
         .current_monitor()
-        .map_err(|_| "OpenQuota display is unavailable.")?
-        .ok_or("OpenQuota display is unavailable.")?;
+        .map_err(|_| "Overcap display is unavailable.")?
+        .ok_or("Overcap display is unavailable.")?;
     let work_area = monitor.work_area();
     Ok(panel_resize_edge_for_context(
         VerticalFrame {
@@ -449,20 +449,20 @@ pub fn panel_resize_edge(window: &WebviewWindow) -> Result<PanelResizeEdge, Stri
 fn panel_maximum_height(window: &WebviewWindow) -> Result<u32, String> {
     let position = window
         .outer_position()
-        .map_err(|_| "OpenQuota window position is unavailable.")?;
+        .map_err(|_| "Overcap window position is unavailable.")?;
     let outer_size = window
         .outer_size()
-        .map_err(|_| "OpenQuota window size is unavailable.")?;
+        .map_err(|_| "Overcap window size is unavailable.")?;
     let inner_size = window
         .inner_size()
-        .map_err(|_| "OpenQuota content size is unavailable.")?;
+        .map_err(|_| "Overcap content size is unavailable.")?;
     let scale = window
         .scale_factor()
-        .map_err(|_| "OpenQuota display scale is unavailable.")?;
+        .map_err(|_| "Overcap display scale is unavailable.")?;
     let monitor = window
         .current_monitor()
-        .map_err(|_| "OpenQuota display is unavailable.")?
-        .ok_or("OpenQuota display is unavailable.")?;
+        .map_err(|_| "Overcap display is unavailable.")?
+        .ok_or("Overcap display is unavailable.")?;
     let work_area = monitor.work_area();
     let current = VerticalFrame {
         top: position.y,
@@ -499,7 +499,7 @@ fn configure_panel_size_constraints(window: &WebviewWindow) -> Result<u32, Strin
     window
         .set_max_size(Some(LogicalSize::new(PANEL_WIDTH, f64::from(maximum))))
         .and_then(|_| window.set_min_size(Some(LogicalSize::new(PANEL_WIDTH, f64::from(minimum)))))
-        .map_err(|_| "OpenQuota panel size limits could not be applied.".to_owned())?;
+        .map_err(|_| "Overcap panel size limits could not be applied.".to_owned())?;
     Ok(maximum)
 }
 
@@ -525,7 +525,7 @@ fn resize_panel_for_context(window: &WebviewWindow, height: u32) -> Result<(), S
     {
         return window
             .set_size(LogicalSize::new(PANEL_WIDTH, f64::from(height)))
-            .map_err(|_| "OpenQuota window could not be resized.".to_owned());
+            .map_err(|_| "Overcap window could not be resized.".to_owned());
     }
     resize_popup_anchored(window, height)
 }
@@ -551,10 +551,10 @@ pub fn prepare_native_panel_resize(window: &WebviewWindow) -> Result<PanelResize
     configure_panel_size_constraints(window)?;
     window
         .set_resizable(true)
-        .map_err(|_| "OpenQuota panel resize could not be enabled.".to_owned())?;
+        .map_err(|_| "Overcap panel resize could not be enabled.".to_owned())?;
     if let Some(session) = window.app_handle().try_state::<Arc<PanelResizeSession>>() {
         let height = current_logical_height(&window.as_ref().window())
-            .ok_or("OpenQuota content size is unavailable.")?;
+            .ok_or("Overcap content size is unavailable.")?;
         session.begin(height)?;
     }
     Ok(edge)
@@ -562,7 +562,7 @@ pub fn prepare_native_panel_resize(window: &WebviewWindow) -> Result<PanelResize
 
 pub fn set_manual_panel_height(window: &WebviewWindow) -> Result<(), String> {
     let height = current_logical_height(&window.as_ref().window())
-        .ok_or("OpenQuota content size is unavailable.")?;
+        .ok_or("Overcap content size is unavailable.")?;
     window
         .app_handle()
         .state::<Arc<PanelResizeSession>>()
@@ -582,17 +582,17 @@ pub fn lock_native_panel_resize_axis(window: &WebviewWindow) -> Result<(), Strin
     // platform briefly reported a horizontal resize before the native constraint took effect.
     window
         .set_resizable(false)
-        .map_err(|_| "OpenQuota panel resize could not be settled.".to_owned())?;
+        .map_err(|_| "Overcap panel resize could not be settled.".to_owned())?;
     let size = window
         .inner_size()
-        .map_err(|_| "OpenQuota content size is unavailable.")?;
+        .map_err(|_| "Overcap content size is unavailable.")?;
     let scale = window
         .scale_factor()
-        .map_err(|_| "OpenQuota display scale is unavailable.")?;
+        .map_err(|_| "Overcap display scale is unavailable.")?;
     let height = f64::from(size.height) / scale;
     window
         .set_size(LogicalSize::new(PANEL_WIDTH, height))
-        .map_err(|_| "OpenQuota panel resize could not be settled.".to_owned())
+        .map_err(|_| "Overcap panel resize could not be settled.".to_owned())
 }
 
 fn current_logical_height(window: &Window) -> Option<u32> {
@@ -613,20 +613,20 @@ pub fn resize_popup_anchored(window: &WebviewWindow, height: u32) -> Result<(), 
 
     let outer_position = window
         .outer_position()
-        .map_err(|_| "OpenQuota window position is unavailable.")?;
+        .map_err(|_| "Overcap window position is unavailable.")?;
     let outer_size = window
         .outer_size()
-        .map_err(|_| "OpenQuota window size is unavailable.")?;
+        .map_err(|_| "Overcap window size is unavailable.")?;
     let inner_size = window
         .inner_size()
-        .map_err(|_| "OpenQuota content size is unavailable.")?;
+        .map_err(|_| "Overcap content size is unavailable.")?;
     let scale = window
         .scale_factor()
-        .map_err(|_| "OpenQuota display scale is unavailable.")?;
+        .map_err(|_| "Overcap display scale is unavailable.")?;
     let monitor = window
         .current_monitor()
-        .map_err(|_| "OpenQuota display is unavailable.")?
-        .ok_or("OpenQuota display is unavailable.")?;
+        .map_err(|_| "Overcap display is unavailable.")?
+        .ok_or("Overcap display is unavailable.")?;
     let work_area = monitor.work_area();
     let frame_overhead = outer_size.height.saturating_sub(inner_size.height);
     let target_inner_height = (f64::from(height) * scale)
@@ -648,7 +648,7 @@ pub fn resize_popup_anchored(window: &WebviewWindow, height: u32) -> Result<(), 
         SetWindowPos(
             window
                 .hwnd()
-                .map_err(|_| "OpenQuota native window is unavailable.")?
+                .map_err(|_| "Overcap native window is unavailable.")?
                 .0 as _,
             std::ptr::null_mut(),
             outer_position.x,
@@ -659,7 +659,7 @@ pub fn resize_popup_anchored(window: &WebviewWindow, height: u32) -> Result<(), 
         )
     };
     if result == 0 {
-        return Err("OpenQuota window could not be resized.".into());
+        return Err("Overcap window could not be resized.".into());
     }
     Ok(())
 }
@@ -668,18 +668,18 @@ pub fn resize_popup_anchored(window: &WebviewWindow, height: u32) -> Result<(), 
 pub fn resize_popup_anchored(window: &WebviewWindow, height: u32) -> Result<(), String> {
     let outer_position = window
         .outer_position()
-        .map_err(|_| "OpenQuota window position is unavailable.")?;
+        .map_err(|_| "Overcap window position is unavailable.")?;
     let outer_size = window
         .outer_size()
-        .map_err(|_| "OpenQuota window size is unavailable.")?;
+        .map_err(|_| "Overcap window size is unavailable.")?;
     let monitor = window
         .current_monitor()
-        .map_err(|_| "OpenQuota display is unavailable.")?
-        .ok_or("OpenQuota display is unavailable.")?;
+        .map_err(|_| "Overcap display is unavailable.")?
+        .ok_or("Overcap display is unavailable.")?;
     let work_area = monitor.work_area();
     let scale = window
         .scale_factor()
-        .map_err(|_| "OpenQuota display scale is unavailable.")?;
+        .map_err(|_| "Overcap display scale is unavailable.")?;
     let target_outer_height = (f64::from(height) * scale)
         .round()
         .clamp(1.0, f64::from(u32::MAX)) as u32;
@@ -699,7 +699,7 @@ pub fn resize_popup_anchored(window: &WebviewWindow, height: u32) -> Result<(), 
         .and_then(|_| {
             window.set_position(tauri::PhysicalPosition::new(outer_position.x, anchored.top))
         })
-        .map_err(|_| "OpenQuota window could not be resized.".into())
+        .map_err(|_| "Overcap window could not be resized.".into())
 }
 
 fn schedule_outside_click_dismiss(window: Window) {
@@ -798,7 +798,7 @@ mod tests {
     #[test]
     fn a_real_resize_owns_the_height_until_automatic_mode_is_restored() {
         let directory = tempdir().unwrap();
-        let storage = Arc::new(Storage::open(&directory.path().join("openquota.db")).unwrap());
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
         let session = PanelResizeSession::new(storage.clone());
 
         assert_eq!(session.mode(), PanelHeightMode::Automatic);

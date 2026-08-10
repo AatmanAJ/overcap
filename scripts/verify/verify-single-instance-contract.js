@@ -22,7 +22,7 @@ if (firstPlugin !== singleInstance) {
   throw new Error('The single-instance plugin must remain the first registered Tauri plugin.');
 }
 if (!application.includes('window::activate_existing_instance(app);')) {
-  throw new Error('A second launch must activate the existing OpenQuota window.');
+  throw new Error('A second launch must activate the existing Overcap window.');
 }
 
 console.log('Single-instance remains the first Tauri plugin and activates the existing window.');

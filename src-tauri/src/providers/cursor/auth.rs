@@ -201,7 +201,7 @@ fn non_empty(value: impl AsRef<str>) -> Option<String> {
 }
 
 fn state_database_paths() -> Vec<PathBuf> {
-    if let Some(path) = std::env::var_os("OPENQUOTA_CURSOR_STATE_DB").map(PathBuf::from) {
+    if let Some(path) = std::env::var_os("OVERCAP_CURSOR_STATE_DB").map(PathBuf::from) {
         return vec![path];
     }
     let home = std::env::var_os("HOME")

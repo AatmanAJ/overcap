@@ -1,12 +1,12 @@
 [package]
-name = "openquota"
-version = "0.4.1"
+name = "overcap"
+version = "0.1.0"
 description = "Cross-platform AI quota tracker"
-authors = ["OpenQuota contributors"]
+authors = ["AIWITHAJ"]
 edition = "2021"
 
 [lib]
-name = "openquota_lib"
+name = "overcap_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]

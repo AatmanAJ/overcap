@@ -34,7 +34,7 @@ function mockInvoke(implementation: InvokeImplementation) {
   });
 }
 
-describe('OpenQuota customization persistence and reorder', () => {
+describe('Overcap customization persistence and reorder', () => {
   beforeEach(() => {
     mocks.currentMonitor.mockResolvedValue({
       scaleFactor: 1,
@@ -63,7 +63,7 @@ describe('OpenQuota customization persistence and reorder', () => {
           version: null,
           body: null,
           installable: true,
-          releaseUrl: 'https://github.com/deviffyy/OpenQuota/releases/latest',
+          releaseUrl: 'https://github.com/AJ-Base44/overcap/releases/latest',
         });
       return Promise.reject(new Error(`unexpected command ${command}`));
     });

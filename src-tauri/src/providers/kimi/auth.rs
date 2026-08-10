@@ -5,7 +5,7 @@ use crate::{
 
 use super::KimiError;
 
-const CONFIG_PATHS: &[&str] = &["~/.config/openquota/kimi.json"];
+const CONFIG_PATHS: &[&str] = &["~/.config/overcap/kimi.json"];
 const ENVIRONMENT_NAMES: &[&str] = &["KIMI_API_KEY"];
 
 #[derive(Clone)]

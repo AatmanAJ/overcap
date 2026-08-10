@@ -106,7 +106,7 @@ mod tests {
 
     #[test]
     fn background_console_process_has_no_console_window() {
-        let script = r#"Add-Type -Name NativeMethods -Namespace OpenQuota -MemberDefinition '[System.Runtime.InteropServices.DllImport("kernel32.dll")] public static extern System.IntPtr GetConsoleWindow();'; [OpenQuota.NativeMethods]::GetConsoleWindow().ToInt64()"#;
+        let script = r#"Add-Type -Name NativeMethods -Namespace Overcap -MemberDefinition '[System.Runtime.InteropServices.DllImport("kernel32.dll")] public static extern System.IntPtr GetConsoleWindow();'; [Overcap.NativeMethods]::GetConsoleWindow().ToInt64()"#;
         let output = background_command("powershell")
             .args([
                 "-NoLogo",

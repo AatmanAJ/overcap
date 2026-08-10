@@ -12,33 +12,33 @@ if ([string]::IsNullOrWhiteSpace($env:RUNNER_TEMP)) {
 
 $originalLocalAppData = [Environment]::GetEnvironmentVariable('LOCALAPPDATA')
 if (![string]::IsNullOrWhiteSpace($originalLocalAppData)) {
-  $existingBinary = Join-Path $originalLocalAppData 'OpenQuota\OpenQuota.exe'
+  $existingBinary = Join-Path $originalLocalAppData 'Overcap\Overcap.exe'
   if (Test-Path -LiteralPath $existingBinary -PathType Leaf) {
-    throw "Refusing to disturb an existing OpenQuota installation: $existingBinary"
+    throw "Refusing to disturb an existing Overcap installation: $existingBinary"
   }
 }
 $uninstallRoot = 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Uninstall'
 if (Test-Path -LiteralPath $uninstallRoot -PathType Container) {
   $existingRegistration = Get-ChildItem -LiteralPath $uninstallRoot | Where-Object {
-    $_.GetValue('DisplayName') -eq 'OpenQuota' -or
-    $_.GetValue('InstallLocation') -like '*\OpenQuota*' -or
-    $_.GetValue('UninstallString') -like '*\OpenQuota\uninstall.exe*'
+    $_.GetValue('DisplayName') -eq 'Overcap' -or
+    $_.GetValue('InstallLocation') -like '*\Overcap*' -or
+    $_.GetValue('UninstallString') -like '*\Overcap\uninstall.exe*'
   } | Select-Object -First 1
   if ($null -ne $existingRegistration) {
-    throw "Refusing to replace an existing OpenQuota uninstall registration: $($existingRegistration.Name)"
+    throw "Refusing to replace an existing Overcap uninstall registration: $($existingRegistration.Name)"
   }
 }
 
 if (!(Test-Path -LiteralPath $InstallerDirectory -PathType Container)) {
-  throw "OpenQuota NSIS directory was not found: $InstallerDirectory"
+  throw "Overcap NSIS directory was not found: $InstallerDirectory"
 }
 $installers = @(Get-ChildItem -LiteralPath $InstallerDirectory -Filter '*-setup.exe' -File)
 if ($installers.Count -ne 1) {
-  throw "Expected exactly one OpenQuota NSIS installer, found $($installers.Count)."
+  throw "Expected exactly one Overcap NSIS installer, found $($installers.Count)."
 }
 $installer = $installers[0].FullName
 
-$smokeRoot = Join-Path $env:RUNNER_TEMP "openquota-windows-$PID"
+$smokeRoot = Join-Path $env:RUNNER_TEMP "overcap-windows-$PID"
 $installRoot = Join-Path $smokeRoot 'install'
 $env:APPDATA = Join-Path $smokeRoot 'roaming'
 $env:LOCALAPPDATA = Join-Path $smokeRoot 'local'
@@ -52,20 +52,20 @@ $uninstallComplete = $false
 try {
   $installProcess = Start-Process -FilePath $installer -ArgumentList @('/S', "/D=$installRoot") -PassThru -Wait
   if ($installProcess.ExitCode -ne 0) {
-    throw "OpenQuota NSIS installer exited with code $($installProcess.ExitCode)."
+    throw "Overcap NSIS installer exited with code $($installProcess.ExitCode)."
   }
 
   $binaries = @(
-    Get-ChildItem -LiteralPath $installRoot -Filter 'openquota.exe' -File -Recurse |
+    Get-ChildItem -LiteralPath $installRoot -Filter 'overcap.exe' -File -Recurse |
       Where-Object { $_.Name -notlike 'uninstall*' }
   )
   if ($binaries.Count -ne 1) {
-    throw "Expected exactly one installed OpenQuota binary, found $($binaries.Count)."
+    throw "Expected exactly one installed Overcap binary, found $($binaries.Count)."
   }
   $binary = $binaries[0].FullName
   $uninstallers = @(Get-ChildItem -LiteralPath $installRoot -Filter 'uninstall*.exe' -File -Recurse)
   if ($uninstallers.Count -ne 1) {
-    throw "Expected exactly one OpenQuota uninstaller, found $($uninstallers.Count)."
+    throw "Expected exactly one Overcap uninstaller, found $($uninstallers.Count)."
   }
   $uninstaller = $uninstallers[0].FullName
 
@@ -74,7 +74,7 @@ try {
   Start-Sleep -Seconds 8
   if ($process.HasExited) {
     Get-Content $stdout, $stderr -ErrorAction SilentlyContinue
-    throw 'OpenQuota exited during the Windows tray startup smoke test.'
+    throw 'Overcap exited during the Windows tray startup smoke test.'
   }
 
   $bytes = [System.IO.File]::ReadAllBytes($binary)
@@ -89,13 +89,13 @@ try {
   $process.WaitForExit(10000)
   $uninstallProcess = Start-Process -FilePath $uninstaller -ArgumentList '/S' -PassThru -Wait
   if ($uninstallProcess.ExitCode -ne 0) {
-    throw "OpenQuota NSIS uninstaller exited with code $($uninstallProcess.ExitCode)."
+    throw "Overcap NSIS uninstaller exited with code $($uninstallProcess.ExitCode)."
   }
   for ($attempt = 0; $attempt -lt 30 -and (Test-Path -LiteralPath $binary); $attempt++) {
     Start-Sleep -Milliseconds 500
   }
   if (Test-Path -LiteralPath $binary) {
-    throw 'OpenQuota remained installed after the NSIS uninstall smoke test.'
+    throw 'Overcap remained installed after the NSIS uninstall smoke test.'
   }
   $uninstallComplete = $true
 } finally {

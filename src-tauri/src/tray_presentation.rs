@@ -11,7 +11,7 @@ use crate::{
     service::UsageViewState,
 };
 
-const TRAY_ID: &str = "openquota-tray";
+const TRAY_ID: &str = "overcap-tray";
 
 #[derive(Debug, Clone, PartialEq)]
 struct TrayMetric {
@@ -59,10 +59,10 @@ pub fn update(
     };
     let groups = resolved_groups(state, settings, registry);
     let tooltip = if groups.is_empty() {
-        "OpenQuota".to_owned()
+        "Overcap".to_owned()
     } else {
         format!(
-            "OpenQuota\n{}",
+            "Overcap\n{}",
             groups
                 .iter()
                 .flat_map(|group| group.metrics.iter())
@@ -418,8 +418,8 @@ fn format_tokens(tokens: u64) -> String {
 }
 
 fn mark_icon() -> Image<'static> {
-    Image::from_bytes(include_bytes!("../icons/32x32.png"))
-        .expect("bundled OpenQuota tray mark must be a valid PNG")
+    Image::from_bytes(include_bytes!("../icons/tray-template.png"))
+        .expect("bundled Overcap tray mark must be a valid PNG")
 }
 
 #[cfg(test)]
@@ -446,7 +446,7 @@ mod tests {
 
     #[test]
     fn bundled_tray_mark_decodes_at_the_expected_size() {
-        let image = tauri::image::Image::from_bytes(include_bytes!("../icons/32x32.png"))
+        let image = tauri::image::Image::from_bytes(include_bytes!("../icons/tray-template.png"))
             .expect("bundled tray mark should decode");
         assert_eq!((image.width(), image.height()), (32, 32));
     }
