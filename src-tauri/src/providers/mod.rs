@@ -129,10 +129,6 @@ pub trait UsageProvider: Send + Sync {
         CacheIdentity::Unscoped
     }
 
-    fn supports_account_names(&self) -> bool {
-        false
-    }
-
     fn account_identity(&self) -> Option<&str> {
         None
     }

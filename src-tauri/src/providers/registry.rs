@@ -97,12 +97,6 @@ impl ProviderRegistry {
             .unwrap_or(CacheIdentity::Unscoped)
     }
 
-    pub fn supports_account_names(&self, id: &str) -> bool {
-        self.runtimes
-            .get(id)
-            .is_some_and(|runtime| runtime.supports_account_names())
-    }
-
     pub fn observed_account_provider_ids(&self) -> Vec<String> {
         self.catalog
             .providers
@@ -147,10 +141,6 @@ struct DefinitionOnlyProvider(ProviderDefinition);
 impl UsageProvider for DefinitionOnlyProvider {
     fn definition(&self) -> ProviderDefinition {
         self.0.clone()
-    }
-
-    fn supports_account_names(&self) -> bool {
-        matches!(super::provider_family(&self.0.id), "claude" | "codex")
     }
 
     fn has_local_credentials(&self) -> bool {

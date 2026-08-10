@@ -525,13 +525,12 @@ impl SettingsService {
         platform_summary: Option<String>,
     ) -> SettingsViewState {
         let (settings, account_revision) = self.get_with_account_revision();
-        let mut renamable_provider_ids = self
-            .registry
-            .catalog()
-            .providers
-            .iter()
-            .map(|provider| provider.id.clone())
-            .collect::<Vec<_>>();
+        let mut renamable_provider_ids = self.registry.observed_account_provider_ids();
+        for provider in &self.registry.catalog().providers {
+            if !renamable_provider_ids.contains(&provider.id) {
+                renamable_provider_ids.push(provider.id.clone());
+            }
+        }
         if let Ok(stored_ids) = self.storage.load_observed_account_provider_ids() {
             for provider_id in stored_ids {
                 if !renamable_provider_ids.contains(&provider_id) {
@@ -897,13 +896,6 @@ mod tests {
     impl UsageProvider for CatalogProvider {
         fn definition(&self) -> ProviderDefinition {
             self.0.clone()
-        }
-
-        fn supports_account_names(&self) -> bool {
-            matches!(
-                crate::providers::provider_family(&self.0.id),
-                "claude" | "codex"
-            )
         }
 
         fn has_local_credentials(&self) -> bool {

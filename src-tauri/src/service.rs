@@ -783,10 +783,6 @@ mod tests {
             true
         }
 
-        fn supports_account_names(&self) -> bool {
-            true
-        }
-
         fn refresh(&self) -> Result<ProviderSnapshot, ProviderError> {
             Ok(test_snapshot("codex"))
         }

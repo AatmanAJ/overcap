@@ -696,10 +696,6 @@ impl crate::providers::UsageProvider for ClaudeProvider {
             .unwrap_or(crate::providers::CacheIdentity::Unresolved)
     }
 
-    fn supports_account_names(&self) -> bool {
-        true
-    }
-
     fn account_identity(&self) -> Option<&str> {
         self.account_identity.as_deref()
     }
