@@ -7,11 +7,13 @@
   import ProviderLinks from './ProviderLinks.svelte';
   import ProviderNoticeRow from './ProviderNoticeRow.svelte';
   import Icon from './Icon.svelte';
+  import HeroGauge from './HeroGauge.svelte';
   import MetricRenderer from './MetricRenderer.svelte';
   import TotalSpend from './TotalSpend.svelte';
   import type { SpendProjection } from './totalSpend';
   import type { ProviderCatalogIndex } from './metrics';
   import { canRenameProvider } from './providerNames';
+  import { selectHeroGaugeMetric } from './heroGauge';
   import type {
     AppSettings,
     MetricLayout,
@@ -132,6 +134,24 @@
         id: provider.id,
         usage: viewState.providers[provider.id]?.snapshot?.usage ?? emptyUsage,
       })),
+  );
+  const heroSelection = $derived(
+    selectHeroGaugeMetric(
+      settings.providers.flatMap((provider) => {
+        if (!provider.enabled) return [];
+        const snapshot = viewState.providers[provider.id]?.snapshot;
+        if (!snapshot) return [];
+        return [
+          {
+            providerId: provider.id,
+            providerName: providerDisplayName(provider.id),
+            snapshot,
+            metricDefinitions: catalog.provider(provider.id)?.metrics ?? [],
+          },
+        ];
+      }),
+      now,
+    ),
   );
 
   function updateProvider(next: ProviderLayout, customization = true) {
@@ -311,6 +331,10 @@
     metricMenu = null;
   }}
 />
+
+{#if heroSelection}
+  <HeroGauge selection={heroSelection} {reducedMotion} />
+{/if}
 
 {#if updateStatus?.available && updateStatus.version !== settings.dismissedUpdateVersion}
   <section class="hint-card update-banner" aria-label="Update Available">
