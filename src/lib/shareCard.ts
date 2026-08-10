@@ -1,18 +1,7 @@
 import type { ProviderCatalogIndex } from './metrics';
-import {
-  formatMetricNumber,
-  formatMetricValue,
-  formatSpendValue,
-  totalSpendRingCenter,
-} from './metricFormat';
+import { formatMetricNumber, formatMetricValue, formatSpendValue } from './metricFormat';
 import { formatLimit, formatReset, projectPace } from './pacing';
-import {
-  providerFamily,
-  providerIconColor,
-  providerIconPath,
-  providerIconViewBox,
-} from './providerIconPaths';
-import { fillRingSector, spendRingArcs } from './spendRing';
+import { providerIconViewBox } from './providerIconPaths';
 import type { SpendProjection } from './totalSpend';
 import type {
   AppSettings,
@@ -26,12 +15,35 @@ import type {
 export const SHARE_CARD_WIDTH = 360;
 export const SHARE_CARD_SCALE = 4;
 
-const OUTER_PADDING = 16;
-const CONTENT_GAP = 12;
-const CARD_GUTTER = 5;
-const CARD_RADIUS = 12;
-const ROW_HORIZONTAL_PADDING = 14;
-const HEADER_HEIGHT = 22;
+export const SHARE_RECEIPT_COLORS = {
+  paper: '#fdf9f0',
+  ink: '#141414',
+  header: '#c7ff69',
+} as const;
+
+const RECEIPT_HEADER_HEIGHT = 64;
+const RECEIPT_BODY_PADDING_TOP = 14;
+const RECEIPT_HORIZONTAL_PADDING = 20;
+const RECEIPT_ROW_HEIGHT = 24;
+const RECEIPT_SEPARATOR_HEIGHT = 21;
+const RECEIPT_FOOTER_HEIGHT = 40;
+const RECEIPT_EMPTY_ROW_HEIGHT = RECEIPT_ROW_HEIGHT;
+const DISPLAY_FONT = '"Bebas Neue", Impact, sans-serif';
+const MONO_FONT = '"JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace';
+const RECEIPT_MONTHS = [
+  'JAN',
+  'FEB',
+  'MAR',
+  'APR',
+  'MAY',
+  'JUN',
+  'JUL',
+  'AUG',
+  'SEP',
+  'OCT',
+  'NOV',
+  'DEC',
+] as const;
 
 export const TOTAL_SPEND_PERIOD_LABELS = ['Today', 'Yesterday', '30 Days'] as const;
 export const TOTAL_SPEND_GEOMETRY = {
@@ -67,23 +79,12 @@ export type ShareRow =
   | { kind: 'text'; label: string; value: string; condensed: boolean }
   | { kind: 'trend'; label: string; daily: DailyUsage[] };
 
-interface SharePalette {
-  tray: string;
-  surface: string;
-  text: string;
-  secondary: string;
-  track: string;
-  fill: string;
-  warning: string;
-  critical: string;
-  provider: (id: string) => string;
-}
-
 interface ProviderShareCardOptions {
   providerId: string;
   providerNames?: Record<string, string>;
   plan: string | null;
   rows: ShareRow[];
+  now: number;
 }
 
 interface TotalSpendShareCardOptions {
@@ -91,6 +92,7 @@ interface TotalSpendShareCardOptions {
   providerNames?: Record<string, string>;
   metric: AppSettings['totalSpendMetric'];
   period: AppSettings['totalSpendPeriod'];
+  now: number;
 }
 
 export function buildProviderShareRows(
@@ -203,68 +205,67 @@ export function buildProviderShareRows(
   return rows;
 }
 
-export function providerShareCardHeight(rows: ShareRow[]) {
-  const rowContentHeight = rows.length
+export function providerShareCardHeight(rows: ShareRow[], hasPlan = false) {
+  const providerRowsHeight = RECEIPT_ROW_HEIGHT * (hasPlan ? 2 : 1);
+  const contentHeight = rows.length
     ? rows.reduce((height, row) => height + shareRowHeight(row), 0)
-    : 45;
-  const cardHeight = CARD_GUTTER * 2 + rowContentHeight;
-  return OUTER_PADDING + HEADER_HEIGHT + CONTENT_GAP + cardHeight + OUTER_PADDING;
+    : RECEIPT_EMPTY_ROW_HEIGHT;
+  return (
+    RECEIPT_HEADER_HEIGHT +
+    RECEIPT_BODY_PADDING_TOP +
+    providerRowsHeight +
+    RECEIPT_SEPARATOR_HEIGHT +
+    contentHeight +
+    RECEIPT_SEPARATOR_HEIGHT +
+    RECEIPT_FOOTER_HEIGHT
+  );
 }
 
-export function totalSpendShareCardHeight() {
-  const cardHeight =
-    TOTAL_SPEND_GEOMETRY.cardPaddingY +
-    TOTAL_SPEND_GEOMETRY.switcherHeight +
-    TOTAL_SPEND_GEOMETRY.bodyGap +
-    TOTAL_SPEND_GEOMETRY.ringDiameter +
-    TOTAL_SPEND_GEOMETRY.cardPaddingY;
-  return TOTAL_SPEND_OUTER_PADDING + cardHeight + TOTAL_SPEND_OUTER_PADDING;
+export function totalSpendShareCardHeight(providerCount = 0) {
+  return (
+    RECEIPT_HEADER_HEIGHT +
+    RECEIPT_BODY_PADDING_TOP +
+    RECEIPT_ROW_HEIGHT +
+    RECEIPT_SEPARATOR_HEIGHT +
+    Math.max(1, providerCount) * RECEIPT_ROW_HEIGHT +
+    RECEIPT_SEPARATOR_HEIGHT +
+    RECEIPT_ROW_HEIGHT +
+    RECEIPT_FOOTER_HEIGHT
+  );
 }
 
 export function renderProviderShareCard(
   catalog: ProviderCatalogIndex,
   options: ProviderShareCardOptions,
 ) {
-  const height = providerShareCardHeight(options.rows);
+  const height = providerShareCardHeight(options.rows, Boolean(options.plan));
   const { canvas, context } = createCanvas(SHARE_CARD_WIDTH, height);
-  const palette = canvasPalette();
-  fillBackground(context, palette, SHARE_CARD_WIDTH, height);
+  drawReceiptBase(context, SHARE_CARD_WIDTH, height, options.now);
 
-  drawProviderHeader(
+  let rowTop = RECEIPT_HEADER_HEIGHT + RECEIPT_BODY_PADDING_TOP;
+  drawReceiptLine(
     context,
-    palette,
-    catalog,
-    options.providerId,
-    options.providerNames,
-    options.plan,
+    'Provider',
+    catalog.displayName(options.providerId, options.providerNames),
+    rowTop,
   );
-  const cardTop = OUTER_PADDING + HEADER_HEIGHT + CONTENT_GAP;
-  const cardHeight =
-    CARD_GUTTER * 2 +
-    (options.rows.length ? options.rows.reduce((sum, row) => sum + shareRowHeight(row), 0) : 45);
-  drawRoundedRect(
-    context,
-    OUTER_PADDING,
-    cardTop,
-    SHARE_CARD_WIDTH - OUTER_PADDING * 2,
-    cardHeight,
-    CARD_RADIUS,
-    palette.surface,
-  );
-
-  let rowTop = cardTop + CARD_GUTTER;
+  rowTop += RECEIPT_ROW_HEIGHT;
+  if (options.plan) {
+    drawReceiptLine(context, 'Plan', options.plan, rowTop);
+    rowTop += RECEIPT_ROW_HEIGHT;
+  }
+  rowTop = drawReceiptSeparator(context, SHARE_CARD_WIDTH, rowTop);
   if (options.rows.length === 0) {
-    context.fillStyle = palette.secondary;
-    context.font = '12px system-ui';
-    context.textAlign = 'center';
-    context.fillText('No metrics to show', SHARE_CARD_WIDTH / 2, rowTop + 27);
-    context.textAlign = 'left';
+    drawReceiptLine(context, 'Usage', 'No data', rowTop);
+    rowTop += RECEIPT_EMPTY_ROW_HEIGHT;
   } else {
     for (const row of options.rows) {
-      drawShareRow(context, palette, row, rowTop);
+      drawReceiptShareRow(context, row, rowTop);
       rowTop += shareRowHeight(row);
     }
   }
+  rowTop = drawReceiptSeparator(context, SHARE_CARD_WIDTH, rowTop);
+  drawReceiptFooter(context, SHARE_CARD_WIDTH, rowTop);
   return canvas;
 }
 
@@ -272,41 +273,45 @@ export function renderTotalSpendShareCard(
   catalog: ProviderCatalogIndex,
   options: TotalSpendShareCardOptions,
 ) {
-  const height = totalSpendShareCardHeight();
-  const width = TOTAL_SPEND_GEOMETRY.width;
+  const height = totalSpendShareCardHeight(options.projection.slices.length);
+  const width = SHARE_CARD_WIDTH;
   const { canvas, context } = createCanvas(width, height);
-  const palette = canvasPalette();
-  fillBackground(context, palette, width, height);
+  drawReceiptBase(context, width, height, options.now);
 
-  const cardTop = TOTAL_SPEND_OUTER_PADDING;
-  const cardHeight = height - TOTAL_SPEND_OUTER_PADDING * 2;
-  drawRoundedRect(
+  let rowTop = RECEIPT_HEADER_HEIGHT + RECEIPT_BODY_PADDING_TOP;
+  drawReceiptLine(context, 'Period', receiptPeriodLabel(options.period), rowTop);
+  rowTop += RECEIPT_ROW_HEIGHT;
+  rowTop = drawReceiptSeparator(context, width, rowTop);
+
+  if (options.projection.slices.length === 0) {
+    drawReceiptLine(context, 'Providers', 'No data', rowTop);
+    rowTop += RECEIPT_EMPTY_ROW_HEIGHT;
+  } else {
+    for (const slice of options.projection.slices) {
+      drawReceiptLine(
+        context,
+        catalog.displayName(slice.id, options.providerNames),
+        formatSpendValue(slice.value, options.metric, 'full'),
+        rowTop,
+        false,
+        true,
+      );
+      rowTop += RECEIPT_ROW_HEIGHT;
+    }
+  }
+
+  rowTop = drawReceiptSeparator(context, width, rowTop);
+  drawReceiptLine(
     context,
-    TOTAL_SPEND_OUTER_PADDING,
-    cardTop,
-    width - TOTAL_SPEND_OUTER_PADDING * 2,
-    cardHeight,
-    CARD_RADIUS,
-    palette.surface,
+    receiptMetricLabel(options.metric),
+    options.projection.centerValue === null
+      ? 'No data'
+      : formatSpendValue(options.projection.centerValue, options.metric, 'full'),
+    rowTop,
+    true,
   );
-  const switcherTop = cardTop + TOTAL_SPEND_GEOMETRY.cardPaddingY;
-  drawPeriodSwitcher(
-    context,
-    palette,
-    options.period,
-    switcherTop,
-    TOTAL_SPEND_OUTER_PADDING,
-    width,
-  );
-  drawSpendBody(
-    context,
-    palette,
-    catalog,
-    options,
-    switcherTop + TOTAL_SPEND_GEOMETRY.switcherHeight + TOTAL_SPEND_GEOMETRY.bodyGap,
-    TOTAL_SPEND_OUTER_PADDING,
-    width,
-  );
+  rowTop += RECEIPT_ROW_HEIGHT;
+  drawReceiptFooter(context, width, rowTop);
   return canvas;
 }
 
@@ -387,9 +392,7 @@ function usageReading(period: UsagePeriod | null) {
 }
 
 function shareRowHeight(row: ShareRow) {
-  if (row.kind === 'quota') return 64;
-  if (row.kind === 'trend') return 37;
-  return row.condensed ? 23 : 27;
+  return row.kind === 'quota' ? 42 : RECEIPT_ROW_HEIGHT;
 }
 
 function createCanvas(width: number, height: number) {
@@ -403,284 +406,122 @@ function createCanvas(width: number, height: number) {
   return { canvas, context };
 }
 
-function canvasPalette(): SharePalette {
-  const styles = getComputedStyle(document.documentElement);
-  const value = (name: string) => styles.getPropertyValue(name).trim();
-  return {
-    tray: value('--tray'),
-    surface: value('--card'),
-    text: value('--text'),
-    secondary: value('--secondary'),
-    track: value('--meter-track'),
-    fill: value('--meter-fill'),
-    warning: value('--meter-warning'),
-    critical: value('--meter-critical'),
-    provider: (id: string) => value(`--provider-${providerFamily(id)}`) || value('--provider'),
-  };
+export function formatReceiptDate(now: number) {
+  if (!Number.isFinite(now)) return 'DATE UNAVAILABLE';
+  const date = new Date(now);
+  if (!Number.isFinite(date.getTime())) return 'DATE UNAVAILABLE';
+  const day = String(date.getDate()).padStart(2, '0');
+  const month = RECEIPT_MONTHS[date.getMonth()];
+  const year = String(date.getFullYear()).padStart(4, '0');
+  return `${day} ${month} ${year}`;
 }
 
-function fillBackground(
+function drawReceiptBase(
   context: CanvasRenderingContext2D,
-  palette: SharePalette,
   width: number,
   height: number,
+  now: number,
 ) {
-  context.fillStyle = palette.tray;
+  context.fillStyle = SHARE_RECEIPT_COLORS.paper;
   context.fillRect(0, 0, width, height);
+  context.fillStyle = SHARE_RECEIPT_COLORS.header;
+  context.fillRect(0, 0, width, RECEIPT_HEADER_HEIGHT);
+
+  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
+  context.font = `400 32px ${DISPLAY_FONT}`;
+  context.textAlign = 'left';
+  context.fillText('OVERCAP', RECEIPT_HORIZONTAL_PADDING, 42);
+
+  context.font = `600 10px ${MONO_FONT}`;
+  context.textAlign = 'right';
+  context.fillText(formatReceiptDate(now), width - RECEIPT_HORIZONTAL_PADDING, 37);
+  context.textAlign = 'left';
 }
 
-function drawProviderHeader(
+function drawReceiptLine(
   context: CanvasRenderingContext2D,
-  palette: SharePalette,
-  catalog: ProviderCatalogIndex,
-  providerId: string,
-  providerNames: Record<string, string> | undefined,
-  plan: string | null,
-) {
-  const iconColor = providerIconColor(providerId) ?? palette.text;
-  drawProviderMark(context, providerId, OUTER_PADDING, OUTER_PADDING, 22, iconColor);
-  const name = catalog.displayName(providerId, providerNames);
-  context.fillStyle = palette.text;
-  context.font = '600 15px system-ui';
-  context.fillText(name, 48, 31);
-  if (!plan) return;
-  const nameWidth = context.measureText(name).width;
-  context.fillStyle = palette.secondary;
-  context.font = '12px system-ui';
-  fitText(
-    context,
-    plan,
-    48 + nameWidth + 6,
-    31,
-    SHARE_CARD_WIDTH - OUTER_PADDING - (48 + nameWidth + 6),
-  );
-}
-
-function drawShareRow(
-  context: CanvasRenderingContext2D,
-  palette: SharePalette,
-  row: ShareRow,
+  label: string,
+  value: string,
   top: number,
+  emphasis = false,
+  preserveLabelCase = false,
 ) {
-  const left = OUTER_PADDING + ROW_HORIZONTAL_PADDING;
-  const right = SHARE_CARD_WIDTH - OUTER_PADDING - ROW_HORIZONTAL_PADDING;
+  const left = RECEIPT_HORIZONTAL_PADDING;
+  const right = SHARE_CARD_WIDTH - RECEIPT_HORIZONTAL_PADDING;
+  const baseline = top + 16;
+  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
+  context.font = `${emphasis ? '600 13px' : '600 10px'} ${MONO_FONT}`;
+  fitText(context, preserveLabelCase ? label : label.toUpperCase(), left, baseline, 145);
+
+  context.font = `${emphasis ? '600 13px' : '400 11px'} ${MONO_FONT}`;
+  context.textAlign = 'right';
+  fitTextRight(context, value, right, baseline, 165);
+  context.textAlign = 'left';
+}
+
+function drawReceiptShareRow(context: CanvasRenderingContext2D, row: ShareRow, top: number) {
   if (row.kind === 'quota') {
-    context.fillStyle = palette.text;
-    context.font = '600 13px system-ui';
-    fitText(context, row.label, left, top + 23, row.paceLabel ? 150 : right - left);
-    if (row.paceLabel) {
-      context.fillStyle = palette.secondary;
-      context.font = '12px system-ui';
-      context.textAlign = 'right';
-      context.fillText(row.paceLabel, right, top + 23);
-      context.textAlign = 'left';
-    }
-    drawRoundedRect(context, left, top + 31, right - left, 5, 3, palette.track);
-    const fillWidth = Math.max(
-      row.fillPercent > 0 ? 5 : 0,
-      ((right - left) * row.fillPercent) / 100,
+    drawReceiptLine(context, row.label, row.reading, top);
+    const details = [row.trailing, row.paceLabel].filter(Boolean).join(' / ');
+    context.fillStyle = SHARE_RECEIPT_COLORS.ink;
+    context.font = `400 9px ${MONO_FONT}`;
+    fitText(
+      context,
+      details.toUpperCase(),
+      RECEIPT_HORIZONTAL_PADDING,
+      top + 35,
+      SHARE_CARD_WIDTH - RECEIPT_HORIZONTAL_PADDING * 2,
     );
-    if (fillWidth > 0) {
-      const fill =
-        row.severity === 'critical'
-          ? palette.critical
-          : row.severity === 'warning'
-            ? palette.warning
-            : palette.fill;
-      drawRoundedRect(context, left, top + 31, fillWidth, 5, Math.min(3, fillWidth / 2), fill);
-    }
-    context.fillStyle = palette.text;
-    context.font = '500 12px system-ui';
-    fitText(context, row.reading, left, top + 52, 130);
-    context.fillStyle = palette.secondary;
-    context.font = '12px system-ui';
-    context.textAlign = 'right';
-    fitTextRight(context, row.trailing, right, top + 52, 155);
-    context.textAlign = 'left';
     return;
   }
   if (row.kind === 'trend') {
-    context.fillStyle = palette.text;
-    context.font = '600 12px system-ui';
-    context.fillText(row.label, left, top + 23);
-    drawTrend(context, palette, row.daily, right - 150, top + 9, 150, 18);
+    const tokens = row.daily.reduce(
+      (total, sample) => total + (Number.isFinite(sample.tokens) ? Math.max(0, sample.tokens) : 0),
+      0,
+    );
+    drawReceiptLine(
+      context,
+      row.label,
+      row.daily.length ? formatMetricValue(tokens, 'count', 'full', 'tokens') : 'No data',
+      top,
+    );
     return;
   }
-  const baseline = top + (row.condensed ? 15 : 17);
-  context.fillStyle = palette.text;
-  context.font = '600 12px system-ui';
-  fitText(context, row.label, left, baseline, 112);
-  context.fillStyle = palette.text;
-  context.font = '12px system-ui';
-  context.textAlign = 'right';
-  fitTextRight(context, row.value, right, baseline, 178);
-  context.textAlign = 'left';
+  drawReceiptLine(context, row.label, row.value, top);
 }
 
-function drawTrend(
-  context: CanvasRenderingContext2D,
-  palette: SharePalette,
-  daily: DailyUsage[],
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-) {
-  const points = daily.slice(-30);
-  const values = points.length ? points.map((point) => point.tokens) : [0];
-  const max = Math.max(1, ...values);
-  const gap = 1.5;
-  const barWidth = Math.max(1, (width - gap * (values.length - 1)) / values.length);
-  values.forEach((value, index) => {
-    const barHeight = Math.max(value > 0 ? 3 : 2, (value / max) * height);
-    drawRoundedRect(
-      context,
-      x + index * (barWidth + gap),
-      y + height - barHeight,
-      barWidth,
-      barHeight,
-      Math.min(1, barWidth / 2),
-      palette.fill,
-    );
-  });
-}
-
-function drawPeriodSwitcher(
-  context: CanvasRenderingContext2D,
-  palette: SharePalette,
-  period: AppSettings['totalSpendPeriod'],
-  top: number,
-  outerPadding: number,
-  canvasWidth: number,
-) {
-  const left = outerPadding + TOTAL_SPEND_GEOMETRY.cardPaddingX;
-  const width = canvasWidth - (outerPadding + TOTAL_SPEND_GEOMETRY.cardPaddingX) * 2;
-  const innerLeft = left + 3;
-  const segmentWidth = (width - 6) / 3;
-  const selectedIndex = period === 'today' ? 0 : period === 'yesterday' ? 1 : 2;
-
-  drawRoundedRect(
-    context,
-    left,
-    top,
-    width,
-    TOTAL_SPEND_GEOMETRY.switcherHeight,
-    TOTAL_SPEND_GEOMETRY.switcherHeight / 2,
-    palette.track,
-  );
-  drawRoundedRect(
-    context,
-    innerLeft + selectedIndex * segmentWidth,
-    top + 3,
-    segmentWidth,
-    TOTAL_SPEND_GEOMETRY.switcherHeight - 6,
-    (TOTAL_SPEND_GEOMETRY.switcherHeight - 6) / 2,
-    palette.tray,
-  );
-
-  context.font = `${TOTAL_SPEND_GEOMETRY.periodFontSize}px system-ui`;
-  context.textAlign = 'center';
-  TOTAL_SPEND_PERIOD_LABELS.forEach((label, index) => {
-    context.fillStyle = index === selectedIndex ? palette.text : palette.secondary;
-    context.font = `${index === selectedIndex ? '600' : '500'} ${TOTAL_SPEND_GEOMETRY.periodFontSize}px system-ui`;
-    context.fillText(label, innerLeft + segmentWidth * (index + 0.5), top + 18);
-  });
-  context.textAlign = 'left';
-}
-
-function drawSpendBody(
-  context: CanvasRenderingContext2D,
-  palette: SharePalette,
-  catalog: ProviderCatalogIndex,
-  options: TotalSpendShareCardOptions,
-  top: number,
-  outerPadding: number,
-  canvasWidth: number,
-) {
-  const { projection, metric } = options;
-  if (projection.centerValue === null) {
-    context.fillStyle = palette.secondary;
-    context.font = '12px system-ui';
-    context.textAlign = 'center';
-    const empty =
-      metric === 'tokens'
-        ? 'No token data for this period'
-        : metric === 'costPerMillion'
-          ? 'No cost-per-token data for this period'
-          : 'No cost data for this period';
-    context.fillText(empty, canvasWidth / 2, top + TOTAL_SPEND_GEOMETRY.ringDiameter / 2 + 4);
-    context.textAlign = 'left';
-    return;
-  }
-
-  const ringOuterRadius = TOTAL_SPEND_GEOMETRY.ringDiameter / 2;
-  const ringLeft = outerPadding + TOTAL_SPEND_GEOMETRY.cardPaddingX;
-  const centerX = ringLeft + ringOuterRadius;
-  const centerY = top + ringOuterRadius;
-  spendRingArcs(projection.slices).forEach((arc) => {
-    context.fillStyle = palette.provider(arc.id);
-    fillRingSector(context, arc, TOTAL_SPEND_GEOMETRY, ringLeft, top);
-  });
-
-  const center = totalSpendRingCenter(projection.centerValue, metric);
-  context.fillStyle = palette.text;
-  context.font = `600 ${TOTAL_SPEND_GEOMETRY.centerFontSize}px system-ui`;
-  context.textAlign = 'center';
-  context.fillText(center.primary, centerX, centerY - 1);
-  context.fillStyle = palette.secondary;
-  context.font = `600 ${TOTAL_SPEND_GEOMETRY.centerUnitFontSize}px system-ui`;
-  context.fillText(center.unit, centerX, centerY + 13);
-  context.textAlign = 'left';
-
-  const legendLeft =
-    outerPadding +
-    TOTAL_SPEND_GEOMETRY.cardPaddingX +
-    TOTAL_SPEND_GEOMETRY.ringDiameter +
-    TOTAL_SPEND_GEOMETRY.legendGap;
-  const legendRight = canvasWidth - outerPadding - TOTAL_SPEND_GEOMETRY.cardPaddingX;
-  const rowHeight = TOTAL_SPEND_GEOMETRY.legendRowHeight;
-  const legendTop =
-    top + (TOTAL_SPEND_GEOMETRY.ringDiameter - projection.slices.length * rowHeight) / 2;
-  projection.slices.forEach((slice, index) => {
-    const baseline = legendTop + index * rowHeight + 15;
-    context.fillStyle = palette.provider(slice.id);
-    context.beginPath();
-    context.arc(legendLeft + 4, baseline - 4, 4, 0, Math.PI * 2);
-    context.fill();
-    context.fillStyle = palette.text;
-    context.font = `${TOTAL_SPEND_GEOMETRY.legendFontSize}px system-ui`;
-    fitText(
-      context,
-      catalog.displayName(slice.id, options.providerNames),
-      legendLeft + 15,
-      baseline,
-      62,
-    );
-    context.fillStyle = palette.secondary;
-    context.font = `600 ${TOTAL_SPEND_GEOMETRY.legendFontSize}px system-ui`;
-    context.textAlign = 'right';
-    fitTextRight(context, formatSpendValue(slice.value, metric), legendRight, baseline, 72);
-    context.textAlign = 'left';
-  });
-}
-
-function drawProviderMark(
-  context: CanvasRenderingContext2D,
-  providerId: string,
-  x: number,
-  y: number,
-  size: number,
-  color: string,
-) {
-  const path = providerIconPath(providerId);
-  if (!path || typeof Path2D === 'undefined') return;
-  const placement = providerIconPlacement(providerId, x, y, size);
+function drawReceiptSeparator(context: CanvasRenderingContext2D, width: number, top: number) {
+  const y = top + RECEIPT_SEPARATOR_HEIGHT / 2;
   context.save();
-  context.translate(placement.x, placement.y);
-  context.scale(placement.scale, placement.scale);
-  context.fillStyle = color;
-  context.fill(new Path2D(path));
+  context.beginPath();
+  context.setLineDash([5, 4]);
+  context.strokeStyle = SHARE_RECEIPT_COLORS.ink;
+  context.lineWidth = 1;
+  context.moveTo(RECEIPT_HORIZONTAL_PADDING, y);
+  context.lineTo(width - RECEIPT_HORIZONTAL_PADDING, y);
+  context.stroke();
+  context.setLineDash([]);
   context.restore();
+  return top + RECEIPT_SEPARATOR_HEIGHT;
+}
+
+function drawReceiptFooter(context: CanvasRenderingContext2D, width: number, top: number) {
+  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
+  context.font = `600 10px ${MONO_FONT}`;
+  context.textAlign = 'center';
+  context.fillText('overcap.dev', width / 2, top + 25);
+  context.textAlign = 'left';
+}
+
+function receiptPeriodLabel(period: AppSettings['totalSpendPeriod']) {
+  const index = period === 'today' ? 0 : period === 'yesterday' ? 1 : 2;
+  return TOTAL_SPEND_PERIOD_LABELS[index].toUpperCase();
+}
+
+function receiptMetricLabel(metric: AppSettings['totalSpendMetric']) {
+  if (metric === 'tokens') return 'Total usage';
+  if (metric === 'costPerMillion') return 'Cost / MTok';
+  return 'Total spend';
 }
 
 export function providerIconPlacement(providerId: string, x: number, y: number, size: number) {
@@ -706,21 +547,6 @@ export function providerIconPlacement(providerId: string, x: number, y: number, 
     y: y + (size - height * scale) / 2 - minY * scale,
     scale,
   };
-}
-
-function drawRoundedRect(
-  context: CanvasRenderingContext2D,
-  x: number,
-  y: number,
-  width: number,
-  height: number,
-  radius: number,
-  fill: string,
-) {
-  context.fillStyle = fill;
-  context.beginPath();
-  context.roundRect(x, y, width, height, radius);
-  context.fill();
 }
 
 function fitText(

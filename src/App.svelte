@@ -371,6 +371,7 @@
         providerNames: current.settings.providerNames,
         plan: provider.plan,
         rows,
+        now,
       });
       await copyCanvas(canvas, snapshot);
     } catch {
@@ -388,6 +389,7 @@
         providerNames: current.settings.providerNames,
         metric: current.settings.totalSpendMetric,
         period: current.settings.totalSpendPeriod,
+        now,
       });
       await copyCanvas(canvas, card.innerText.trim());
       return true;
