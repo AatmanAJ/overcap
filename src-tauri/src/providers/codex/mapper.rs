@@ -381,11 +381,12 @@ fn format_plan(value: Option<&Value>) -> Option<String> {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
+    use std::{collections::HashMap, sync::Arc};
 
     use chrono::{TimeZone, Utc};
     use reqwest::StatusCode;
     use serde_json::{json, Value};
+    use tempfile::tempdir;
 
     use super::{map_usage, SESSION_PERIOD_SECONDS, WEEKLY_PERIOD_SECONDS};
     use crate::{
@@ -393,8 +394,9 @@ mod tests {
             AppSettings, MetricLayout, MetricSection, MetricValueKind, NotificationPreferences,
             ProviderLayout, ProviderSnapshot, UsageHistory, ValueMetric,
         },
-        pacing::{Milestone, NotificationEvaluator},
+        pacing::{NotificationEvaluator, ThresholdLevel},
         providers::{codex::client::UsageResponse, ProviderRegistry},
+        storage::Storage,
     };
 
     fn response(body: Value) -> UsageResponse {
@@ -463,7 +465,7 @@ mod tests {
     }
 
     #[test]
-    fn weekly_only_mapping_keeps_session_and_weekly_notification_baselines_separate() {
+    fn weekly_only_mapping_keeps_session_and_weekly_threshold_ledgers_separate() {
         let now = Utc.timestamp_opt(1_800_000_000, 0).unwrap();
         let registry =
             ProviderRegistry::from_definitions(vec![crate::providers::codex::definition()])
@@ -485,9 +487,9 @@ mod tests {
                     .collect(),
             }],
             notifications: NotificationPreferences {
-                almost_out: false,
+                almost_out: true,
                 cutting_it_close: false,
-                will_run_out: true,
+                will_run_out: false,
             },
             ..AppSettings::default()
         };
@@ -519,33 +521,38 @@ mod tests {
                 refreshed_at: now,
             }
         };
-        let evaluator = NotificationEvaluator::default();
+        let directory = tempdir().unwrap();
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
+        let evaluator = NotificationEvaluator::new(storage);
 
-        assert!(evaluator
-            .evaluate(
-                &snapshot(SESSION_PERIOD_SECONDS, 10.0),
-                &settings,
-                &registry,
-                now,
-            )
-            .is_empty());
-        assert!(evaluator
-            .evaluate(
-                &snapshot(WEEKLY_PERIOD_SECONDS, 60.0),
-                &settings,
-                &registry,
-                now,
-            )
-            .is_empty());
-        let alerts = evaluator.evaluate(
-            &snapshot(SESSION_PERIOD_SECONDS, 60.0),
+        let session = evaluator.evaluate(
+            &snapshot(SESSION_PERIOD_SECONDS, 80.0),
             &settings,
             &registry,
             now,
         );
-        assert_eq!(alerts.len(), 1);
-        assert_eq!(alerts[0].metric, "Session");
-        assert_eq!(alerts[0].milestone, Milestone::WillRunOut);
+        assert_eq!(session.len(), 1);
+        assert_eq!(session[0].metric, "Session");
+        assert_eq!(session[0].level, ThresholdLevel::Warning);
+
+        let weekly = evaluator.evaluate(
+            &snapshot(WEEKLY_PERIOD_SECONDS, 80.0),
+            &settings,
+            &registry,
+            now,
+        );
+        assert_eq!(weekly.len(), 1);
+        assert_eq!(weekly[0].metric, "Weekly");
+        assert_eq!(weekly[0].level, ThresholdLevel::Warning);
+
+        assert!(evaluator
+            .evaluate(
+                &snapshot(SESSION_PERIOD_SECONDS, 80.0),
+                &settings,
+                &registry,
+                now,
+            )
+            .is_empty());
     }
 
     #[test]

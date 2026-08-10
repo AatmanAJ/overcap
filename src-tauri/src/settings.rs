@@ -469,6 +469,9 @@ impl SettingsService {
             .ok_or_else(|| "Provider settings are unavailable.".to_owned())?;
         provider.expanded = false;
         provider.metrics = default_provider(definition, provider.detected).metrics;
+        settings
+            .provider_notification_thresholds
+            .remove(provider_id);
         self.update(settings)
     }
 
@@ -604,7 +607,7 @@ fn normalize_with_persisted_accounts(
 ) {
     let catalog = registry.catalog();
     let migrating_to_multi_provider = settings.schema_version < 3;
-    settings.schema_version = 6;
+    settings.schema_version = 7;
     settings.dismissed_update_version = settings
         .dismissed_update_version
         .take()
@@ -615,6 +618,19 @@ fn normalize_with_persisted_accounts(
         .take()
         .map(|shortcut| shortcut.trim().to_owned())
         .filter(|shortcut| !shortcut.is_empty());
+    settings.notification_thresholds = settings.notification_thresholds.normalized();
+    let known_threshold_provider_ids = catalog
+        .providers
+        .iter()
+        .map(|provider| provider.id.as_str())
+        .chain(persisted_accounts.iter().map(String::as_str))
+        .collect::<HashSet<_>>();
+    settings
+        .provider_notification_thresholds
+        .retain(|provider_id, thresholds| {
+            *thresholds = thresholds.normalized();
+            known_threshold_provider_ids.contains(provider_id.as_str())
+        });
     settings.provider_names.retain(|provider_id, name| {
         if !registry.supports_account_names(provider_id)
             && !persisted_accounts.contains(provider_id)
@@ -1810,7 +1826,7 @@ mod tests {
             &mut settings,
             &HashSet::from(["codex".to_owned(), "antigravity".to_owned()]),
         );
-        assert_eq!(settings.schema_version, 6);
+        assert_eq!(settings.schema_version, 7);
         assert_eq!(
             settings
                 .providers

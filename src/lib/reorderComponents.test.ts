@@ -8,7 +8,7 @@ import type { AppSettings } from './types';
 afterEach(cleanup);
 
 const settings: AppSettings = {
-  schemaVersion: 6,
+  schemaVersion: 7,
   providerNames: {},
   knownProviderIds: ['codex', 'claude', 'antigravity'],
   showTotalSpend: false,
@@ -27,6 +27,8 @@ const settings: AppSettings = {
   globalShortcut: null,
   logLevel: 'info',
   notifications: { almostOut: false, cuttingItClose: false, willRunOut: false },
+  notificationThresholds: { warning: 80, critical: 95, capped: 100 },
+  providerNotificationThresholds: {},
   totalSpendMetric: 'cost',
   totalSpendPeriod: 'today',
   detectionNoticeDismissed: true,

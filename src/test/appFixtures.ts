@@ -341,7 +341,7 @@ export const settingsState: SettingsViewState = {
   trayAvailable: true,
   platformSummary: null,
   settings: {
-    schemaVersion: 6,
+    schemaVersion: 7,
     providerNames: {},
     knownProviderIds: ['claude', 'codex', 'antigravity'],
     showTotalSpend: true,
@@ -360,6 +360,8 @@ export const settingsState: SettingsViewState = {
     globalShortcut: null,
     logLevel: 'info',
     notifications: { almostOut: false, cuttingItClose: false, willRunOut: false },
+    notificationThresholds: { warning: 80, critical: 95, capped: 100 },
+    providerNotificationThresholds: {},
     totalSpendMetric: 'cost',
     totalSpendPeriod: 'today',
     detectionNoticeDismissed: true,

@@ -4,6 +4,7 @@ export function restoreCustomization(current: AppSettings, previous: AppSettings
   return {
     ...current,
     providers: previous.providers,
+    providerNotificationThresholds: previous.providerNotificationThresholds,
     detectionNoticeDismissed: previous.detectionNoticeDismissed,
   };
 }

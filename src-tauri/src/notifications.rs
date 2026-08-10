@@ -5,7 +5,7 @@ use tauri_plugin_notification::{NotificationExt, PermissionState};
 
 use crate::{
     models::{ProviderSnapshot, ProviderViewState},
-    pacing::{NotificationEvaluator, PaceAlert},
+    pacing::{NotificationEvaluator, ThresholdAlert},
     popup::PopupDismissGuard,
     service::UsageViewState,
     settings::SettingsService,
@@ -30,7 +30,6 @@ pub fn finish_refresh(
 ) {
     let preferences = settings.get();
     tray_presentation::update(app, state, &preferences, settings.registry());
-    notifications.prune(&preferences);
     for snapshot in state.providers.values().filter_map(notification_snapshot) {
         let alerts = notifications.evaluate(
             snapshot,
@@ -51,7 +50,7 @@ fn notification_snapshot(state: &ProviderViewState) -> Option<&ProviderSnapshot>
     state.snapshot.as_ref()
 }
 
-fn deliver(app: &AppHandle, alerts: &[PaceAlert]) -> Vec<PaceAlert> {
+fn deliver(app: &AppHandle, alerts: &[ThresholdAlert]) -> Vec<ThresholdAlert> {
     if permission(app) != "granted" {
         if !alerts.is_empty() {
             crate::app_debug!(
@@ -65,21 +64,12 @@ fn deliver(app: &AppHandle, alerts: &[PaceAlert]) -> Vec<PaceAlert> {
     alerts
         .iter()
         .filter_map(|alert| {
-            let result = show(
-                app,
-                alert.milestone.title(),
-                &format!(
-                    "{} · {}\n{}",
-                    alert.provider,
-                    alert.metric,
-                    alert.milestone.body()
-                ),
-            );
+            let result = show(app, "Overcap", &alert.message);
             if result.is_ok() {
-                crate::app_info!("notifications", "pace alert delivered");
+                crate::app_info!("notifications", "threshold alert delivered");
                 None
             } else {
-                crate::app_error!("notifications", "pace alert delivery failed");
+                crate::app_error!("notifications", "threshold alert delivery failed");
                 Some(alert.clone())
             }
         })

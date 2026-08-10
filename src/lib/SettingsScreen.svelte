@@ -3,6 +3,7 @@
   import Icon from './Icon.svelte';
   import type { DesktopPlatform } from './platform';
   import SelectMenu from './SelectMenu.svelte';
+  import NotificationThresholdControls from './NotificationThresholdControls.svelte';
   import type {
     AppSettings,
     NotificationPreferences,
@@ -286,12 +287,17 @@
     <h2>
       Notifications {#if notificationsNeedAttention}<span class="permission-warning">!</span>{/if}
     </h2>
+    <NotificationThresholdControls
+      thresholds={settings.notificationThresholds}
+      label="Global notification thresholds"
+      onChange={(notificationThresholds) => patch({ notificationThresholds })}
+    />
     <label class="setting-row"
       ><span
-        ><b>Almost Out</b><i
+        ><b>{settings.notificationThresholds.warning}% alert</b><i
           class="setting-info"
-          data-tooltip="Alert when a limit drops below 10% remaining."
-          aria-label="Alert when a limit drops below 10% remaining."
+          data-tooltip="A calm heads-up when usage reaches the first threshold."
+          aria-label="A calm heads-up when usage reaches the first threshold."
           ><Icon name="about" size={12} strokeWidth={1.8} /></i
         ></span
       ><input
@@ -302,10 +308,10 @@
     >
     <label class="setting-row"
       ><span
-        ><b>Cutting It Close</b><i
+        ><b>{settings.notificationThresholds.critical}% alert</b><i
           class="setting-info"
-          data-tooltip="Alert when a limit is projected to finish with little left."
-          aria-label="Alert when a limit is projected to finish with little left."
+          data-tooltip="A redline alert at the second threshold."
+          aria-label="A redline alert at the second threshold."
           ><Icon name="about" size={12} strokeWidth={1.8} /></i
         ></span
       ><input
@@ -316,10 +322,10 @@
     >
     <label class="setting-row"
       ><span
-        ><b>Will Run Out</b><i
+        ><b>{settings.notificationThresholds.capped}% alert</b><i
           class="setting-info"
-          data-tooltip="Alert when a limit is projected to finish before it resets."
-          aria-label="Alert when a limit is projected to finish before it resets."
+          data-tooltip="A capped alert at the final threshold."
+          aria-label="A capped alert at the final threshold."
           ><Icon name="about" size={12} strokeWidth={1.8} /></i
         ></span
       ><input

@@ -4,6 +4,7 @@
   import type { ProviderCatalogIndex } from './metrics';
   import type { AppSettings, MetricLayout, MetricSection, ProviderLayout } from './types';
   import Icon from './Icon.svelte';
+  import NotificationThresholdControls from './NotificationThresholdControls.svelte';
   import ProviderApiKeySection from './ProviderApiKeySection.svelte';
   import ProviderNameSection from './ProviderNameSection.svelte';
   import { reorderFlip } from './motion';
@@ -41,6 +42,9 @@
     if (messageTimer) clearTimeout(messageTimer);
   });
   const provider = $derived(settings.providers.find((item) => item.id === providerId));
+  const providerThresholdOverride = $derived(
+    settings.providerNotificationThresholds[providerId] ?? null,
+  );
 
   function updateProvider(next: ProviderLayout) {
     onChange({
@@ -53,6 +57,24 @@
     updateProvider({
       ...provider,
       metrics: provider.metrics.map((item) => (item.id === metric.id ? metric : item)),
+    });
+  }
+  function toggleThresholdOverride(enabled: boolean) {
+    const providerNotificationThresholds = { ...settings.providerNotificationThresholds };
+    if (enabled) {
+      providerNotificationThresholds[providerId] = { ...settings.notificationThresholds };
+    } else {
+      delete providerNotificationThresholds[providerId];
+    }
+    onChange({ ...settings, providerNotificationThresholds });
+  }
+  function updateThresholdOverride(thresholds: AppSettings['notificationThresholds']) {
+    onChange({
+      ...settings,
+      providerNotificationThresholds: {
+        ...settings.providerNotificationThresholds,
+        [providerId]: thresholds,
+      },
     });
   }
   function togglePin(metric: MetricLayout, button: HTMLButtonElement) {
@@ -125,6 +147,33 @@
     {#if canRenameProvider(provider.id, renamableProviderIds)}
       <ProviderNameSection {settings} {provider} {catalog} onChange={onNameChange} />
     {/if}
+    <div class="metric-section provider-threshold-section">
+      <h2>Alerts</h2>
+      <div class="provider-threshold-card">
+        <label class="provider-threshold-toggle">
+          <span
+            ><b>Custom thresholds</b><small
+              >{providerThresholdOverride
+                ? 'Overrides the global redline.'
+                : 'Uses the global redline.'}</small
+            ></span
+          >
+          <input
+            type="checkbox"
+            checked={providerThresholdOverride !== null}
+            aria-label={`Use custom alert thresholds for ${providerDisplayName(provider.id)}`}
+            onchange={(event) => toggleThresholdOverride(event.currentTarget.checked)}
+          />
+        </label>
+        {#if providerThresholdOverride}
+          <NotificationThresholdControls
+            thresholds={providerThresholdOverride}
+            label={`${providerDisplayName(provider.id)} notification thresholds`}
+            onChange={updateThresholdOverride}
+          />
+        {/if}
+      </div>
+    </div>
     {#each ['alwaysVisible', 'onDemand'] as section (section)}
       {@const sectionMetrics = provider.metrics.filter((metric) => metric.section === section)}
       <div
@@ -232,6 +281,43 @@
 {/if}
 
 <style>
+  .provider-threshold-section {
+    margin-bottom: 14px;
+  }
+
+  .provider-threshold-card {
+    overflow: hidden;
+    border: 1px solid var(--surface-border);
+    border-radius: 12px;
+    background: var(--card);
+  }
+
+  .provider-threshold-toggle {
+    display: flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 8px 11px;
+  }
+
+  .provider-threshold-toggle > span {
+    display: grid;
+    min-width: 0;
+    gap: 1px;
+  }
+
+  .provider-threshold-toggle b {
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .provider-threshold-toggle small {
+    color: var(--secondary);
+    font-family: var(--font-mono);
+    font-size: 9px;
+  }
+
   :global {
     .customize-metric-row {
       display: flex;

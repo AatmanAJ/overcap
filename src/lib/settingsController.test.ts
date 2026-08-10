@@ -18,7 +18,7 @@ function settingsView(theme: AppSettings['theme'] = 'system'): SettingsViewState
     trayAvailable: true,
     platformSummary: null,
     settings: {
-      schemaVersion: 6,
+      schemaVersion: 7,
       providerNames: {},
       providers: [],
       knownProviderIds: [],
@@ -38,6 +38,8 @@ function settingsView(theme: AppSettings['theme'] = 'system'): SettingsViewState
       globalShortcut: null,
       logLevel: 'info',
       notifications: { almostOut: false, cuttingItClose: false, willRunOut: false },
+      notificationThresholds: { warning: 80, critical: 95, capped: 100 },
+      providerNotificationThresholds: {},
       totalSpendMetric: 'cost',
       totalSpendPeriod: 'today',
       detectionNoticeDismissed: false,

@@ -301,6 +301,7 @@ impl MetricSource {
         }
     }
 
+    #[cfg(test)]
     pub fn session_window(&self) -> bool {
         matches!(
             self,
@@ -678,6 +679,43 @@ pub struct NotificationPreferences {
     pub will_run_out: bool,
 }
 
+#[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
+#[serde(rename_all = "camelCase", default)]
+pub struct NotificationThresholds {
+    pub warning: u8,
+    pub critical: u8,
+    pub capped: u8,
+}
+
+impl NotificationThresholds {
+    pub fn normalized(self) -> Self {
+        let mut values = [
+            self.warning.clamp(1, 100),
+            self.critical.clamp(1, 100),
+            self.capped.clamp(1, 100),
+        ];
+        values.sort_unstable();
+        let warning = values[0].min(98);
+        let critical = values[1].clamp(warning + 1, 99);
+        let capped = values[2].clamp(critical + 1, 100);
+        Self {
+            warning,
+            critical,
+            capped,
+        }
+    }
+}
+
+impl Default for NotificationThresholds {
+    fn default() -> Self {
+        Self {
+            warning: 80,
+            critical: 95,
+            capped: 100,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "camelCase", default)]
 pub struct AppSettings {
@@ -701,6 +739,8 @@ pub struct AppSettings {
     pub global_shortcut: Option<String>,
     pub log_level: LogLevel,
     pub notifications: NotificationPreferences,
+    pub notification_thresholds: NotificationThresholds,
+    pub provider_notification_thresholds: BTreeMap<String, NotificationThresholds>,
     pub total_spend_metric: TotalSpendMetric,
     pub total_spend_period: UsagePeriodSelection,
     pub detection_notice_dismissed: bool,
@@ -709,7 +749,7 @@ pub struct AppSettings {
 impl Default for AppSettings {
     fn default() -> Self {
         Self {
-            schema_version: 6,
+            schema_version: 7,
             providers: Vec::new(),
             known_provider_ids: Vec::new(),
             provider_names: BTreeMap::new(),
@@ -729,6 +769,8 @@ impl Default for AppSettings {
             global_shortcut: None,
             log_level: LogLevel::Info,
             notifications: NotificationPreferences::default(),
+            notification_thresholds: NotificationThresholds::default(),
+            provider_notification_thresholds: BTreeMap::new(),
             total_spend_metric: TotalSpendMetric::Cost,
             total_spend_period: UsagePeriodSelection::Today,
             detection_notice_dismissed: false,
@@ -760,8 +802,9 @@ pub struct SettingsViewState {
 #[cfg(test)]
 mod tests {
     use super::{
-        ApiKeyStatus, AppSettings, LogLevel, ProviderApiKeyState, ProviderErrorKind, ProviderLink,
-        ProviderSnapshot, ProviderViewState, ThemePreference, UsagePeriod, WindowMode,
+        ApiKeyStatus, AppSettings, LogLevel, NotificationThresholds, ProviderApiKeyState,
+        ProviderErrorKind, ProviderLink, ProviderSnapshot, ProviderViewState, ThemePreference,
+        UsagePeriod, WindowMode,
     };
 
     #[test]
@@ -780,6 +823,8 @@ mod tests {
         object.remove("logLevel");
         object.remove("providerNames");
         object.remove("windowMode");
+        object.remove("notificationThresholds");
+        object.remove("providerNotificationThresholds");
 
         let settings: AppSettings = serde_json::from_value(value).unwrap();
         assert_eq!(settings.dismissed_update_version, None);
@@ -787,6 +832,41 @@ mod tests {
         assert_eq!(settings.last_update_check_at, None);
         assert_eq!(settings.log_level, LogLevel::Info);
         assert_eq!(settings.window_mode, WindowMode::Popup);
+        assert_eq!(
+            settings.notification_thresholds,
+            NotificationThresholds::default()
+        );
+        assert!(settings.provider_notification_thresholds.is_empty());
+    }
+
+    #[test]
+    fn notification_thresholds_are_clamped_sorted_and_kept_distinct() {
+        assert_eq!(
+            NotificationThresholds {
+                warning: 100,
+                critical: 0,
+                capped: 100,
+            }
+            .normalized(),
+            NotificationThresholds {
+                warning: 1,
+                critical: 99,
+                capped: 100,
+            }
+        );
+        assert_eq!(
+            NotificationThresholds {
+                warning: 100,
+                critical: 100,
+                capped: 100,
+            }
+            .normalized(),
+            NotificationThresholds {
+                warning: 98,
+                critical: 99,
+                capped: 100,
+            }
+        );
     }
 
     #[test]

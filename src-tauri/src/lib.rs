@@ -260,7 +260,7 @@ pub fn run() {
                 app.package_info().version,
                 logging::current_level().log_label()
             );
-            let notifications = Arc::new(NotificationEvaluator::default());
+            let notifications = Arc::new(NotificationEvaluator::new(storage.clone()));
             app.manage(registry.clone());
             app.manage(service.clone());
             app.manage(settings.clone());

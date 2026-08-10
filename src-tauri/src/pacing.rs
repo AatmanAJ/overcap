@@ -1,15 +1,20 @@
-use std::{
-    collections::{HashMap, HashSet},
-    sync::Mutex,
-};
+use std::{collections::HashSet, sync::Arc};
 
-use chrono::{DateTime, Duration, Utc};
+use chrono::{DateTime, Utc};
+
+#[cfg(test)]
+use chrono::Duration;
 
 use crate::models::{
-    AppSettings, MetricSource, NotificationPreferences, ProviderSnapshot, QuotaFormat, QuotaWindow,
+    AppSettings, MetricSource, NotificationPreferences, NotificationThresholds, ProviderSnapshot,
+    TimeFormatPreference,
 };
+#[cfg(test)]
+use crate::models::{QuotaFormat, QuotaWindow};
 use crate::providers::ProviderRegistry;
+use crate::storage::{Storage, ThresholdNotificationClaim};
 
+#[cfg(test)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum PaceSeverity {
     Untracked,
@@ -19,6 +24,7 @@ pub enum PaceSeverity {
     Spent,
 }
 
+#[cfg(test)]
 #[derive(Debug, Clone, PartialEq)]
 pub struct PaceProjection {
     pub severity: PaceSeverity,
@@ -27,6 +33,7 @@ pub struct PaceProjection {
     pub run_out_at: Option<DateTime<Utc>>,
 }
 
+#[cfg(test)]
 pub fn project(
     window: &QuotaWindow,
     now: DateTime<Utc>,
@@ -97,6 +104,7 @@ pub fn project(
     }
 }
 
+#[cfg(test)]
 fn is_visibly_spent(window: &QuotaWindow, used_percent: f64) -> bool {
     if window.format == QuotaFormat::Dollars {
         if let (Some(used), Some(limit)) = (window.used_value, window.limit_value) {
@@ -108,6 +116,7 @@ fn is_visibly_spent(window: &QuotaWindow, used_percent: f64) -> bool {
     (100.0 - used_percent).round() <= 0.0
 }
 
+#[cfg(test)]
 fn level_projection(_used: f64) -> PaceProjection {
     PaceProjection {
         severity: PaceSeverity::Untracked,
@@ -117,87 +126,49 @@ fn level_projection(_used: f64) -> PaceProjection {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub enum Milestone {
-    AlmostOut,
-    CuttingItClose,
-    WillRunOut,
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum ThresholdLevel {
+    Warning,
+    Critical,
+    Capped,
 }
 
-impl Milestone {
-    pub fn title(self) -> &'static str {
-        match self {
-            Self::AlmostOut => "Almost Out",
-            Self::CuttingItClose => "Cutting It Close",
-            Self::WillRunOut => "Will Run Out",
-        }
-    }
-
-    pub fn body(self) -> &'static str {
-        match self {
-            Self::AlmostOut => "Under 10% usage remaining for this window.",
-            Self::CuttingItClose => "Projected to finish close to your limit.",
-            Self::WillRunOut => "Projected to run out before the limit resets.",
-        }
-    }
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct ThresholdCrossing {
+    pub level: ThresholdLevel,
+    pub threshold: u8,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
-pub struct PaceAlert {
-    pub milestone: Milestone,
+pub struct ThresholdAlert {
     pub provider: String,
     pub metric: String,
-    metric_id: String,
-    previous_severity: Option<PaceSeverity>,
-    previous_was_under_ten: bool,
+    pub level: ThresholdLevel,
+    pub threshold: u8,
+    pub message: String,
+    claim: ThresholdNotificationClaim,
 }
 
-#[derive(Debug, Clone, Default)]
-struct NotificationState {
-    resets_at: Option<DateTime<Utc>>,
-    fired: HashSet<Milestone>,
-    previous: Option<PaceSeverity>,
-    was_under_ten: bool,
-    primed: bool,
-}
-
-#[derive(Default)]
 pub struct NotificationEvaluator {
-    states: Mutex<HashMap<String, NotificationState>>,
+    storage: Arc<Storage>,
 }
 
 impl NotificationEvaluator {
-    pub fn prune(&self, settings: &AppSettings) {
-        let active = settings
-            .providers
-            .iter()
-            .filter(|provider| provider.enabled)
-            .flat_map(|provider| {
-                provider
-                    .metrics
-                    .iter()
-                    .filter(|metric| metric.enabled)
-                    .map(|metric| metric.id.clone())
-            })
-            .collect::<HashSet<_>>();
-        if let Ok(mut states) = self.states.lock() {
-            states.retain(|metric_id, _| active.contains(metric_id));
-        }
+    pub fn new(storage: Arc<Storage>) -> Self {
+        Self { storage }
     }
 
-    pub fn rollback(&self, alerts: &[PaceAlert]) {
-        let Ok(mut states) = self.states.lock() else {
-            return;
-        };
+    pub fn rollback(&self, alerts: &[ThresholdAlert]) {
         for alert in alerts {
-            let Some(state) = states.get_mut(&alert.metric_id) else {
-                continue;
-            };
-            state.fired.remove(&alert.milestone);
-            if alert.milestone == Milestone::AlmostOut {
-                state.was_under_ten = alert.previous_was_under_ten;
-            } else {
-                state.previous = alert.previous_severity;
+            if self
+                .storage
+                .rollback_notification_threshold(&alert.claim)
+                .is_err()
+            {
+                crate::app_error!(
+                    "notifications",
+                    "failed notification claim could not be rolled back"
+                );
             }
         }
     }
@@ -208,7 +179,7 @@ impl NotificationEvaluator {
         settings: &AppSettings,
         registry: &ProviderRegistry,
         now: DateTime<Utc>,
-    ) -> Vec<PaceAlert> {
+    ) -> Vec<ThresholdAlert> {
         let Some(provider) = settings
             .providers
             .iter()
@@ -225,11 +196,20 @@ impl NotificationEvaluator {
             .filter(|metric| metric.enabled)
             .map(|metric| metric.id.as_str())
             .collect::<HashSet<_>>();
-        let Ok(mut states) = self.states.lock() else {
-            return Vec::new();
-        };
+        let thresholds = settings
+            .provider_notification_thresholds
+            .get(&snapshot.provider_id)
+            .copied()
+            .unwrap_or(settings.notification_thresholds)
+            .normalized();
+        let provider_name = settings
+            .provider_display_name(provider_definition)
+            .to_owned();
         let mut alerts = Vec::new();
         for window in &snapshot.quotas {
+            let Some(resets_at) = window.resets_at.filter(|reset| *reset > now) else {
+                continue;
+            };
             let Some(metric_definition) = provider_definition.metrics.iter().find(|metric| {
                 matches!(
                     &metric.source,
@@ -243,143 +223,114 @@ impl NotificationEvaluator {
             if !enabled.contains(metric_definition.id.as_str()) {
                 continue;
             }
-            let metric_id = metric_definition.id.clone();
-            let is_session_window = metric_definition.source.session_window();
-            let projection = project(window, now, is_session_window);
-            let state = states.entry(metric_id.clone()).or_default();
-            let previous_severity = state.previous;
-            let previous_was_under_ten = state.was_under_ten;
-            let mut new_alerts = transition(
-                state,
-                projection.severity,
-                100.0 - window.used_percent.clamp(0.0, 100.0),
-                window.resets_at,
-                &settings.notifications,
-                &window.label,
-            );
-            for alert in &mut new_alerts {
-                alert.provider = settings
-                    .provider_display_name(provider_definition)
-                    .to_owned();
-                alert.metric_id.clone_from(&metric_id);
-                alert.previous_severity = previous_severity;
-                alert.previous_was_under_ten = previous_was_under_ten;
-            }
-            alerts.extend(new_alerts);
+            let Some(crossing) =
+                highest_crossed_threshold(window.used_percent, thresholds, &settings.notifications)
+            else {
+                continue;
+            };
+            let claim = match self.storage.claim_notification_threshold(
+                &metric_definition.id,
+                resets_at.timestamp_millis(),
+                crossing.threshold,
+            ) {
+                Ok(Some(claim)) => claim,
+                Ok(None) => continue,
+                Err(_) => {
+                    crate::app_error!("notifications", "notification state could not be persisted");
+                    continue;
+                }
+            };
+            alerts.push(ThresholdAlert {
+                provider: provider_name.clone(),
+                metric: metric_definition.label.clone(),
+                level: crossing.level,
+                threshold: crossing.threshold,
+                message: alert_message(&provider_name, crossing, resets_at, settings.time_format),
+                claim,
+            });
         }
         alerts
     }
 }
 
-fn transition(
-    state: &mut NotificationState,
-    severity: PaceSeverity,
-    remaining_percent: f64,
-    resets_at: Option<DateTime<Utc>>,
+pub fn highest_crossed_threshold(
+    used_percent: f64,
+    thresholds: NotificationThresholds,
     toggles: &NotificationPreferences,
-    metric: &str,
-) -> Vec<PaceAlert> {
-    let severity = match severity {
-        PaceSeverity::Spent => PaceSeverity::RunningOut,
-        value => value,
-    };
-    if reset_advanced(resets_at, state.resets_at) {
-        state.fired.clear();
-        state.previous = None;
-        state.was_under_ten = false;
+) -> Option<ThresholdCrossing> {
+    if !used_percent.is_finite() {
+        return None;
     }
-    state.resets_at = resets_at.or(state.resets_at);
-    if !state.primed {
-        state.primed = true;
-        state.previous = (severity != PaceSeverity::Untracked).then_some(severity);
-        state.was_under_ten = remaining_percent < 10.0;
-        return Vec::new();
-    }
-
-    let mut milestones = Vec::new();
-    let previous = state.previous;
-    if severity != PaceSeverity::Untracked {
-        if severity == PaceSeverity::Close
-            && previous.is_none_or(|value| value < PaceSeverity::Close)
-            && toggles.cutting_it_close
-            && !state.fired.contains(&Milestone::CuttingItClose)
-        {
-            milestones.push(Milestone::CuttingItClose);
-        }
-        if severity >= PaceSeverity::RunningOut
-            && previous.is_none_or(|value| value < PaceSeverity::RunningOut)
-            && toggles.will_run_out
-            && !state.fired.contains(&Milestone::WillRunOut)
-        {
-            milestones.push(Milestone::WillRunOut);
-        }
-        if previous.is_some_and(|value| severity < value) {
-            if severity <= PaceSeverity::Healthy {
-                state.fired.remove(&Milestone::CuttingItClose);
-            }
-            if severity <= PaceSeverity::Close {
-                state.fired.remove(&Milestone::WillRunOut);
-            }
-        }
-        if previous.is_some_and(|value| severity <= value) || !milestones.is_empty() {
-            state.previous = Some(severity);
-        }
-    }
-
-    let under_ten = remaining_percent < 10.0;
-    if under_ten
-        && !state.was_under_ten
-        && toggles.almost_out
-        && !state.fired.contains(&Milestone::AlmostOut)
-    {
-        milestones.push(Milestone::AlmostOut);
-    }
-    if !under_ten {
-        state.fired.remove(&Milestone::AlmostOut);
-    }
-    if !under_ten || milestones.contains(&Milestone::AlmostOut) {
-        state.was_under_ten = under_ten;
-    }
-    for milestone in &milestones {
-        state.fired.insert(*milestone);
-    }
-    milestones
-        .into_iter()
-        .map(|milestone| PaceAlert {
-            milestone,
-            provider: String::new(),
-            metric: metric.into(),
-            metric_id: String::new(),
-            previous_severity: None,
-            previous_was_under_ten: false,
-        })
-        .collect()
+    let thresholds = thresholds.normalized();
+    [
+        (
+            ThresholdLevel::Capped,
+            thresholds.capped,
+            toggles.will_run_out,
+        ),
+        (
+            ThresholdLevel::Critical,
+            thresholds.critical,
+            toggles.cutting_it_close,
+        ),
+        (
+            ThresholdLevel::Warning,
+            thresholds.warning,
+            toggles.almost_out,
+        ),
+    ]
+    .into_iter()
+    .find(|(_, threshold, enabled)| *enabled && used_percent >= f64::from(*threshold))
+    .map(|(level, threshold, _)| ThresholdCrossing { level, threshold })
 }
 
-fn reset_advanced(current: Option<DateTime<Utc>>, previous: Option<DateTime<Utc>>) -> bool {
-    match (current, previous) {
-        (Some(_), None) => true,
-        (Some(current), Some(previous)) => {
-            current.signed_duration_since(previous).num_milliseconds() > 1_000
+fn alert_message(
+    provider: &str,
+    crossing: ThresholdCrossing,
+    resets_at: DateTime<Utc>,
+    time_format: TimeFormatPreference,
+) -> String {
+    match crossing.level {
+        ThresholdLevel::Warning => {
+            format!("{provider} at {}%. Pace yourself.", crossing.threshold)
         }
-        _ => false,
+        ThresholdLevel::Critical => format!("{}%. Redlining.", crossing.threshold),
+        ThresholdLevel::Capped => {
+            format!("Capped. Back at {}.", reset_time(resets_at, time_format))
+        }
+    }
+}
+
+fn reset_time(resets_at: DateTime<Utc>, time_format: TimeFormatPreference) -> String {
+    let local = resets_at.with_timezone(&chrono::Local);
+    if time_format == TimeFormatPreference::TwelveHour {
+        local
+            .format("%I:%M %p")
+            .to_string()
+            .trim_start_matches('0')
+            .to_owned()
+    } else {
+        local.format("%H:%M").to_string()
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use chrono::{Duration, TimeZone, Utc};
+    use tempfile::tempdir;
 
     use super::{
-        project, transition, Milestone, NotificationEvaluator, NotificationState, PaceAlert,
-        PaceSeverity,
+        highest_crossed_threshold, project, NotificationEvaluator, PaceSeverity, ThresholdLevel,
     };
     use crate::models::{
         AppSettings, MetricDefinition, MetricLayout, MetricSection, MetricSource,
-        NotificationPreferences, ProviderDefinition, ProviderLayout, ProviderSnapshot, QuotaWindow,
-        UsageHistory,
+        NotificationPreferences, NotificationThresholds, ProviderDefinition, ProviderLayout,
+        ProviderSnapshot, QuotaWindow, UsageHistory,
     };
     use crate::providers::ProviderRegistry;
+    use crate::storage::Storage;
 
     fn window(used: f64, elapsed_fraction: f64) -> QuotaWindow {
         let now = Utc.timestamp_opt(1_800_000_000, 0).unwrap();
@@ -481,180 +432,7 @@ mod tests {
         assert_eq!(project(&dollars, now, false).severity, PaceSeverity::Spent);
     }
 
-    #[test]
-    fn notifications_prime_then_fire_once_on_worsening() {
-        let toggles = NotificationPreferences {
-            cutting_it_close: true,
-            will_run_out: true,
-            almost_out: true,
-        };
-        let reset = Some(Utc.timestamp_opt(1_800_010_000, 0).unwrap());
-        let mut state = NotificationState::default();
-        assert!(transition(
-            &mut state,
-            PaceSeverity::Healthy,
-            50.0,
-            reset,
-            &toggles,
-            "Weekly"
-        )
-        .is_empty());
-        let first = transition(
-            &mut state,
-            PaceSeverity::Close,
-            8.0,
-            reset,
-            &toggles,
-            "Weekly",
-        );
-        assert_eq!(first.len(), 2);
-        assert!(transition(
-            &mut state,
-            PaceSeverity::Close,
-            8.0,
-            reset,
-            &toggles,
-            "Weekly"
-        )
-        .is_empty());
-    }
-
-    #[test]
-    fn a_later_reset_window_rearms_notifications() {
-        let toggles = NotificationPreferences {
-            cutting_it_close: true,
-            will_run_out: true,
-            almost_out: false,
-        };
-        let reset = Utc.timestamp_opt(1_800_010_000, 0).unwrap();
-        let mut state = NotificationState::default();
-        transition(
-            &mut state,
-            PaceSeverity::Healthy,
-            50.0,
-            Some(reset),
-            &toggles,
-            "Weekly",
-        );
-        assert_eq!(
-            transition(
-                &mut state,
-                PaceSeverity::Close,
-                8.0,
-                Some(reset),
-                &toggles,
-                "Weekly"
-            )
-            .len(),
-            1
-        );
-        assert!(transition(
-            &mut state,
-            PaceSeverity::Close,
-            8.0,
-            Some(reset),
-            &toggles,
-            "Weekly"
-        )
-        .is_empty());
-        let next_reset = reset + Duration::hours(1);
-        assert_eq!(
-            transition(
-                &mut state,
-                PaceSeverity::Close,
-                8.0,
-                Some(next_reset),
-                &toggles,
-                "Weekly"
-            )
-            .len(),
-            1
-        );
-    }
-
-    #[test]
-    fn disabled_worsening_is_not_consumed_from_an_untracked_baseline() {
-        let reset = Some(Utc.timestamp_opt(1_800_010_000, 0).unwrap());
-        let mut state = NotificationState::default();
-        let disabled = NotificationPreferences::default();
-        transition(
-            &mut state,
-            PaceSeverity::Untracked,
-            50.0,
-            reset,
-            &disabled,
-            "Weekly",
-        );
-        assert!(transition(
-            &mut state,
-            PaceSeverity::Close,
-            20.0,
-            reset,
-            &disabled,
-            "Weekly",
-        )
-        .is_empty());
-        assert_eq!(state.previous, None);
-
-        let enabled = NotificationPreferences {
-            cutting_it_close: true,
-            ..NotificationPreferences::default()
-        };
-        assert_eq!(
-            transition(
-                &mut state,
-                PaceSeverity::Close,
-                20.0,
-                reset,
-                &enabled,
-                "Weekly",
-            )
-            .len(),
-            1
-        );
-    }
-
-    #[test]
-    fn failed_delivery_rolls_back_the_consumed_transition() {
-        let evaluator = NotificationEvaluator::default();
-        evaluator.states.lock().unwrap().insert(
-            "codex.weekly".into(),
-            NotificationState {
-                fired: [Milestone::WillRunOut].into_iter().collect(),
-                previous: Some(PaceSeverity::RunningOut),
-                was_under_ten: true,
-                primed: true,
-                ..NotificationState::default()
-            },
-        );
-        evaluator.rollback(&[
-            PaceAlert {
-                milestone: Milestone::WillRunOut,
-                provider: "Codex".into(),
-                metric: "Weekly".into(),
-                metric_id: "codex.weekly".into(),
-                previous_severity: Some(PaceSeverity::Healthy),
-                previous_was_under_ten: false,
-            },
-            PaceAlert {
-                milestone: Milestone::AlmostOut,
-                provider: "Codex".into(),
-                metric: "Weekly".into(),
-                metric_id: "codex.weekly".into(),
-                previous_severity: Some(PaceSeverity::Healthy),
-                previous_was_under_ten: false,
-            },
-        ]);
-
-        let states = evaluator.states.lock().unwrap();
-        let state = states.get("codex.weekly").unwrap();
-        assert!(state.fired.is_empty());
-        assert_eq!(state.previous, Some(PaceSeverity::Healthy));
-        assert!(!state.was_under_ten);
-    }
-
-    #[test]
-    fn evaluator_resolves_metric_identity_from_registry_metadata() {
+    fn threshold_fixture() -> (ProviderRegistry, AppSettings, ProviderSnapshot) {
         let registry = ProviderRegistry::from_definitions(vec![ProviderDefinition {
             id: "custom".into(),
             display_name: "Custom Provider".into(),
@@ -663,17 +441,17 @@ mod tests {
             local_usage_source_note: None,
             links: vec![],
             metrics: vec![MetricDefinition::new(
-                "custom.rolling",
-                "Rolling",
+                "custom.weekly",
+                "Weekly",
                 MetricSource::Quota {
-                    source_id: "bucket".into(),
-                    session_window: true,
+                    source_id: "weekly".into(),
+                    session_window: false,
                 },
                 true,
                 true,
                 MetricSection::AlwaysVisible,
-                true,
-                Some("R"),
+                false,
+                Some("W"),
                 None,
             )],
         }])
@@ -685,116 +463,29 @@ mod tests {
                 detected: true,
                 expanded: false,
                 metrics: vec![MetricLayout {
-                    id: "custom.rolling".into(),
+                    id: "custom.weekly".into(),
                     enabled: true,
                     section: MetricSection::AlwaysVisible,
-                    pinned: true,
+                    pinned: false,
                 }],
             }],
+            notifications: NotificationPreferences {
+                almost_out: true,
+                cutting_it_close: true,
+                will_run_out: true,
+            },
             ..AppSettings::default()
         };
+        let now = Utc.timestamp_opt(1_800_000_000, 0).unwrap();
         let snapshot = ProviderSnapshot {
             provider_id: "custom".into(),
             plan: None,
             quotas: vec![QuotaWindow {
-                id: "bucket".into(),
-                label: "Rolling".into(),
-                used_percent: 25.0,
-                resets_at: None,
-                period_seconds: 18_000,
-                format: crate::models::QuotaFormat::Percent,
-                used_value: None,
-                limit_value: None,
-                unit: None,
-                estimated: false,
-                source_note: None,
-            }],
-            value_metrics: Vec::new(),
-            status_metrics: Vec::new(),
-            notices: Vec::new(),
-            usage: UsageHistory::default(),
-            warnings: Vec::new(),
-            refreshed_at: Utc::now(),
-        };
-        let evaluator = NotificationEvaluator::default();
-
-        assert!(evaluator
-            .evaluate(&snapshot, &settings, &registry, Utc::now())
-            .is_empty());
-        let states = evaluator.states.lock().unwrap();
-        assert!(states.contains_key("custom.rolling"));
-        assert!(!states.contains_key("custom.bucket"));
-    }
-
-    #[test]
-    fn evaluator_preserves_quota_state_missing_from_a_successful_snapshot() {
-        let quota_metric = |id: &str, source_id: &str, label: &str| {
-            MetricDefinition::new(
-                id,
-                label,
-                MetricSource::Quota {
-                    source_id: source_id.into(),
-                    session_window: false,
-                },
-                true,
-                true,
-                MetricSection::AlwaysVisible,
-                false,
-                Some(label),
-                None,
-            )
-        };
-        let registry = ProviderRegistry::from_definitions(vec![ProviderDefinition {
-            id: "switching".into(),
-            display_name: "Switching".into(),
-            short_name: "Sw".into(),
-            fallback_enabled: true,
-            local_usage_source_note: None,
-            links: vec![],
-            metrics: vec![
-                quota_metric("switching.session", "session", "S"),
-                quota_metric("switching.weekly", "weekly", "W"),
-            ],
-        }])
-        .unwrap();
-        let settings = AppSettings {
-            providers: vec![ProviderLayout {
-                id: "switching".into(),
-                enabled: true,
-                detected: true,
-                expanded: false,
-                metrics: vec![
-                    MetricLayout {
-                        id: "switching.session".into(),
-                        enabled: true,
-                        section: MetricSection::AlwaysVisible,
-                        pinned: false,
-                    },
-                    MetricLayout {
-                        id: "switching.weekly".into(),
-                        enabled: true,
-                        section: MetricSection::AlwaysVisible,
-                        pinned: false,
-                    },
-                ],
-            }],
-            notifications: NotificationPreferences {
-                will_run_out: true,
-                ..NotificationPreferences::default()
-            },
-            ..AppSettings::default()
-        };
-        let now = Utc::now();
-        let resets_at = now + Duration::hours(4);
-        let snapshot = |source_id: &str, label: &str, used_percent: f64| ProviderSnapshot {
-            provider_id: "switching".into(),
-            plan: None,
-            quotas: vec![QuotaWindow {
-                id: source_id.into(),
-                label: label.into(),
-                used_percent,
-                resets_at: Some(resets_at),
-                period_seconds: 18_000,
+                id: "weekly".into(),
+                label: "Weekly".into(),
+                used_percent: 80.0,
+                resets_at: Some(now + Duration::hours(2)),
+                period_seconds: 604_800,
                 format: crate::models::QuotaFormat::Percent,
                 used_value: None,
                 limit_value: None,
@@ -809,78 +500,131 @@ mod tests {
             warnings: Vec::new(),
             refreshed_at: now,
         };
-        let evaluator = NotificationEvaluator::default();
-
-        evaluator.evaluate(
-            &snapshot("session", "Session", 10.0),
-            &settings,
-            &registry,
-            now,
-        );
-        assert!(evaluator
-            .states
-            .lock()
-            .unwrap()
-            .contains_key("switching.session"));
-
-        evaluator.evaluate(
-            &snapshot("weekly", "Weekly", 20.0),
-            &settings,
-            &registry,
-            now,
-        );
-        let states = evaluator.states.lock().unwrap();
-        assert!(states.contains_key("switching.session"));
-        assert!(states.contains_key("switching.weekly"));
-        drop(states);
-
-        let alerts = evaluator.evaluate(
-            &snapshot("session", "Session", 80.0),
-            &settings,
-            &registry,
-            now,
-        );
-        assert_eq!(alerts.len(), 1);
-        assert_eq!(alerts[0].milestone, Milestone::WillRunOut);
+        (registry, settings, snapshot)
     }
 
     #[test]
-    fn pruning_drops_disabled_and_removed_metric_state() {
-        let evaluator = NotificationEvaluator::default();
-        let mut settings = AppSettings {
-            providers: vec![ProviderLayout {
-                id: "codex".into(),
-                enabled: true,
-                detected: true,
-                expanded: false,
-                metrics: vec![MetricLayout {
-                    id: "codex.weekly".into(),
-                    enabled: true,
-                    section: MetricSection::AlwaysVisible,
-                    pinned: false,
-                }],
-            }],
-            ..AppSettings::default()
+    fn threshold_selection_chooses_the_highest_enabled_crossing() {
+        let all = NotificationPreferences {
+            almost_out: true,
+            cutting_it_close: true,
+            will_run_out: true,
         };
-        evaluator.states.lock().unwrap().extend([
-            ("codex.weekly".into(), NotificationState::default()),
-            ("codex.session".into(), NotificationState::default()),
-        ]);
+        assert_eq!(
+            highest_crossed_threshold(99.0, NotificationThresholds::default(), &all)
+                .unwrap()
+                .level,
+            ThresholdLevel::Critical
+        );
+        assert_eq!(
+            highest_crossed_threshold(100.0, NotificationThresholds::default(), &all)
+                .unwrap()
+                .level,
+            ThresholdLevel::Capped
+        );
+        let without_cap = NotificationPreferences {
+            will_run_out: false,
+            ..all
+        };
+        assert_eq!(
+            highest_crossed_threshold(100.0, NotificationThresholds::default(), &without_cap)
+                .unwrap()
+                .level,
+            ThresholdLevel::Critical
+        );
+        assert!(highest_crossed_threshold(79.9, NotificationThresholds::default(), &all).is_none());
+    }
 
-        evaluator.prune(&settings);
+    #[test]
+    fn evaluator_fires_once_rearms_on_reset_and_rolls_back_failed_delivery() {
+        let directory = tempdir().unwrap();
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
+        let evaluator = NotificationEvaluator::new(storage);
+        let (registry, settings, mut snapshot) = threshold_fixture();
+        let now = Utc.timestamp_opt(1_800_000_000, 0).unwrap();
+
+        let first = evaluator.evaluate(&snapshot, &settings, &registry, now);
+        assert_eq!(first.len(), 1);
+        assert_eq!(first[0].message, "Custom Provider at 80%. Pace yourself.");
+        assert!(evaluator
+            .evaluate(&snapshot, &settings, &registry, now)
+            .is_empty());
+
+        evaluator.rollback(&first);
         assert_eq!(
             evaluator
-                .states
-                .lock()
-                .unwrap()
-                .keys()
-                .cloned()
-                .collect::<Vec<_>>(),
-            vec!["codex.weekly"]
+                .evaluate(&snapshot, &settings, &registry, now)
+                .len(),
+            1
         );
+        snapshot.quotas[0].resets_at = Some(now + Duration::hours(3));
+        assert_eq!(
+            evaluator
+                .evaluate(&snapshot, &settings, &registry, now)
+                .len(),
+            1
+        );
+    }
 
-        settings.providers[0].enabled = false;
-        evaluator.prune(&settings);
-        assert!(evaluator.states.lock().unwrap().is_empty());
+    #[test]
+    fn evaluator_advances_each_threshold_once_with_the_expected_voice() {
+        let directory = tempdir().unwrap();
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
+        let evaluator = NotificationEvaluator::new(storage);
+        let (registry, settings, mut snapshot) = threshold_fixture();
+        let now = Utc.timestamp_opt(1_800_000_000, 0).unwrap();
+
+        let warning = evaluator.evaluate(&snapshot, &settings, &registry, now);
+        assert_eq!(warning[0].message, "Custom Provider at 80%. Pace yourself.");
+
+        snapshot.quotas[0].used_percent = 95.0;
+        let critical = evaluator.evaluate(&snapshot, &settings, &registry, now);
+        assert_eq!(critical.len(), 1);
+        assert_eq!(critical[0].message, "95%. Redlining.");
+        assert!(evaluator
+            .evaluate(&snapshot, &settings, &registry, now)
+            .is_empty());
+
+        snapshot.quotas[0].used_percent = 100.0;
+        let capped = evaluator.evaluate(&snapshot, &settings, &registry, now);
+        assert_eq!(capped.len(), 1);
+        assert!(capped[0].message.starts_with("Capped. Back at "));
+        assert!(capped[0].message.ends_with('.'));
+        assert!(evaluator
+            .evaluate(&snapshot, &settings, &registry, now)
+            .is_empty());
+    }
+
+    #[test]
+    fn evaluator_skips_unknown_resets_disabled_metrics_and_uses_provider_overrides() {
+        let directory = tempdir().unwrap();
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
+        let evaluator = NotificationEvaluator::new(storage);
+        let (registry, mut settings, mut snapshot) = threshold_fixture();
+        let now = Utc.timestamp_opt(1_800_000_000, 0).unwrap();
+        snapshot.quotas[0].resets_at = None;
+        assert!(evaluator
+            .evaluate(&snapshot, &settings, &registry, now)
+            .is_empty());
+
+        snapshot.quotas[0].resets_at = Some(now + Duration::hours(2));
+        settings.providers[0].metrics[0].enabled = false;
+        assert!(evaluator
+            .evaluate(&snapshot, &settings, &registry, now)
+            .is_empty());
+
+        settings.providers[0].metrics[0].enabled = true;
+        settings.provider_notification_thresholds.insert(
+            "custom".into(),
+            NotificationThresholds {
+                warning: 70,
+                critical: 90,
+                capped: 99,
+            },
+        );
+        snapshot.quotas[0].used_percent = 75.0;
+        let alerts = evaluator.evaluate(&snapshot, &settings, &registry, now);
+        assert_eq!(alerts[0].threshold, 70);
+        assert_eq!(alerts[0].message, "Custom Provider at 70%. Pace yourself.");
     }
 }

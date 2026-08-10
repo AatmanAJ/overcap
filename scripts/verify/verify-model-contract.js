@@ -33,6 +33,7 @@ const contracts = [
   'MetricLayout',
   'ProviderLayout',
   'NotificationPreferences',
+  'NotificationThresholds',
   'AppSettings',
   'SettingsViewState',
   'BootstrapState',

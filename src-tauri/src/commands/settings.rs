@@ -174,6 +174,7 @@ pub async fn reset_customization(
         .map(|provider| provider.id.clone())
         .collect::<HashSet<_>>();
     next.providers = settings.default_settings(&detected_before_reset).providers;
+    next.provider_notification_thresholds.clear();
     next.detection_notice_dismissed = false;
     let next = settings.update(next)?;
     tray_presentation::update(&app, &service.state(), &next, settings.registry());

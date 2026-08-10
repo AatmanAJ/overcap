@@ -36,6 +36,20 @@ pub struct ProviderAccountUpdate {
     pub payload: String,
 }
 
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ThresholdNotificationState {
+    pub reset_at_millis: i64,
+    pub last_fired_threshold: u8,
+}
+
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct ThresholdNotificationClaim {
+    pub metric_id: String,
+    pub reset_at_millis: i64,
+    pub threshold: u8,
+    previous: Option<ThresholdNotificationState>,
+}
+
 impl Storage {
     pub fn open(path: &Path) -> Result<Self, StorageError> {
         if let Some(parent) = path.parent() {
@@ -86,6 +100,11 @@ impl Storage {
                payload TEXT NOT NULL,
                PRIMARY KEY(provider_family, identity_key),
                UNIQUE(provider_family, provider_id)
+             );
+             CREATE TABLE IF NOT EXISTS threshold_notification_state (
+               metric_id TEXT PRIMARY KEY,
+               reset_at_millis INTEGER NOT NULL,
+               last_fired_threshold INTEGER NOT NULL
              );",
         )?;
         if !Self::has_column(&connection, "log_file_cache", "modified_nanos")? {
@@ -330,6 +349,131 @@ impl Storage {
         Ok(())
     }
 
+    pub fn claim_notification_threshold(
+        &self,
+        metric_id: &str,
+        reset_at_millis: i64,
+        threshold: u8,
+    ) -> Result<Option<ThresholdNotificationClaim>, StorageError> {
+        let mut connection = self.connection()?;
+        let transaction = connection.transaction()?;
+        let previous = transaction
+            .query_row(
+                "SELECT reset_at_millis, last_fired_threshold
+                 FROM threshold_notification_state
+                 WHERE metric_id = ?1",
+                [metric_id],
+                |row| {
+                    Ok(ThresholdNotificationState {
+                        reset_at_millis: row.get(0)?,
+                        last_fired_threshold: row.get(1)?,
+                    })
+                },
+            )
+            .optional()?;
+        const RESET_DRIFT_TOLERANCE_MILLIS: u64 = 1_000;
+        let effective_reset_at_millis = match previous.as_ref() {
+            Some(state)
+                if state.reset_at_millis.abs_diff(reset_at_millis)
+                    <= RESET_DRIFT_TOLERANCE_MILLIS =>
+            {
+                if state.last_fired_threshold >= threshold {
+                    return Ok(None);
+                }
+                state.reset_at_millis
+            }
+            Some(state) if state.reset_at_millis > reset_at_millis => return Ok(None),
+            _ => reset_at_millis,
+        };
+        transaction.execute(
+            "INSERT INTO threshold_notification_state(
+               metric_id, reset_at_millis, last_fired_threshold
+             ) VALUES (?1, ?2, ?3)
+             ON CONFLICT(metric_id) DO UPDATE SET
+               reset_at_millis = excluded.reset_at_millis,
+               last_fired_threshold = excluded.last_fired_threshold",
+            params![metric_id, effective_reset_at_millis, threshold],
+        )?;
+        transaction.commit()?;
+        Ok(Some(ThresholdNotificationClaim {
+            metric_id: metric_id.to_owned(),
+            reset_at_millis: effective_reset_at_millis,
+            threshold,
+            previous,
+        }))
+    }
+
+    pub fn rollback_notification_threshold(
+        &self,
+        claim: &ThresholdNotificationClaim,
+    ) -> Result<bool, StorageError> {
+        let mut connection = self.connection()?;
+        let transaction = connection.transaction()?;
+        let current = transaction
+            .query_row(
+                "SELECT reset_at_millis, last_fired_threshold
+                 FROM threshold_notification_state
+                 WHERE metric_id = ?1",
+                [&claim.metric_id],
+                |row| {
+                    Ok(ThresholdNotificationState {
+                        reset_at_millis: row.get(0)?,
+                        last_fired_threshold: row.get(1)?,
+                    })
+                },
+            )
+            .optional()?;
+        if current
+            != Some(ThresholdNotificationState {
+                reset_at_millis: claim.reset_at_millis,
+                last_fired_threshold: claim.threshold,
+            })
+        {
+            return Ok(false);
+        }
+        if let Some(previous) = &claim.previous {
+            transaction.execute(
+                "UPDATE threshold_notification_state
+                 SET reset_at_millis = ?2, last_fired_threshold = ?3
+                 WHERE metric_id = ?1",
+                params![
+                    claim.metric_id,
+                    previous.reset_at_millis,
+                    previous.last_fired_threshold
+                ],
+            )?;
+        } else {
+            transaction.execute(
+                "DELETE FROM threshold_notification_state WHERE metric_id = ?1",
+                [&claim.metric_id],
+            )?;
+        }
+        transaction.commit()?;
+        Ok(true)
+    }
+
+    #[cfg(test)]
+    fn load_notification_threshold_state(
+        &self,
+        metric_id: &str,
+    ) -> Result<Option<ThresholdNotificationState>, StorageError> {
+        self.connection()?
+            .query_row(
+                "SELECT reset_at_millis, last_fired_threshold
+                 FROM threshold_notification_state
+                 WHERE metric_id = ?1",
+                [metric_id],
+                |row| {
+                    Ok(ThresholdNotificationState {
+                        reset_at_millis: row.get(0)?,
+                        last_fired_threshold: row.get(1)?,
+                    })
+                },
+            )
+            .optional()
+            .map_err(StorageError::from)
+    }
+
     pub fn load_provider_environment(
         &self,
     ) -> Result<Option<HashMap<String, String>>, StorageError> {
@@ -481,7 +625,7 @@ mod tests {
     use rusqlite::Connection;
     use tempfile::tempdir;
 
-    use super::{ProviderAccountUpdate, Storage};
+    use super::{ProviderAccountUpdate, Storage, ThresholdNotificationState};
     use crate::models::{
         AppSettings, DailyUsage, ModelUsageBreakdown, ModelUsageEntry, ProviderSnapshot,
         QuotaFormat, QuotaWindow, UsageHistory, UsagePeriod,
@@ -716,6 +860,101 @@ mod tests {
         };
         storage.save_settings(&settings).unwrap();
         assert_eq!(storage.load_settings().unwrap(), Some(settings));
+    }
+
+    #[test]
+    fn threshold_claims_persist_and_rearm_only_for_a_later_reset_window() {
+        let directory = tempdir().unwrap();
+        let path = directory.path().join("overcap.db");
+        let first = Storage::open(&path).unwrap();
+        assert!(first
+            .claim_notification_threshold("codex.weekly", 10_000, 80)
+            .unwrap()
+            .is_some());
+        assert!(first
+            .claim_notification_threshold("codex.weekly", 10_000, 80)
+            .unwrap()
+            .is_none());
+        assert!(first
+            .claim_notification_threshold("codex.weekly", 11_000, 80)
+            .unwrap()
+            .is_none());
+        assert!(first
+            .claim_notification_threshold("codex.weekly", 9_000, 95)
+            .unwrap()
+            .is_some());
+        assert!(first
+            .claim_notification_threshold("codex.weekly", 10_000, 95)
+            .unwrap()
+            .is_none());
+        assert!(first
+            .claim_notification_threshold("codex.weekly", 10_000, 100)
+            .unwrap()
+            .is_some());
+        drop(first);
+
+        let reopened = Storage::open(&path).unwrap();
+        assert!(reopened
+            .claim_notification_threshold("codex.weekly", 10_000, 100)
+            .unwrap()
+            .is_none());
+        assert!(reopened
+            .claim_notification_threshold("codex.weekly", 9_000, 100)
+            .unwrap()
+            .is_none());
+        assert!(reopened
+            .claim_notification_threshold("codex.weekly", 20_000, 80)
+            .unwrap()
+            .is_some());
+        assert_eq!(
+            reopened
+                .load_notification_threshold_state("codex.weekly")
+                .unwrap(),
+            Some(ThresholdNotificationState {
+                reset_at_millis: 20_000,
+                last_fired_threshold: 80,
+            })
+        );
+    }
+
+    #[test]
+    fn threshold_rollback_is_conditional_and_restores_the_previous_claim() {
+        let directory = tempdir().unwrap();
+        let storage = Storage::open(&directory.path().join("overcap.db")).unwrap();
+        storage
+            .claim_notification_threshold("codex.weekly", 10_000, 80)
+            .unwrap();
+        let failed = storage
+            .claim_notification_threshold("codex.weekly", 10_000, 95)
+            .unwrap()
+            .unwrap();
+        assert!(storage.rollback_notification_threshold(&failed).unwrap());
+        assert_eq!(
+            storage
+                .load_notification_threshold_state("codex.weekly")
+                .unwrap(),
+            Some(ThresholdNotificationState {
+                reset_at_millis: 10_000,
+                last_fired_threshold: 80,
+            })
+        );
+
+        let retry = storage
+            .claim_notification_threshold("codex.weekly", 10_000, 95)
+            .unwrap()
+            .unwrap();
+        storage
+            .claim_notification_threshold("codex.weekly", 10_000, 100)
+            .unwrap();
+        assert!(!storage.rollback_notification_threshold(&retry).unwrap());
+        assert_eq!(
+            storage
+                .load_notification_threshold_state("codex.weekly")
+                .unwrap()
+                .unwrap()
+                .last_fired_threshold,
+            100
+        );
     }
 
     #[test]

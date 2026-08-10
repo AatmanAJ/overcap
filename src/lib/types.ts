@@ -196,6 +196,12 @@ export interface NotificationPreferences {
   willRunOut: boolean;
 }
 
+export interface NotificationThresholds {
+  warning: number;
+  critical: number;
+  capped: number;
+}
+
 export interface AppSettings {
   schemaVersion: number;
   providers: ProviderLayout[];
@@ -217,6 +223,8 @@ export interface AppSettings {
   globalShortcut: string | null;
   logLevel: 'error' | 'warn' | 'info' | 'debug';
   notifications: NotificationPreferences;
+  notificationThresholds: NotificationThresholds;
+  providerNotificationThresholds: Record<string, NotificationThresholds>;
   totalSpendMetric: 'cost' | 'costPerMillion' | 'tokens';
   totalSpendPeriod: 'today' | 'yesterday' | 'last30Days';
   detectionNoticeDismissed: boolean;

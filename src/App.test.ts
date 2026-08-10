@@ -837,7 +837,7 @@ describe('Overcap dashboard', () => {
     const recorder = screen.getByRole('button', { name: 'Record Shortcut' });
     await fireEvent.click(recorder);
     await fireEvent.keyDown(recorder, { key: 'Q', code: 'KeyQ', ctrlKey: true, shiftKey: true });
-    await fireEvent.click(screen.getByRole('checkbox', { name: /Almost Out/ }));
+    await fireEvent.click(screen.getByRole('checkbox', { name: /80% alert/ }));
     await waitFor(() => {
       expect(mocks.invoke).toHaveBeenCalledWith(
         'save_app_settings',
@@ -847,7 +847,7 @@ describe('Overcap dashboard', () => {
       );
       expect(mocks.invoke).toHaveBeenCalledWith('request_notification_permission');
     });
-    expect(screen.getByRole('checkbox', { name: /Almost Out/ })).toBeChecked();
+    expect(screen.getByRole('checkbox', { name: /80% alert/ })).toBeChecked();
   });
 
   it('offers system settings only when enabled notifications are blocked', async () => {
