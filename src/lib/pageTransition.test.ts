@@ -1,43 +1,44 @@
 import { describe, expect, it } from 'vitest';
+import appSource from '../App.svelte?raw';
+import { snapMotion } from './motion';
 import { horizontalPageTransition, shouldSlideBetweenScreens } from './pageTransition';
 
 describe('page transition', () => {
-  const linear = (value: number) => value;
-
   function page() {
-    const element = document.createElement('div');
-    element.getBoundingClientRect = () =>
-      ({
-        width: 292,
-        height: 400,
-        x: 0,
-        y: 0,
-        top: 0,
-        right: 292,
-        bottom: 400,
-        left: 0,
-      }) as DOMRect;
-    return element;
+    return document.createElement('div');
   }
 
-  it('moves pages horizontally without fading the content', () => {
+  it('moves the incoming page by exactly 6px without fading content', () => {
     const transition = horizontalPageTransition(page(), {
       direction: 1,
-      duration: 420,
-      easing: linear,
+      ...snapMotion(false),
     });
-    expect(transition.css?.(0, 1)).toContain('translate3d(292px, 0, 0)');
+    expect(transition.duration).toBe(160);
+    expect(transition.css?.(0, 1)).toContain('translate3d(6px, 0, 0)');
     expect(transition.css?.(1, 0)).toContain('translate3d(0px, 0, 0)');
     expect(transition.css?.(0.5, 0.5)).not.toContain('opacity');
   });
 
-  it('moves the outgoing page in the opposite direction', () => {
+  it('honors reverse navigation direction', () => {
     const transition = horizontalPageTransition(page(), {
       direction: -1,
-      duration: 420,
-      easing: linear,
+      ...snapMotion(false),
     });
-    expect(transition.css?.(0, 1)).toContain('translate3d(-292px, 0, 0)');
+    expect(transition.css?.(0, 1)).toContain('translate3d(-6px, 0, 0)');
+  });
+
+  it('jumps to the settled transform under reduced motion', () => {
+    const transition = horizontalPageTransition(page(), {
+      direction: 1,
+      ...snapMotion(true),
+    });
+    expect(transition.duration).toBe(0);
+    expect(transition.css?.(0, 1)).toContain('translate3d(0px, 0, 0)');
+  });
+
+  it('hard-cuts the outgoing keyed screen instead of retaining it for an outro', () => {
+    expect(appSource).toContain('in:horizontalPageTransition');
+    expect(appSource).not.toContain('out:horizontalPageTransition');
   });
 
   it('slides every navigation inside the stable user-sized panel', () => {

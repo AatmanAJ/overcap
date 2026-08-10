@@ -36,7 +36,7 @@
   import Icon from './lib/Icon.svelte';
   import { createListenerRegistry } from './lib/listenerRegistry';
   import { emptyProviderCatalog, ProviderCatalogIndex } from './lib/metrics';
-  import { springMotion } from './lib/motion';
+  import { snapMotion } from './lib/motion';
   import OvercapMark from './lib/OvercapMark.svelte';
   import { horizontalPageTransition, shouldSlideBetweenScreens } from './lib/pageTransition';
   import { desktopPlatform, shortcutLabels } from './lib/platform';
@@ -758,11 +758,7 @@
             data-screen={screen}
             in:horizontalPageTransition={{
               direction: slideDirection,
-              ...springMotion(reducedMotion || !slidePageTransition),
-            }}
-            out:horizontalPageTransition={{
-              direction: -slideDirection,
-              ...springMotion(reducedMotion || !slidePageTransition),
+              ...snapMotion(reducedMotion || !slidePageTransition),
             }}
           >
             {#if screen === 'dashboard'}
@@ -1050,6 +1046,7 @@
       font-size: 11px;
       font-weight: 600;
       letter-spacing: 0.01em;
+      font-family: var(--font-display);
       touch-action: none;
     }
 
@@ -1098,7 +1095,7 @@
     }
 
     .floating-chrome__close:focus-visible {
-      outline: 2px solid color-mix(in srgb, var(--meter-fill) 55%, transparent);
+      outline: 2px solid var(--text);
       outline-offset: -1px;
     }
 
@@ -1128,14 +1125,6 @@
     .panel-resize-dragger:hover::after {
       width: 42px;
       background: var(--tertiary);
-    }
-
-    .panel-resize-dragger--top {
-      box-shadow: 0 10px 18px -20px rgba(0, 0, 0, 0.7);
-    }
-
-    .panel-resize-dragger--bottom {
-      box-shadow: 0 -10px 18px -20px rgba(0, 0, 0, 0.7);
     }
 
     .content {
@@ -1211,7 +1200,7 @@
       border: 1px solid var(--separator);
       border-radius: 9px;
       background: var(--tray);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
     }
 
     .options-menu button {
@@ -1260,7 +1249,7 @@
 
     .screen-header .text-button {
       justify-self: end;
-      color: var(--meter-fill);
+      color: var(--text);
       font-size: 10px;
     }
 
@@ -1310,7 +1299,7 @@
       padding: 12px 14px;
       border-top: 0;
       background: color-mix(in srgb, var(--tray) 94%, transparent);
-      box-shadow: 0 -10px 18px -18px rgba(0, 0, 0, 0.65);
+      border-top: 1px solid var(--separator);
     }
 
     .identity {
@@ -1362,7 +1351,7 @@
     }
 
     .window-mode-toggle--active {
-      color: var(--meter-fill);
+      color: var(--text);
     }
 
     .window-mode-toggle:active {
@@ -1370,7 +1359,7 @@
     }
 
     .window-mode-toggle:focus-visible {
-      outline: 2px solid color-mix(in srgb, var(--meter-fill) 55%, transparent);
+      outline: 2px solid var(--text);
       outline-offset: 1px;
     }
 
@@ -1402,7 +1391,7 @@
       color: var(--text);
       background: color-mix(in srgb, var(--card) 72%, transparent);
       font-size: 11px;
-      font-weight: 550;
+      font-weight: 500;
     }
 
     .options-menu > summary i {
@@ -1423,11 +1412,11 @@
       bottom: 34px;
       width: 172px;
       padding: 6px;
-      border: 0;
+      border: 1px solid var(--separator);
       border-radius: 10px;
-      box-shadow: 0 10px 32px rgba(0, 0, 0, 0.28);
+      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
       transform-origin: bottom right;
-      animation: menu-in 180ms ease-out both;
+      animation: menu-in var(--motion-snap) both;
     }
 
     .options-menu button {
@@ -1443,8 +1432,7 @@
       margin: 0 -14px 12px;
       padding: 0 14px;
       background: color-mix(in srgb, var(--tray) 94%, transparent);
-      box-shadow: 0 10px 18px -20px rgba(0, 0, 0, 0.8);
-      backdrop-filter: blur(18px);
+      border-bottom: 1px solid var(--separator);
     }
 
     .app-top-bar {
@@ -1554,9 +1542,9 @@
       border: 1px solid var(--separator);
       border-radius: 9px;
       background: var(--tray);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24);
+      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
       transform-origin: bottom right;
-      animation: menu-in 160ms ease-out both;
+      animation: menu-in var(--motion-snap) both;
     }
 
     .share-menu button {
@@ -1584,13 +1572,13 @@
       border-radius: 999px;
       color: var(--text);
       background: color-mix(in srgb, var(--tray) 96%, transparent);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.22);
+      box-shadow: 2px 2px 0 color-mix(in srgb, var(--text) 24%, transparent);
       font-size: 10px;
-      animation: detail-in var(--motion-spring) both;
+      animation: detail-in var(--motion-snap) both;
     }
 
     .transient-pill .symbol-icon {
-      color: #34c759;
+      color: var(--secondary);
     }
 
     .about-backdrop {
@@ -1601,7 +1589,6 @@
       background: rgba(0, 0, 0, 0.28);
       inset: 0;
       place-items: center;
-      backdrop-filter: blur(6px);
     }
 
     .about-card {
@@ -1614,14 +1601,16 @@
       border-radius: 16px;
       color: var(--text);
       background: var(--tray);
-      box-shadow: 0 18px 55px rgba(0, 0, 0, 0.35);
+      box-shadow: 4px 4px 0 color-mix(in srgb, var(--text) 24%, transparent);
       flex-direction: column;
-      animation: detail-in var(--motion-spring) both;
+      animation: detail-in var(--motion-snap) both;
     }
 
     .about-card h1 {
       margin: 10px 0 2px;
       font-size: 17px;
+      font-family: var(--font-display);
+      letter-spacing: 0.04em;
     }
 
     .about-card p,
@@ -1662,7 +1651,7 @@
     }
 
     .about-card__close:focus-visible {
-      outline: 2px solid color-mix(in srgb, var(--meter-fill) 55%, transparent);
+      outline: 2px solid var(--text);
       outline-offset: 1px;
     }
 

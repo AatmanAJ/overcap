@@ -1,8 +1,7 @@
 <script lang="ts">
   import { onDestroy } from 'svelte';
   import { flip } from 'svelte/animate';
-  import { scale, slide } from 'svelte/transition';
-  import { reorderFlip, springMotion } from './motion';
+  import { reorderFlip, snapMotion, snapScale, snapSlide } from './motion';
   import { pointerReorder } from './pointerReorder';
   import ProviderIcon from './ProviderIcon.svelte';
   import ProviderLinks from './ProviderLinks.svelte';
@@ -148,7 +147,7 @@
     if (demandMorphing) {
       demandMorphTimer = window.setTimeout(
         () => (demandMorphing = false),
-        springMotion(false).duration + 34,
+        snapMotion(false).duration + 34,
       );
     }
     onContentMorph();
@@ -386,7 +385,7 @@
 {/if}
 
 {#if !settings.detectionNoticeDismissed}
-  <section class="detection-card" out:scale={{ start: 0.95, ...springMotion(reducedMotion) }}>
+  <section class="detection-card" out:snapScale={{ start: 0.95, reducedMotion }}>
     <div>
       <strong>Welcome to Overcap</strong><span
         >We set you up with the AI tools found on your computer. Add or hide providers any time.</span
@@ -553,7 +552,7 @@
             />
           </button>
           {#if provider.expanded}
-            <div class="demand-metrics" transition:slide={springMotion(reducedMotion)}>
+            <div class="demand-metrics" transition:snapSlide={{ reducedMotion }}>
               {#each demandMetrics as metric (metric.id)}
                 <div
                   class="metric-context-target"
@@ -714,7 +713,7 @@
     .provider-header h1 {
       margin: 0;
       font-size: 14px;
-      font-weight: 650;
+      font-weight: 600;
       letter-spacing: -0.01em;
     }
 
@@ -731,7 +730,7 @@
       color: var(--warning);
       background: var(--warning-bg);
       font-size: 9px;
-      font-weight: 650;
+      font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.04em;
     }
@@ -798,6 +797,7 @@
 
     .provider-card {
       padding: 5px 12px;
+      border: 1px solid var(--separator);
       border-radius: 12px;
       background: var(--card);
     }
@@ -853,7 +853,7 @@
       width: 22px;
       height: 22px;
       grid-row: 1 / span 2;
-      color: var(--meter-fill);
+      color: var(--text);
       place-items: center;
     }
 
@@ -894,9 +894,33 @@
     }
 
     .update-actions .update-primary-action {
-      color: white;
-      background: var(--meter-fill);
+      position: relative;
+      z-index: 0;
+      overflow: hidden;
+      border-radius: 999px;
+      color: var(--action-text);
+      background: var(--action-fill);
       font-weight: 600;
+      isolation: isolate;
+    }
+
+    .update-actions .update-primary-action::before,
+    .detection-card button:not(.dismiss)::before {
+      position: absolute;
+      z-index: -1;
+      background: var(--action-hover);
+      content: '';
+      inset: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--motion-switch);
+    }
+
+    .update-actions .update-primary-action:hover::before,
+    .update-actions .update-primary-action:focus-visible::before,
+    .detection-card button:not(.dismiss):hover::before,
+    .detection-card button:not(.dismiss):focus-visible::before {
+      transform: scaleX(1);
     }
 
     .update-actions .update-release-action {
@@ -989,8 +1013,8 @@
       min-width: 8%;
       height: 100%;
       border-radius: inherit;
-      background: var(--meter-fill);
-      transition: width 160ms ease;
+      background: var(--text);
+      transition: width var(--motion-snap);
     }
 
     .detection-card div {
@@ -1011,14 +1035,18 @@
     }
 
     .detection-card button {
+      position: relative;
+      z-index: 0;
       align-self: center;
+      overflow: hidden;
       padding: 4px 8px;
       border: 0;
-      border-radius: 6px;
-      color: white;
-      background: var(--provider);
+      border-radius: 999px;
+      color: var(--action-text);
+      background: var(--action-fill);
       font-size: 10px;
       cursor: pointer;
+      isolation: isolate;
     }
 
     .detection-card .dismiss {
@@ -1110,7 +1138,7 @@
 
     .provider-card {
       padding: 5px 8px;
-      border: 0;
+      border: 1px solid var(--separator);
       border-radius: 12px;
     }
 
@@ -1122,8 +1150,8 @@
     }
 
     .detection-card button {
-      color: var(--text);
-      background: var(--button-hover);
+      color: var(--action-text);
+      background: var(--action-fill);
     }
 
     .detection-card .dismiss {
@@ -1157,7 +1185,6 @@
       cursor: grab;
       transform: translateY(-50%);
       place-items: center;
-      transition: opacity 140ms ease;
     }
 
     .metric-context-target:hover > .metric-reorder-handle {
@@ -1172,9 +1199,8 @@
       border: 1px solid var(--separator);
       border-radius: 10px;
       background: color-mix(in srgb, var(--tray) 97%, transparent);
-      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
-      backdrop-filter: blur(18px);
-      animation: menu-in 180ms ease-out both;
+      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
+      animation: menu-in var(--motion-snap) both;
     }
 
     .context-menu:focus {

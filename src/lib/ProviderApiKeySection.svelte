@@ -149,7 +149,7 @@
                   class="primary"
                   type="button"
                   disabled={!apiKey.trim() || saving}
-                  onclick={save}>{saving ? 'Saving…' : 'Save'}</button
+                  onclick={save}><span>{saving ? 'Saving…' : 'Save'}</span></button
                 >
                 {#if overrideExternal}
                   <button type="button" disabled={saving} onclick={resetEditor}>Cancel</button>
@@ -229,7 +229,7 @@
     width: 6px;
     height: 6px;
     border-radius: 50%;
-    background: #34c759;
+    background: var(--secondary);
   }
 
   .api-key-summary i.missing {
@@ -280,8 +280,9 @@
   }
 
   .api-key-input input:focus {
-    border-color: var(--meter-fill);
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--meter-fill) 20%, transparent);
+    border-color: color-mix(in srgb, var(--text) 65%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+    outline-offset: 1px;
   }
 
   .api-key-input .field-icon {
@@ -315,11 +316,32 @@
   }
 
   .api-key-actions .primary {
+    position: relative;
     min-width: 56px;
     padding-inline: 12px;
-    color: white;
-    background: var(--meter-fill);
+    overflow: hidden;
+    border-radius: 999px;
+    color: var(--action-text);
+    background: var(--action-fill);
     font-weight: 600;
+  }
+
+  .api-key-actions .primary::before {
+    position: absolute;
+    background: var(--action-hover);
+    content: '';
+    inset: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-switch);
+  }
+
+  .api-key-actions .primary > span {
+    position: relative;
+  }
+
+  .api-key-actions .primary:hover:not(:disabled)::before {
+    transform: scaleX(1);
   }
 
   .api-key-readonly .clear-icon {

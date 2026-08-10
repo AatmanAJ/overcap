@@ -78,7 +78,8 @@
   }
 
   .provider-name-card:focus-within {
-    box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--meter-fill) 65%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--text) 65%, transparent);
+    outline-offset: -1px;
   }
 
   input {

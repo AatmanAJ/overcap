@@ -52,7 +52,7 @@
     .provider-notice-copy strong {
       color: var(--text);
       font-size: 11px;
-      font-weight: 650;
+      font-weight: 600;
       line-height: 14px;
     }
 

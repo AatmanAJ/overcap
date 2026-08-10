@@ -173,25 +173,25 @@
       min-height: 2px;
       flex: 1;
       border-radius: 1px;
-      background: var(--meter-fill);
+      background: var(--secondary);
       transition:
         height var(--motion-switch),
-        opacity var(--motion-switch),
         transform var(--motion-switch);
     }
 
     .trend-bars:hover span {
-      opacity: 0.55;
+      background: var(--tertiary);
     }
 
     .trend-bars span:hover {
-      opacity: 1;
+      background: var(--secondary);
       transform: scaleX(1.35);
     }
 
     .trend-bars--active {
       background: var(--button-hover);
-      box-shadow: 0 0 0 4px var(--button-hover);
+      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+      outline-offset: 3px;
     }
 
     .trend-detail {
@@ -203,13 +203,12 @@
       width: 240px;
       gap: 8px;
       padding: 12px;
-      border: 1px solid var(--separator);
+      border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
       border-radius: 12px;
       color: var(--text);
-      background: color-mix(in srgb, var(--tray) 96%, transparent);
-      box-shadow: 0 12px 36px rgba(0, 0, 0, 0.28);
-      backdrop-filter: blur(20px);
-      animation: detail-in 180ms ease-out both;
+      background: var(--tray);
+      box-shadow: var(--hard-shadow);
+      animation: trend-detail-in var(--motion-snap) both;
     }
 
     .trend-detail > header,
@@ -227,6 +226,7 @@
 
     .trend-detail > header span {
       color: var(--secondary);
+      font-family: var(--font-mono);
       font-size: 11px;
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
@@ -244,24 +244,31 @@
       min-height: 2px;
       flex: 1;
       border-radius: 1px;
-      background: var(--meter-fill);
-      transition: opacity 120ms ease;
+      background: var(--secondary);
     }
 
     .trend-detail__bars i.muted {
-      opacity: 0.28;
+      background: var(--tertiary);
     }
 
     .trend-detail__axis {
       color: var(--secondary);
+      font-family: var(--font-mono);
       font-size: 10px;
       font-variant-numeric: tabular-nums;
     }
 
     .trend-detail__source {
       color: var(--secondary);
+      font-family: var(--font-mono);
       font-size: 10px;
       text-align: center;
+    }
+
+    @keyframes trend-detail-in {
+      from {
+        transform: translateY(6px);
+      }
     }
 
     :root[data-density='compact'] .trend-row {

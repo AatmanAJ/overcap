@@ -248,7 +248,7 @@
       inset: 0 auto 0 0;
       width: 0;
       border-radius: inherit;
-      background: var(--meter-fill);
+      background: var(--secondary);
       transition:
         width var(--motion-switch),
         background-color var(--motion-switch);
@@ -279,7 +279,8 @@
 
     .metric__reading strong {
       color: var(--text);
-      font-weight: 450;
+      font-family: var(--font-mono);
+      font-weight: 500;
     }
 
     .metric__reading button {
@@ -290,8 +291,8 @@
       background: none;
       cursor: pointer;
       transition:
-        color 120ms ease,
-        background-color 120ms ease;
+        color var(--motion-switch),
+        background-color var(--motion-switch);
     }
 
     .metric__reading button:first-child {
@@ -302,7 +303,8 @@
     .metric__reading button:hover,
     .metric__reading button:focus-visible {
       background: var(--button-hover);
-      box-shadow: 0 0 0 3px var(--button-hover);
+      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+      outline-offset: 2px;
     }
   }
 </style>

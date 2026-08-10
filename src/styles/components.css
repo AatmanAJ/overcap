@@ -66,30 +66,27 @@
     width: max-content;
     max-width: min(190px, calc(100vw - 24px));
     padding: 5px 7px;
-    border: 1px solid var(--separator);
+    border: 1px solid var(--surface-border);
     border-radius: 6px;
     color: var(--text);
-    background: color-mix(in srgb, var(--tray) 96%, transparent);
-    box-shadow: 0 5px 18px rgba(0, 0, 0, 0.24);
+    background: var(--tray);
+    box-shadow: var(--hard-shadow);
     content: attr(data-tooltip);
     font-size: 10px;
     font-weight: 400;
     line-height: 13px;
     white-space: pre-line;
     overflow-wrap: anywhere;
-    opacity: 0;
+    visibility: hidden;
     pointer-events: none;
-    transform: translate(-50%, -2px) scale(0.97);
-    transition:
-      opacity 120ms ease 180ms,
-      transform 120ms ease 180ms;
+    transform: translate(-50%, -6px);
+    transition: transform var(--motion-snap);
   }
 
   [data-tooltip]:hover::after,
   [data-tooltip]:focus-visible::after {
-    opacity: 1;
-    transform: translate(-50%, 0) scale(1);
-    transition-delay: 400ms;
+    visibility: visible;
+    transform: translate(-50%, 0);
   }
 
   .provider-warning::after,
@@ -97,7 +94,7 @@
   .screen-header > :last-child[data-tooltip]::after {
     right: 0;
     left: auto;
-    transform: translate(0, -2px) scale(0.97);
+    transform: translate(0, -6px);
     transform-origin: top right;
   }
 
@@ -107,7 +104,7 @@
   .total-card__share:focus-visible::after,
   .screen-header > :last-child[data-tooltip]:hover::after,
   .screen-header > :last-child[data-tooltip]:focus-visible::after {
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0);
   }
 
   .total-card__info::after,
@@ -115,7 +112,7 @@
   .screen-header > :first-child[data-tooltip]::after {
     right: auto;
     left: 0;
-    transform: translate(0, -2px) scale(0.97);
+    transform: translate(0, -6px);
     transform-origin: top left;
   }
 
@@ -125,7 +122,7 @@
   .usage-label-warning:focus-visible::after,
   .screen-header > :first-child[data-tooltip]:hover::after,
   .screen-header > :first-child[data-tooltip]:focus-visible::after {
-    transform: translate(0, 0) scale(1);
+    transform: translate(0, 0);
   }
 
   .settings-section,
@@ -180,7 +177,7 @@
   .pointer-reorder-lift.provider-list-row,
   .pointer-reorder-lift.customize-metric-row,
   .pointer-reorder-lift.metric-context-target {
-    box-shadow: 0 8px 28px rgba(0, 0, 0, 0.18);
+    box-shadow: var(--hard-shadow);
   }
 
   .pointer-reorder-lift.provider-list-row,
@@ -250,6 +247,38 @@
     background: var(--card);
     text-align: left;
     cursor: pointer;
+  }
+
+  .pill-cta,
+  [data-cta='primary'] {
+    position: relative;
+    z-index: 0;
+    overflow: hidden;
+    border: 1px solid color-mix(in srgb, var(--action-text) 24%, transparent);
+    border-radius: 999px;
+    color: var(--action-text);
+    background: var(--action-fill);
+    isolation: isolate;
+  }
+
+  .pill-cta::before,
+  [data-cta='primary']::before {
+    position: absolute;
+    z-index: -1;
+    background: var(--action-hover);
+    content: '';
+    inset: 0;
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform var(--motion-wipe);
+  }
+
+  .pill-cta:hover::before,
+  .pill-cta:focus-visible::before,
+  [data-cta='primary']:hover::before,
+  [data-cta='primary']:focus-visible::before {
+    transform: scaleX(1);
+    transform-origin: left;
   }
 
   .screen-cross-link > span {
@@ -346,7 +375,7 @@
     .metric-list {
       transition:
         background-color var(--motion-switch),
-        transform var(--motion-spring);
+        transform var(--motion-snap);
     }
 
     button:active {
@@ -355,37 +384,33 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    *,
-    *::before,
-    *::after {
-      scroll-behavior: auto !important;
-      animation-duration: 0.01ms !important;
-      animation-iteration-count: 1 !important;
-      transition-duration: 0.01ms !important;
+    .pill-cta::before,
+    [data-cta='primary']::before {
+      display: none;
+    }
+
+    button:active {
+      transform: none !important;
     }
   }
 
   @keyframes detail-in {
     from {
-      opacity: 0;
-      transform: translateY(4px) scale(0.97);
+      transform: translateY(6px);
     }
 
     to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateY(0);
     }
   }
 
   @keyframes menu-in {
     from {
-      opacity: 0;
-      transform: translateY(4px) scale(0.96);
+      transform: translateY(6px);
     }
 
     to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
+      transform: translateY(0);
     }
   }
 }

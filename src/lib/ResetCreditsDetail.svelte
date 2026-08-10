@@ -148,7 +148,8 @@
                       type="button"
                       disabled={pendingExpiry !== null}
                       onclick={() => confirmClaim(entry.expiry)}
-                      >{pendingExpiry === entry.expiry ? 'Resetting…' : 'Use reset'}</button
+                      ><span>{pendingExpiry === entry.expiry ? 'Resetting…' : 'Use reset'}</span
+                      ></button
                     >
                     <button
                       type="button"
@@ -197,15 +198,12 @@
       width: 250px;
       max-height: calc(100vh - 16px);
       overflow: hidden;
-      border: 1px solid var(--separator);
+      border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
       border-radius: 11px;
       color: var(--text);
-      background: color-mix(in srgb, var(--tray) 98%, transparent);
-      box-shadow:
-        0 10px 28px rgba(0, 0, 0, 0.22),
-        0 2px 7px rgba(0, 0, 0, 0.12);
-      backdrop-filter: blur(16px);
-      animation: reset-detail-in 120ms ease-out both;
+      background: var(--tray);
+      box-shadow: var(--hard-shadow);
+      animation: reset-detail-in var(--motion-snap) both;
     }
 
     .reset-detail-body {
@@ -223,7 +221,7 @@
       padding: 7px 8px;
       border-radius: 7px;
       color: var(--text);
-      background: color-mix(in srgb, var(--meter-fill) 16%, transparent);
+      background: var(--card-hover);
       font-size: 10px;
     }
 
@@ -255,7 +253,7 @@
 
     .reset-entry > span {
       overflow: hidden;
-      font-weight: 550;
+      font-weight: 500;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
@@ -270,9 +268,9 @@
     .reset-trailing > small {
       color: var(--secondary);
       font: inherit;
+      font-family: var(--font-mono);
       font-variant-numeric: tabular-nums;
       white-space: nowrap;
-      transition: opacity 100ms ease;
     }
 
     .reset-use,
@@ -280,7 +278,7 @@
       min-height: 22px;
       padding: 2px 8px;
       border: 1px solid var(--separator);
-      border-radius: 6px;
+      border-radius: 999px;
       color: var(--text);
       background: var(--card);
       font: inherit;
@@ -291,18 +289,19 @@
     .reset-use {
       position: absolute;
       right: 0;
-      opacity: 0;
-      transition: opacity 100ms ease;
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform var(--motion-switch);
     }
 
     .reset-entry:hover .reset-trailing > small,
     .reset-entry:focus-within .reset-trailing > small {
-      opacity: 0;
+      visibility: hidden;
     }
 
     .reset-entry:hover .reset-use,
     .reset-entry:focus-within .reset-use {
-      opacity: 1;
+      transform: scaleX(1);
     }
 
     .reset-use:disabled,
@@ -318,7 +317,7 @@
       border-radius: 8px;
       background: color-mix(in srgb, var(--text) 4%, transparent);
       font-size: 10px;
-      animation: reset-confirm-in 150ms ease-out both;
+      animation: reset-confirm-in var(--motion-snap) both;
     }
 
     .reset-confirm > span {
@@ -336,9 +335,30 @@
     }
 
     .reset-confirm .reset-confirm-primary {
-      color: white;
-      background: var(--meter-fill);
+      position: relative;
+      overflow: hidden;
+      border-color: color-mix(in srgb, var(--action-text) 24%, transparent);
+      color: var(--action-text);
+      background: var(--action-fill);
       font-weight: 600;
+    }
+
+    .reset-confirm-primary::before {
+      position: absolute;
+      background: var(--action-hover);
+      content: '';
+      inset: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--motion-switch);
+    }
+
+    .reset-confirm-primary > span {
+      position: relative;
+    }
+
+    .reset-confirm-primary:hover:not(:disabled)::before {
+      transform: scaleX(1);
     }
 
     .reset-rail {
@@ -356,7 +376,7 @@
     }
 
     .reset-rail > .reset-rail-hidden {
-      opacity: 0;
+      visibility: hidden;
     }
 
     .reset-node {
@@ -365,15 +385,16 @@
       height: 18px;
       place-items: center;
       border-radius: 50%;
-      color: white;
-      background: var(--meter-fill);
+      color: var(--tray);
+      background: var(--text);
+      font-family: var(--font-mono);
       font-size: 11px;
       font-weight: 600;
       line-height: 1;
     }
 
     .reset-node--warning {
-      color: #171719;
+      color: #141414;
       background: var(--meter-warning);
     }
 
@@ -394,29 +415,18 @@
 
     .reset-empty strong {
       color: var(--text);
-      font-weight: 650;
+      font-weight: 600;
     }
 
     @keyframes reset-detail-in {
       from {
-        opacity: 0;
-        transform: translateY(-2px) scale(0.98);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateY(-6px);
       }
     }
 
     @keyframes reset-confirm-in {
       from {
-        opacity: 0;
-        transform: scale(0.97);
-        transform-origin: top;
-      }
-      to {
-        opacity: 1;
-        transform: scale(1);
+        transform: translateY(-6px);
       }
     }
 

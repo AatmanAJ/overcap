@@ -102,7 +102,7 @@ describe('popover geometry contract', () => {
     expect(liftRule).toContain('opacity: 1');
     expect(liftRule).not.toContain('box-shadow');
     expect(css).toMatch(
-      /\.pointer-reorder-lift\.provider-section > \.provider-card,[\s\S]*box-shadow: 0 8px 28px rgba\(0, 0, 0, 0\.18\);/,
+      /\.pointer-reorder-lift\.provider-section > \.provider-card,[\s\S]*box-shadow: var\(--hard-shadow\);/,
     );
   });
 });

@@ -72,7 +72,7 @@
         class="confirmation-sheet__confirm"
         type="button"
         disabled={pending}
-        onclick={onConfirm}>{pending ? 'Resetting…' : confirmLabel}</button
+        onclick={onConfirm}><span>{pending ? 'Resetting…' : confirmLabel}</span></button
       >
     </div>
   </div>
@@ -85,8 +85,6 @@
     display: grid;
     padding: 48px 18px 18px;
     background: color-mix(in srgb, #000 24%, transparent);
-    backdrop-filter: blur(7px) saturate(0.9);
-    animation: confirmation-backdrop-in var(--motion-switch) both;
     inset: 0;
     place-items: start center;
   }
@@ -98,15 +96,12 @@
     grid-template-columns: 30px 1fr;
     gap: 0 10px;
     padding: 17px;
-    border: 1px solid color-mix(in srgb, var(--text) 11%, transparent);
+    border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
     border-radius: 15px;
     color: var(--text);
-    background: color-mix(in srgb, var(--tray) 96%, transparent);
-    box-shadow:
-      0 22px 60px rgba(0, 0, 0, 0.3),
-      0 2px 8px rgba(0, 0, 0, 0.14);
-    backdrop-filter: blur(24px) saturate(1.18);
-    animation: confirmation-sheet-in var(--motion-spring) both;
+    background: var(--tray);
+    box-shadow: var(--hard-shadow);
+    animation: confirmation-sheet-in var(--motion-snap) both;
   }
 
   .confirmation-sheet__icon {
@@ -127,7 +122,7 @@
   .confirmation-sheet h1 {
     margin: 0 0 5px;
     font-size: 13px;
-    font-weight: 650;
+    font-weight: 600;
     letter-spacing: -0.01em;
   }
 
@@ -151,18 +146,16 @@
     min-height: 31px;
     padding: 6px 12px;
     border: 1px solid color-mix(in srgb, var(--text) 9%, transparent);
-    border-radius: 8px;
+    border-radius: 999px;
     color: var(--text);
     background: color-mix(in srgb, var(--text) 7%, var(--tray));
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08);
     font-size: 11px;
     font-weight: 600;
     cursor: pointer;
     transition:
       background-color 120ms ease,
       border-color 120ms ease,
-      box-shadow 120ms ease,
-      transform 90ms ease;
+      transform var(--motion-switch);
   }
 
   .confirmation-sheet__actions button:hover:not(:disabled) {
@@ -174,19 +167,34 @@
   }
 
   .confirmation-sheet__actions button:focus-visible {
-    outline: 2px solid color-mix(in srgb, var(--meter-fill) 65%, transparent);
+    outline: 2px solid color-mix(in srgb, var(--text) 65%, transparent);
     outline-offset: 2px;
   }
 
   .confirmation-sheet__actions .confirmation-sheet__confirm {
-    border-color: color-mix(in srgb, var(--meter-critical) 80%, #000);
-    color: #fff;
-    background: var(--meter-critical);
-    box-shadow: 0 1px 3px color-mix(in srgb, var(--meter-critical) 34%, transparent);
+    position: relative;
+    overflow: hidden;
+    border-color: color-mix(in srgb, var(--action-text) 24%, transparent);
+    color: var(--action-text);
+    background: var(--action-fill);
   }
 
-  .confirmation-sheet__actions .confirmation-sheet__confirm:hover:not(:disabled) {
-    background: color-mix(in srgb, var(--meter-critical) 88%, #000);
+  .confirmation-sheet__confirm::before {
+    position: absolute;
+    background: var(--action-hover);
+    content: '';
+    inset: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-switch);
+  }
+
+  .confirmation-sheet__confirm > span {
+    position: relative;
+  }
+
+  .confirmation-sheet__actions .confirmation-sheet__confirm:hover:not(:disabled)::before {
+    transform: scaleX(1);
   }
 
   .confirmation-sheet__actions button:disabled {
@@ -194,22 +202,13 @@
     opacity: 0.58;
   }
 
-  @keyframes confirmation-backdrop-in {
-    from {
-      background-color: transparent;
-      backdrop-filter: blur(0) saturate(1);
-    }
-  }
-
   @keyframes confirmation-sheet-in {
     from {
-      opacity: 0;
-      transform: translateY(-12px) scale(0.975);
+      transform: translateY(-6px);
     }
   }
 
-  :global(:root[data-reduced-motion]) .confirmation-backdrop,
-  :global(:root[data-reduced-motion]) .confirmation-sheet {
-    animation-duration: 0ms;
+  :global(:root[data-reduced-motion]) .confirmation-sheet__confirm::before {
+    transition: none;
   }
 </style>

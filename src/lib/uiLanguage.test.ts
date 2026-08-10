@@ -12,12 +12,24 @@ import { coLocatedComponentCss } from './uiStyleSources';
 const css = `${tokensCss}\n${layoutCss}\n${sharedComponentCss}\n${coLocatedComponentCss}`;
 
 describe('native UI language contract', () => {
-  it('uses the platform system font and reference type sizes', () => {
-    expect(css).toMatch(/font-family:\s*system-ui,/);
-    expect(css).not.toMatch(/font-family:\s*Inter/);
+  it('uses the Overcap type system and reference type sizes', () => {
+    expect(tokensCss).toContain("--font-ui: 'Inter'");
+    expect(tokensCss).toContain("--font-mono: 'JetBrains Mono'");
+    expect(tokensCss).toContain("--font-display: 'Bebas Neue'");
+    expect(css).toMatch(/\.metric\s*{[^}]*font-family: var\(--font-mono\);/s);
+    expect(css).toMatch(/font-variant-numeric:\s*tabular-nums/);
     expect(css).toMatch(/\.provider-header h1\s*{[^}]*font-size: 14px;[^}]*font-weight: 600;/s);
     expect(css).toMatch(/\.provider-list-main b\s*{[^}]*font-size: 14px;[^}]*font-weight: 600;/s);
     expect(css).toMatch(/\.setting-row\s*{[^}]*font-size: 13px;/s);
+  });
+
+  it('keeps shared surfaces flat and shared entrances free of opacity crossfades', () => {
+    const sharedCss = `${layoutCss}\n${sharedComponentCss}`;
+    expect(sharedCss).not.toMatch(/(?:linear|radial|conic)-gradient\(/);
+    expect(sharedCss).not.toContain('backdrop-filter');
+    expect(sharedCss).not.toMatch(/transition:[^;]*opacity/s);
+    expect(sharedComponentCss).toMatch(/@keyframes detail-in\s*{[^}]*translateY\(6px\)/s);
+    expect(sharedComponentCss).not.toMatch(/@keyframes (?:detail|menu)-in[\s\S]*?opacity:/);
   });
 
   it('keeps the critical flame colored while its warning copy stays secondary', () => {
@@ -97,7 +109,7 @@ describe('native UI language contract', () => {
 
   it('keeps interactive highlights in the component layer that owns their base style', () => {
     expect(providerNameSection).toMatch(
-      /\.provider-name-card:focus-within\s*{[^}]*box-shadow: inset 0 0 0 2px/s,
+      /\.provider-name-card:focus-within\s*{[^}]*outline: 1px solid/s,
     );
     expect(providerNameSection).toMatch(/input\s*{[^}]*display: block;/s);
     expect(dashboard).toMatch(

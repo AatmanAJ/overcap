@@ -714,7 +714,7 @@ impl Default for AppSettings {
             known_provider_ids: Vec::new(),
             provider_names: BTreeMap::new(),
             show_total_spend: true,
-            theme: ThemePreference::System,
+            theme: ThemePreference::Dark,
             density: DensityPreference::Default,
             window_mode: WindowMode::Popup,
             menu_bar_style: MenuBarStyle::Text,
@@ -761,8 +761,15 @@ pub struct SettingsViewState {
 mod tests {
     use super::{
         ApiKeyStatus, AppSettings, LogLevel, ProviderApiKeyState, ProviderErrorKind, ProviderLink,
-        ProviderSnapshot, ProviderViewState, UsagePeriod, WindowMode,
+        ProviderSnapshot, ProviderViewState, ThemePreference, UsagePeriod, WindowMode,
     };
+
+    #[test]
+    fn first_run_defaults_to_dark_while_system_remains_a_supported_preference() {
+        let settings = AppSettings::default();
+        assert_eq!(settings.theme, ThemePreference::Dark);
+        assert_ne!(settings.theme, ThemePreference::System);
+    }
 
     #[test]
     fn older_settings_default_new_update_state_fields() {

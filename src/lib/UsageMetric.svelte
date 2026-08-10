@@ -109,6 +109,7 @@
   :global {
     .usage-row {
       padding: 6px 14px;
+      font-family: var(--font-mono);
       font-size: 12px;
       line-height: 15px;
     }
@@ -124,7 +125,7 @@
 
     .usage-row strong,
     .usage-row > button {
-      font-weight: 450;
+      font-weight: 500;
       text-align: right;
     }
 
@@ -145,15 +146,14 @@
       border-radius: 6px;
       outline: none;
       cursor: default;
-      transition:
-        background-color 120ms ease,
-        box-shadow 120ms ease;
+      transition: background-color var(--motion-switch);
     }
 
     .usage-reading-interactive:hover,
     .usage-reading-interactive:focus-visible {
       background: var(--button-hover);
-      box-shadow: 0 0 0 4px var(--button-hover);
+      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+      outline-offset: 3px;
     }
 
     .usage-label-warning {

@@ -316,18 +316,18 @@
       border-radius: 999px;
       color: var(--text);
       background: color-mix(in srgb, var(--tray) 96%, transparent);
-      box-shadow: 0 8px 22px rgba(0, 0, 0, 0.22);
+      box-shadow: 2px 2px 0 color-mix(in srgb, var(--text) 24%, transparent);
       font-size: 10px;
-      animation: detail-in var(--motion-spring) both;
+      animation: detail-in var(--motion-snap) both;
     }
 
     .customization-pill .symbol-icon {
-      color: #34c759;
+      color: var(--secondary);
     }
 
     .customization-pill.denied {
       color: var(--warning);
-      animation: detail-in var(--motion-spring) both;
+      animation: detail-in var(--motion-snap) both;
     }
 
     .customization-pill.denied .symbol-icon {

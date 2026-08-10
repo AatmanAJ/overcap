@@ -343,12 +343,14 @@
             ></span
           >
           <button
-            class="secondary-button"
+            class="secondary-button notification-primary"
             type="button"
             onclick={settingsView.notificationPermission === 'denied'
               ? onOpenNotificationSettings
               : onRequestNotifications}
-            >{settingsView.notificationPermission === 'denied' ? 'Open Settings' : 'Allow'}</button
+            ><span
+              >{settingsView.notificationPermission === 'denied' ? 'Open Settings' : 'Allow'}</span
+            ></button
           >
         </div>
       </div>
@@ -443,7 +445,7 @@
     }
 
     .setting-row b {
-      font-weight: 550;
+      font-weight: 500;
     }
 
     .setting-row small {
@@ -455,7 +457,7 @@
     input[type='checkbox'] {
       width: 15px;
       height: 15px;
-      accent-color: var(--meter-fill);
+      accent-color: var(--text);
     }
 
     .shortcut-field {
@@ -472,14 +474,14 @@
       border-radius: 6px;
       color: var(--secondary);
       background: var(--tray);
-      font-family: ui-monospace, monospace;
+      font-family: var(--font-mono);
       font-size: 12px;
       text-overflow: ellipsis;
       white-space: nowrap;
     }
 
     .shortcut-field button.recording {
-      border-color: var(--meter-fill);
+      border-color: color-mix(in srgb, var(--text) 65%, transparent);
       color: var(--text);
     }
 
@@ -521,7 +523,7 @@
       height: 13px;
       margin-left: 3px;
       border-radius: 50%;
-      color: white;
+      color: #141414;
       background: var(--warning);
       font-size: 8px;
       place-items: center;
@@ -594,7 +596,7 @@
       border-radius: 9px;
       background: var(--meter-track);
       cursor: pointer;
-      transition: background-color 160ms ease;
+      transition: background-color var(--motion-switch);
     }
 
     input[type='checkbox']::after {
@@ -603,14 +605,13 @@
       height: 12px;
       margin: 2px;
       border-radius: 50%;
-      background: white;
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+      background: var(--tray);
       content: '';
-      transition: transform 160ms ease;
+      transition: transform var(--motion-switch);
     }
 
     input[type='checkbox']:checked {
-      background: var(--meter-fill);
+      background: var(--text);
     }
 
     input[type='checkbox']:checked::after {
@@ -685,6 +686,33 @@
 
     .notification-attention .secondary-button {
       flex: 0 0 auto;
+    }
+
+    .notification-attention .notification-primary {
+      position: relative;
+      overflow: hidden;
+      border-color: color-mix(in srgb, var(--action-text) 24%, transparent);
+      border-radius: 999px;
+      color: var(--action-text);
+      background: var(--action-fill);
+    }
+
+    .notification-primary::before {
+      position: absolute;
+      background: var(--action-hover);
+      content: '';
+      inset: 0;
+      transform: scaleX(0);
+      transform-origin: left;
+      transition: transform var(--motion-switch);
+    }
+
+    .notification-primary > span {
+      position: relative;
+    }
+
+    .notification-primary:hover::before {
+      transform: scaleX(1);
     }
 
     .settings-update-error {

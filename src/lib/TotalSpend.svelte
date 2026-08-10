@@ -209,8 +209,8 @@
       width: calc((100% - 6px) / 3);
       border-radius: 999px;
       background: var(--tray);
-      box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12);
-      transition: transform var(--motion-spring);
+      box-shadow: 1px 1px 0 color-mix(in srgb, var(--text) 24%, transparent);
+      transition: transform var(--motion-snap);
     }
 
     .total-card__body {
@@ -236,7 +236,7 @@
 
     .spend-ring__segment {
       fill: var(--segment-color);
-      transition: fill 160ms ease;
+      transition: fill var(--motion-snap);
     }
 
     .spend-ring__label {
@@ -251,6 +251,7 @@
     .spend-ring strong {
       max-width: 48px;
       overflow: hidden;
+      font-family: var(--font-mono);
       font-size: 13px;
       text-overflow: ellipsis;
       white-space: nowrap;
@@ -259,6 +260,7 @@
     .spend-ring span,
     .spend-legend small {
       color: var(--secondary);
+      font-family: var(--font-mono);
       font-size: 8px;
     }
 
@@ -267,6 +269,7 @@
       flex: 1;
       grid-template-columns: 1fr auto;
       gap: 2px 8px;
+      font-family: var(--font-mono);
       font-size: 11px;
     }
 
@@ -304,7 +307,7 @@
     }
 
     .icon-button:focus-visible {
-      outline: 2px solid var(--meter-fill);
+      outline: 2px solid color-mix(in srgb, var(--text) 65%, transparent);
       outline-offset: 2px;
     }
 
@@ -349,7 +352,7 @@
 
     .select-menu--title .select-menu__trigger:hover,
     .select-menu--title .select-menu__trigger[aria-expanded='true'] {
-      color: var(--meter-fill);
+      color: var(--text);
       background: transparent;
     }
 

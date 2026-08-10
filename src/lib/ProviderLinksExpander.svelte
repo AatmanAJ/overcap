@@ -1,7 +1,6 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition';
   import Icon from './Icon.svelte';
-  import { springMotion } from './motion';
+  import { snapSlide } from './motion';
   import ProviderLinks from './ProviderLinks.svelte';
   import type { ProviderLink } from './types';
 
@@ -30,7 +29,7 @@
     <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={10} strokeWidth={2.2} />
   </button>
   {#if expanded}
-    <div class="demand-metrics" transition:slide={springMotion(reducedMotion)}>
+    <div class="demand-metrics" transition:snapSlide={{ reducedMotion }}>
       <ProviderLinks {links} {onOpen} />
     </div>
   {/if}

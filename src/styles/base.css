@@ -11,11 +11,77 @@
     margin: 0;
     overflow: hidden;
     background: var(--tray);
+    font-family: var(--font-ui);
+  }
+
+  body {
+    color: var(--text);
+  }
+
+  small,
+  time,
+  kbd,
+  output,
+  .metric,
+  .usage-row,
+  .value-row,
+  .status-row,
+  .trend-row,
+  .total-spend-section,
+  .model-usage-detail,
+  .reset-credits-detail,
+  .reset-detail,
+  .customize-metric-name,
+  [data-tooltip]::after {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .display-type,
+  .wordmark {
+    font-family: var(--font-display);
   }
 
   button,
   input,
-  select {
+  select,
+  textarea {
     font: inherit;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+      animation: none !important;
+      scroll-behavior: auto !important;
+      transition: none !important;
+    }
+
+    .pill-cta::before,
+    [data-cta='primary']::before {
+      display: none;
+    }
+
+    button:active {
+      transform: none !important;
+    }
+  }
+
+  :root[data-reduced-motion] *,
+  :root[data-reduced-motion] *::before,
+  :root[data-reduced-motion] *::after {
+    animation: none !important;
+    scroll-behavior: auto !important;
+    transition: none !important;
+  }
+
+  :root[data-reduced-motion] .pill-cta::before,
+  :root[data-reduced-motion] [data-cta='primary']::before {
+    display: none;
+  }
+
+  :root[data-reduced-motion] button:active {
+    transform: none !important;
   }
 }

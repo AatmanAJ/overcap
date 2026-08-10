@@ -56,7 +56,8 @@
   }
 
   button:focus-visible {
-    box-shadow: 0 0 0 2px color-mix(in srgb, var(--provider) 35%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--provider) 30%, transparent);
+    outline-offset: 2px;
   }
 
   span {

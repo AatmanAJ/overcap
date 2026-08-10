@@ -1,7 +1,5 @@
 <script lang="ts">
   import { onMount, tick } from 'svelte';
-  import { cubicOut } from 'svelte/easing';
-  import type { TransitionConfig } from 'svelte/transition';
   import Icon from './Icon.svelte';
 
   export interface SelectOption {
@@ -147,28 +145,6 @@
             : (current - 1 + items.length) % items.length;
     items[index]?.focus();
   }
-
-  function menuMotion(duration: number): TransitionConfig {
-    const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    return {
-      duration: reducedMotion ? 0 : duration,
-      easing: cubicOut,
-      css: (progress) => `
-        opacity: ${progress};
-        transform: translateY(${(1 - progress) * (openAbove ? 4 : -4)}px) scale(${0.96 + progress * 0.04});
-      `,
-    };
-  }
-
-  function menuReveal(node: Element): TransitionConfig {
-    void node;
-    return menuMotion(150);
-  }
-
-  function menuDismiss(node: Element): TransitionConfig {
-    void node;
-    return menuMotion(100);
-  }
 </script>
 
 <div class="select-menu" class:select-menu--title={variant === 'title'} bind:this={root}>
@@ -197,8 +173,6 @@
       style={`--select-menu-max-height: ${maxListHeight}px; --select-menu-trigger-width: ${triggerWidth}px; top: ${listTop}px; left: ${listLeft}px`}
       bind:this={listbox}
       use:portal
-      in:menuReveal
-      out:menuDismiss
     >
       {#each options as option (option.value)}
         <button
@@ -248,8 +222,7 @@
       cursor: pointer;
       transition:
         border-color var(--motion-switch),
-        background var(--motion-switch),
-        box-shadow var(--motion-switch);
+        background var(--motion-switch);
     }
 
     .select-menu__trigger:hover,
@@ -259,7 +232,7 @@
     }
 
     .select-menu__trigger:focus-visible {
-      outline: 2px solid color-mix(in srgb, var(--meter-fill) 55%, transparent);
+      outline: 2px solid color-mix(in srgb, var(--text) 55%, transparent);
       outline-offset: 1px;
     }
 
@@ -277,18 +250,18 @@
       padding: 5px;
       overflow-y: auto;
       overscroll-behavior: contain;
-      border: 1px solid var(--separator);
+      border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
       border-radius: 8px;
-      background: color-mix(in srgb, var(--tray) 90%, transparent);
-      box-shadow:
-        0 12px 32px rgba(0, 0, 0, 0.2),
-        0 2px 8px rgba(0, 0, 0, 0.1);
-      backdrop-filter: blur(22px) saturate(1.35);
+      background: var(--tray);
+      box-shadow: var(--hard-shadow);
+      animation: select-menu-in var(--motion-snap) both;
       transform-origin: top right;
-      will-change: transform, opacity;
+      --select-menu-entry-y: -6px;
+      will-change: transform;
     }
 
     .select-menu__list--above {
+      --select-menu-entry-y: 6px;
       transform-origin: bottom right;
     }
 
@@ -304,7 +277,7 @@
       justify-content: flex-start;
       gap: 5px;
       padding: 3px 8px 3px 3px;
-      border: 0;
+      border: 1px solid transparent;
       border-radius: 6px;
       color: var(--text);
       background: transparent;
@@ -317,8 +290,9 @@
     .select-menu__list button:hover,
     .select-menu__list button:focus-visible {
       outline: none;
-      color: #ffffff;
-      background: var(--meter-fill);
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--text) 24%, transparent);
+      background: var(--card-hover);
     }
 
     .select-menu__list button.active {
@@ -337,6 +311,12 @@
       height: 16px;
       flex: 0 0 16px;
       place-items: center;
+    }
+
+    @keyframes select-menu-in {
+      from {
+        transform: translateY(var(--select-menu-entry-y));
+      }
     }
 
     :root[data-density='compact'] .select-menu__trigger {

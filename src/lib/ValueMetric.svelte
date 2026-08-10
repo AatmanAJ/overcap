@@ -167,6 +167,7 @@
       justify-content: space-between;
       gap: 8px;
       padding: 6px 14px;
+      font-family: var(--font-mono);
       font-size: 12px;
       line-height: 15px;
     }
@@ -197,23 +198,22 @@
       font: inherit;
       cursor: default;
       outline: none;
-      transition:
-        background-color 120ms ease,
-        box-shadow 120ms ease;
+      transition: background-color var(--motion-switch);
     }
 
     .value-reading--interactive:hover,
     .value-reading--interactive:focus-visible,
     .value-reading--interactive[aria-expanded='true'] {
       background: var(--button-hover);
-      box-shadow: 0 0 0 4px var(--button-hover);
+      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+      outline-offset: 3px;
     }
 
     .expiry-dot {
       width: 6px;
       height: 6px;
       border-radius: 50%;
-      background: var(--meter-fill);
+      background: var(--secondary);
     }
 
     .expiry-dot--warning {
