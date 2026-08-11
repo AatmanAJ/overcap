@@ -37,7 +37,7 @@
   import Icon from './lib/Icon.svelte';
   import { createListenerRegistry } from './lib/listenerRegistry';
   import { emptyProviderCatalog, ProviderCatalogIndex } from './lib/metrics';
-  import { measuredMotion } from './lib/motion';
+  import { snapMotion } from './lib/motion';
   import OvercapMark from './lib/OvercapMark.svelte';
   import { horizontalPageTransition, shouldSlideBetweenScreens } from './lib/pageTransition';
   import { desktopPlatform, shortcutLabels } from './lib/platform';
@@ -409,7 +409,7 @@
   }
   function topBarTitle() {
     if (screen.startsWith('provider:')) return providerDisplayName(screen.slice(9));
-    return screen === 'settings' ? 'Settings' : 'Customise';
+    return screen === 'settings' ? 'Settings' : 'Customize';
   }
   function closeAboutFromBackdrop(event: MouseEvent) {
     if (event.target === event.currentTarget) showAbout = false;
@@ -714,7 +714,7 @@
   {#if floatingWindow}
     <header class="floating-chrome" aria-label="Overcap window controls">
       <div class="floating-chrome__drag">
-        <OvercapMark size={16} />
+        <OvercapMark size={14} />
         <span>Overcap</span>
       </div>
       <button
@@ -739,9 +739,9 @@
             class="text-button"
             type="button"
             onclick={requestCustomizationReset}
-            aria-label="Reset all customisation"
-            data-tooltip="Reset all customisation"
-            ><Icon name="reset" size={16} strokeWidth={2} /></button
+            aria-label="Reset all customization"
+            data-tooltip="Reset All Customization"
+            ><Icon name="reset" size={15} strokeWidth={2} /></button
           >
         {:else if screen.startsWith('provider:')}
           <button
@@ -750,7 +750,7 @@
             onclick={() => resetProviderCustomization(screen.slice(9))}
             aria-label={`Reset ${topBarTitle()}`}
             data-tooltip={`Reset ${topBarTitle()}`}
-            ><Icon name="reset" size={16} strokeWidth={2} /></button
+            ><Icon name="reset" size={15} strokeWidth={2} /></button
           >
         {:else}
           <span></span>
@@ -768,11 +768,7 @@
             data-screen={screen}
             in:horizontalPageTransition={{
               direction: slideDirection,
-              ...measuredMotion(reducedMotion || !slidePageTransition),
-            }}
-            out:horizontalPageTransition={{
-              direction: -slideDirection,
-              ...measuredMotion(reducedMotion || !slidePageTransition),
+              ...snapMotion(reducedMotion || !slidePageTransition),
             }}
           >
             {#if screen === 'dashboard'}
@@ -871,14 +867,14 @@
                 data-tooltip={floatingWindow ? 'Return to Tray Popup' : 'Keep Window Open'}
                 onclick={toggleFloatingWindow}
               >
-                <Icon name={floatingWindow ? 'pin-filled' : 'pin'} size={16} strokeWidth={2} />
+                <Icon name={floatingWindow ? 'pin-filled' : 'pin'} size={14} strokeWidth={1.9} />
               </button>
             {/if}
             <details class="options-menu" bind:this={optionsMenuElement}>
               <summary aria-label="Open options" onkeydown={handleOptionsKey}
                 ><span>Options</span><Icon
                   name="chevron-down"
-                  size={12}
+                  size={11}
                   strokeWidth={2.2}
                 /></summary
               >
@@ -897,9 +893,9 @@
                 <button
                   class="menu-item"
                   type="button"
-                  aria-label="Customise"
+                  aria-label="Customize"
                   onclick={() => navigate('customize')}
-                  ><Icon name="sliders" /><span>Customise</span><kbd>↩</kbd></button
+                  ><Icon name="sliders" /><span>Customize</span><kbd>↩</kbd></button
                 >
                 <button
                   class="menu-item"
@@ -930,7 +926,7 @@
                   </div>
                 </details>
                 <button class="menu-item" type="button" onclick={() => void checkForUpdates(true)}
-                  ><Icon name="refresh" /><span>Check for updates…</span></button
+                  ><Icon name="refresh" /><span>Check for Updates…</span></button
                 >
                 <hr />
                 <button class="menu-item" type="button" onclick={() => (showAbout = true)}
@@ -952,15 +948,15 @@
 
     {#if confirmationMessage}
       <div class="transient-pill" role="status">
-        <Icon name="check" size={16} strokeWidth={2} />{confirmationMessage}
+        <Icon name="check" size={15} strokeWidth={2.4} />{confirmationMessage}
       </div>
     {/if}
 
     {#if resetConfirmationOpen}
       <ConfirmationSheet
-        title="Reset all customisation?"
+        title="Reset All Customization?"
         message="This turns installed providers back on and restores every provider's metric visibility and order."
-        confirmLabel="Reset all"
+        confirmLabel="Reset All"
         pending={resettingCustomization}
         onConfirm={() => void confirmCustomizationReset()}
         onCancel={() => (resetConfirmationOpen = false)}
@@ -989,7 +985,7 @@
             type="button"
             aria-label="Close About"
             onclick={() => (showAbout = false)}
-            ><Icon name="close" size={12} strokeWidth={2} /></button
+            ><Icon name="close" size={11} strokeWidth={2.3} /></button
           >
           <OvercapMark size={44} />
           <h1>Overcap by AIWITHAJ</h1>
@@ -1033,41 +1029,41 @@
       display: flex;
       width: 100%;
       height: 100%;
-      min-width: 0;
       flex-direction: column;
       overflow: hidden;
-      color: var(--body);
-      background: var(--paper);
-      border-radius: 16px;
+      color: var(--text);
+      background: var(--tray);
       isolation: isolate;
       user-select: none;
     }
 
     .floating-chrome {
       position: relative;
-      z-index: 32;
+      z-index: 30;
       display: grid;
       width: 100%;
       height: 32px;
       flex: 0 0 32px;
       grid-template-columns: 32px 1fr 32px;
       align-items: center;
-      border-bottom: 0.5px solid var(--rule);
+      border-bottom: 1px solid var(--separator);
+      background: color-mix(in srgb, var(--text) 3%, var(--tray));
     }
 
     .floating-chrome__drag {
-      display: flex;
-      height: 100%;
       grid-row: 1;
       grid-column: 1 / -1;
+      display: flex;
+      height: 100%;
       align-items: center;
       justify-content: center;
-      gap: 8px;
-      color: var(--muted);
+      gap: 6px;
+      color: var(--secondary);
       cursor: grab;
       font-size: 11px;
-      font-weight: 500;
-      letter-spacing: 0.09em;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+      font-family: var(--font-display);
       touch-action: none;
     }
 
@@ -1087,16 +1083,37 @@
       height: 24px;
       grid-row: 1;
       grid-column: 3;
+      align-items: center;
       justify-self: center;
       padding: 0;
       border: 0;
-      color: var(--muted);
+      border-radius: 7px;
+      color: var(--secondary);
+      background: transparent;
       cursor: default;
       place-items: center;
+      transition:
+        color 120ms ease,
+        background-color 120ms ease,
+        transform 80ms ease;
     }
 
     .popover--macos .floating-chrome__close {
       grid-column: 1;
+    }
+
+    .floating-chrome__close:hover {
+      color: var(--text);
+      background: color-mix(in srgb, var(--text) 9%, transparent);
+    }
+
+    .floating-chrome__close:active {
+      transform: scale(0.92);
+    }
+
+    .floating-chrome__close:focus-visible {
+      outline: 2px solid var(--text);
+      outline-offset: -1px;
     }
 
     .panel-resize-dragger {
@@ -1104,31 +1121,176 @@
       z-index: 20;
       display: grid;
       width: 100%;
-      height: 8px;
-      flex: 0 0 8px;
+      height: 10px;
+      flex: 0 0 10px;
       cursor: ns-resize;
       touch-action: none;
       place-items: center;
     }
 
     .panel-resize-dragger::after {
-      width: 32px;
-      border-top: 0.5px solid var(--rule);
+      width: 36px;
+      height: 4px;
+      border-radius: 999px;
+      background: var(--separator);
       content: '';
+      transition:
+        width 120ms ease,
+        background-color 120ms ease;
+    }
+
+    .panel-resize-dragger:hover::after {
+      width: 42px;
+      background: var(--tertiary);
     }
 
     .content {
       flex: 1;
       min-height: 0;
-      padding: 20px;
-      overflow-x: hidden;
+      padding: 14px 14px 12px;
       overflow-y: auto;
       scrollbar-width: none;
+      overflow-x: hidden;
     }
 
     .content::-webkit-scrollbar {
       width: 0;
       height: 0;
+    }
+
+    .footer {
+      display: flex;
+      min-height: 58px;
+      align-items: center;
+      gap: 12px;
+      padding: 10px 14px;
+      border-top: 1px solid var(--separator);
+      background: color-mix(in srgb, var(--tray) 92%, transparent);
+    }
+
+    .identity {
+      display: flex;
+      flex-direction: column;
+      color: var(--secondary);
+      font-size: 10px;
+      line-height: 14px;
+    }
+
+    .identity small {
+      color: var(--tertiary);
+      font: inherit;
+    }
+
+    .options-menu {
+      position: relative;
+    }
+
+    .options-menu > summary {
+      display: grid;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      color: var(--secondary);
+      cursor: pointer;
+      font-size: 13px;
+      list-style: none;
+      place-items: center;
+    }
+
+    .options-menu > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .options-menu[open] > summary,
+    .options-menu > summary:hover {
+      color: var(--text);
+      background: var(--button-hover);
+    }
+
+    .options-menu > div {
+      position: absolute;
+      right: 0;
+      bottom: 36px;
+      z-index: 10;
+      width: 130px;
+      padding: 4px;
+      border: 1px solid var(--separator);
+      border-radius: 9px;
+      background: var(--tray);
+      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
+    }
+
+    .options-menu button {
+      width: 100%;
+      padding: 6px 8px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--text);
+      background: none;
+      font-size: 11px;
+      text-align: left;
+    }
+
+    .options-menu button:hover {
+      background: var(--button-hover);
+    }
+
+    .screen-header {
+      display: grid;
+      min-height: 30px;
+      align-items: center;
+      grid-template-columns: 54px 1fr 54px;
+      margin-bottom: 8px;
+    }
+
+    .screen-header h1 {
+      margin: 0;
+      font-size: 14px;
+      text-align: center;
+    }
+
+    .screen-header button {
+      width: fit-content;
+      padding: 3px 7px;
+      border: 0;
+      border-radius: 6px;
+      color: var(--secondary);
+      background: transparent;
+      cursor: pointer;
+    }
+
+    .screen-header > button:first-child {
+      font-size: 23px;
+      line-height: 20px;
+    }
+
+    .screen-header .text-button {
+      justify-self: end;
+      color: var(--text);
+      font-size: 10px;
+    }
+
+    .screen-header button:hover {
+      background: var(--button-hover);
+    }
+
+    :root[data-density='compact'] .content {
+      padding: 9px 11px 7px;
+    }
+
+    :root[data-density='compact'] .footer {
+      min-height: 48px;
+      padding-top: 6px;
+      padding-bottom: 6px;
+    }
+
+    .content {
+      padding: 14px 14px 12px;
+      scrollbar-width: none;
+    }
+
+    .content--chrome {
+      padding-top: 12px;
     }
 
     .screen-stage {
@@ -1137,6 +1299,7 @@
       min-width: 0;
       min-height: 0;
       overflow: clip;
+      background: var(--tray);
     }
 
     .screen-page {
@@ -1145,34 +1308,26 @@
       min-height: 0;
       grid-area: 1 / 1;
       align-self: start;
+      transform-origin: 50% 45%;
     }
 
     .footer {
-      display: flex;
-      min-height: 48px;
-      align-items: center;
-      gap: 12px;
-      padding: 8px 20px;
-      border-top: 0.5px solid var(--rule);
+      min-height: 52px;
+      padding: 12px 14px;
+      border-top: 0;
+      background: color-mix(in srgb, var(--tray) 94%, transparent);
+      border-top: 1px solid var(--separator);
     }
 
     .identity {
-      display: flex;
-      flex-direction: column;
       padding: 0;
       border: 0;
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 400;
-      line-height: 16px;
+      color: var(--secondary);
+      background: none;
+      font-size: 10px;
+      line-height: 12px;
       text-align: left;
       cursor: pointer;
-      font-variant-numeric: tabular-nums lining-nums;
-    }
-
-    .identity small {
-      color: inherit;
-      font: inherit;
     }
 
     .identity:disabled {
@@ -1182,59 +1337,172 @@
     .footer-actions {
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 6px;
       margin-left: auto;
     }
 
-    .window-mode-toggle,
+    .footer-actions .options-menu {
+      margin-left: 0;
+    }
+
+    .window-mode-toggle {
+      display: grid;
+      width: 26px;
+      height: 26px;
+      padding: 0;
+      border: 0;
+      border-radius: 8px;
+      color: var(--secondary);
+      background: transparent;
+      cursor: pointer;
+      place-items: center;
+      transition:
+        color 120ms ease,
+        background-color 120ms ease,
+        transform 80ms ease;
+    }
+
+    .window-mode-toggle:hover {
+      color: var(--text);
+      background: var(--button-hover);
+    }
+
+    .window-mode-toggle--active {
+      color: var(--text);
+    }
+
+    .window-mode-toggle:active {
+      transform: scale(0.92);
+    }
+
+    .window-mode-toggle:focus-visible {
+      outline: 2px solid var(--text);
+      outline-offset: 1px;
+    }
+
+    .window-mode-toggle::after {
+      top: auto;
+      bottom: calc(100% + 7px);
+      transform: translate(-50%, 2px) scale(0.97);
+      transform-origin: bottom center;
+    }
+
+    .window-mode-toggle:hover::after,
+    .window-mode-toggle:focus-visible::after {
+      transform: translate(-50%, 0) scale(1);
+    }
+
+    .options-menu {
+      margin-left: auto;
+    }
+
     .options-menu > summary {
+      display: flex;
+      width: auto;
+      height: 26px;
+      align-items: center;
+      gap: 4px;
+      padding: 0 9px 0 10px;
+      border: 1px solid var(--separator);
+      border-radius: 8px;
+      color: var(--text);
+      background: color-mix(in srgb, var(--card) 72%, transparent);
+      font-size: 11px;
+      font-weight: 500;
+    }
+
+    .options-menu > summary i {
+      margin-top: -2px;
+      font-size: 11px;
+      font-style: normal;
+    }
+
+    .options-menu > summary .symbol-icon {
+      transition: transform 160ms ease;
+    }
+
+    .options-menu[open] > summary .symbol-icon {
+      transform: rotate(180deg);
+    }
+
+    .options-menu > div {
+      bottom: 34px;
+      width: 172px;
+      padding: 6px;
+      border: 1px solid var(--separator);
+      border-radius: 10px;
+      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
+      transform-origin: bottom right;
+      animation: menu-in var(--motion-snap) both;
+    }
+
+    .options-menu button {
+      font-size: 11px;
+    }
+
+    .screen-header {
+      position: sticky;
+      top: 0;
+      z-index: 5;
+      min-height: 44px;
+      grid-template-columns: 44px 1fr 44px;
+      margin: 0 -14px 12px;
+      padding: 0 14px;
+      background: color-mix(in srgb, var(--tray) 94%, transparent);
+      border-bottom: 1px solid var(--separator);
+    }
+
+    .app-top-bar {
+      position: relative;
+      top: auto;
+      z-index: 10;
+      width: 100%;
+      min-height: 44px;
+      flex: 0 0 44px;
+      margin: 0;
+      padding: 0 14px;
+    }
+
+    .screen-header h1 {
+      font-size: 13px;
+      font-weight: 600;
+    }
+
+    .screen-header button:first-child {
       display: grid;
       width: 28px;
       height: 28px;
       padding: 0;
-      border: 0;
-      color: var(--ink);
-      cursor: pointer;
-      list-style: none;
+      border-radius: 50%;
+      background: var(--button-hover);
       place-items: center;
     }
 
-    .options-menu,
-    .share-menu {
-      position: relative;
+    .screen-header .text-button {
+      width: 28px;
+      height: 28px;
+      overflow: hidden;
+      color: var(--secondary);
+      font-size: inherit;
     }
 
-    .options-menu > summary::-webkit-details-marker,
-    .share-menu > summary::-webkit-details-marker {
-      display: none;
-    }
-
-    .options-menu__panel,
-    .options-menu > div,
-    .share-menu > div {
-      position: absolute;
-      right: 0;
-      bottom: 36px;
-      z-index: 40;
-      width: 176px;
-      padding: 8px 0;
-      border-top: 0.5px solid var(--rule);
-      border-bottom: 0.5px solid var(--rule);
+    .screen-header .text-button::after {
+      content: none;
     }
 
     .options-menu .menu-item,
-    .share-menu > summary,
-    .share-menu button {
+    .share-menu > summary {
       display: flex;
       width: 100%;
       min-height: 32px;
       align-items: center;
       gap: 8px;
-      padding: 8px 0;
+      padding: 7px 9px;
       border: 0;
-      color: var(--ink);
-      font-size: 12px;
-      font-weight: 400;
+      border-radius: 6px;
+      color: var(--text);
+      background: transparent;
+      font-size: 11px;
       text-align: left;
     }
 
@@ -1244,82 +1512,90 @@
     }
 
     .options-menu kbd {
-      color: var(--muted);
-      font: inherit;
-      font-variant-numeric: tabular-nums lining-nums;
+      color: var(--tertiary);
+      background: none;
+      font: 10px/1 inherit;
     }
 
     .options-menu .menu-item--danger {
-      color: var(--critical);
+      color: var(--meter-critical);
     }
 
-    .share-menu > div {
-      right: calc(100% + 4px);
-      bottom: 0;
-      width: 144px;
+    .share-menu {
+      position: relative;
     }
 
-    .share-menu__direction {
+    .share-menu > summary {
+      cursor: pointer;
+      list-style: none;
+    }
+
+    .share-menu > summary::-webkit-details-marker {
+      display: none;
+    }
+
+    .share-menu > summary .share-menu__direction {
       display: grid;
       width: 16px;
       flex: 0 0 16px;
       place-items: center;
     }
 
-    .screen-header {
-      display: grid;
-      min-height: 40px;
-      grid-template-columns: 40px 1fr 40px;
-      align-items: center;
-      margin: 0 0 24px;
-      border-bottom: 0.5px solid var(--rule);
+    .share-menu > summary .share-menu__direction .symbol-icon {
+      transition: transform 140ms ease;
     }
 
-    .app-top-bar {
+    .share-menu[open] > summary .share-menu__direction .symbol-icon {
+      transform: translateX(-2px);
+    }
+
+    .share-menu > div {
+      position: absolute;
+      right: calc(100% - 2px);
+      bottom: -5px;
+      width: 130px;
+      max-width: calc(100vw - 16px);
+      padding: 5px;
+      border: 1px solid var(--separator);
+      border-radius: 9px;
+      background: var(--tray);
+      box-shadow: 3px 3px 0 color-mix(in srgb, var(--text) 24%, transparent);
+      transform-origin: bottom right;
+      animation: menu-in var(--motion-snap) both;
+    }
+
+    .share-menu button {
       width: 100%;
-      min-height: 40px;
-      flex: 0 0 40px;
-      margin: 0;
-      padding: 0 20px;
-    }
-
-    .screen-header h1 {
-      margin: 0;
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 500;
-      text-align: center;
-    }
-
-    .screen-header button {
-      display: grid;
-      width: 28px;
-      height: 28px;
-      padding: 0;
+      min-height: 30px;
+      padding: 7px 9px;
       border: 0;
-      color: var(--ink);
-      cursor: pointer;
-      place-items: center;
-    }
-
-    .screen-header .text-button {
-      justify-self: end;
+      border-radius: 5px;
+      color: var(--text);
+      background: transparent;
+      font-size: 11px;
+      text-align: left;
     }
 
     .transient-pill {
       position: absolute;
-      right: 20px;
-      bottom: 64px;
-      z-index: 80;
+      right: 14px;
+      bottom: 62px;
+      z-index: 90;
       display: flex;
       align-items: center;
-      gap: 8px;
-      padding: 8px 0;
-      border-top: 0.5px solid var(--rule);
-      border-bottom: 0.5px solid var(--rule);
-      color: var(--body);
-      font-size: 11px;
-      font-variant-numeric: tabular-nums lining-nums;
+      gap: 6px;
+      padding: 7px 10px;
+      border: 1px solid var(--separator);
+      border-radius: 999px;
+      color: var(--text);
+      background: color-mix(in srgb, var(--tray) 96%, transparent);
+      box-shadow: 2px 2px 0 color-mix(in srgb, var(--text) 24%, transparent);
+      font-size: 10px;
+      animation: detail-in var(--motion-snap) both;
+    }
+
+    .transient-pill .symbol-icon {
+      color: var(--secondary);
     }
 
     .about-backdrop {
@@ -1327,6 +1603,7 @@
       z-index: 100;
       display: grid;
       border: 0;
+      background: rgba(0, 0, 0, 0.28);
       inset: 0;
       place-items: center;
     }
@@ -1334,53 +1611,68 @@
     .about-card {
       position: relative;
       display: flex;
-      width: 240px;
+      width: 230px;
       align-items: center;
-      padding: 24px 20px;
-      border-top: 0.5px solid var(--rule);
-      border-bottom: 0.5px solid var(--rule);
-      color: var(--body);
+      padding: 24px 20px 20px;
+      border: 1px solid var(--separator);
+      border-radius: 16px;
+      color: var(--text);
+      background: var(--tray);
+      box-shadow: 4px 4px 0 color-mix(in srgb, var(--text) 24%, transparent);
       flex-direction: column;
+      animation: detail-in var(--motion-snap) both;
     }
 
     .about-card h1 {
-      margin: 12px 0 4px;
-      color: var(--ink);
-      font-size: 13px;
-      font-weight: 500;
-    }
-
-    .about-card p,
-    .about-card__credit,
-    .about-card__links {
-      color: var(--muted);
-      font-size: 11px;
-      font-weight: 400;
-      line-height: 16px;
-      font-variant-numeric: tabular-nums lining-nums;
+      margin: 10px 0 2px;
+      font-size: 17px;
+      font-family: var(--font-display);
+      letter-spacing: 0.04em;
     }
 
     .about-card p {
       margin: 0;
+      color: var(--secondary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
+      text-align: center;
     }
 
     .about-card__credit {
-      margin-top: 16px;
-      color: var(--ink);
+      margin-top: 14px;
+      color: var(--text);
+      font-size: 10px;
+      line-height: 14px;
       text-align: center;
       text-decoration: underline;
-      text-underline-offset: 4px;
+      text-decoration-color: color-mix(in srgb, var(--text) 40%, transparent);
+      text-underline-offset: 3px;
     }
 
     .about-card__links {
       display: flex;
-      gap: 16px;
+      gap: 12px;
       margin-top: 12px;
+      font-family: var(--font-mono);
+      font-size: 9px;
     }
 
     .about-card__links a {
-      color: var(--muted);
+      color: var(--secondary);
       text-decoration: none;
+    }
+
+    .about-card__credit:hover,
+    .about-card__links a:hover {
+      color: var(--text);
+    }
+
+    .about-card__credit:focus-visible,
+    .about-card__links a:focus-visible {
+      border-radius: 3px;
+      outline: 1px solid var(--text);
+      outline-offset: 3px;
     }
 
     .about-card__close {
@@ -1392,13 +1684,48 @@
       height: 24px;
       padding: 0;
       border: 0;
-      color: var(--ink);
+      border-radius: 50%;
+      color: var(--secondary);
+      background: var(--button-hover);
       cursor: pointer;
       place-items: center;
+      transition:
+        color var(--motion-switch),
+        background var(--motion-switch),
+        transform var(--motion-switch);
+    }
+
+    .about-card__close:hover {
+      color: var(--text);
+      background: color-mix(in srgb, var(--text) 14%, transparent);
+    }
+
+    .about-card__close:active {
+      transform: scale(0.92);
+    }
+
+    .about-card__close:focus-visible {
+      outline: 2px solid var(--text);
+      outline-offset: 1px;
+    }
+
+    :root[data-density='compact'] .content {
+      padding: 10px 14px 8px;
+    }
+
+    :root[data-density='compact'] .content--chrome {
+      padding-top: 12px;
     }
 
     .notice--blocking {
-      color: var(--critical);
+      color: var(--error);
+      background: var(--error-bg);
+    }
+
+    .popover {
+      width: 100%;
+      min-width: 0;
+      max-width: 320px;
     }
   }
 </style>

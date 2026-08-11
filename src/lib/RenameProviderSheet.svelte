@@ -65,7 +65,7 @@
         onRename(draft);
       }}
     >
-      <h1 id="rename-title">Rename provider</h1>
+      <h1 id="rename-title">Rename Card</h1>
       <input
         bind:this={input}
         bind:value={draft}
@@ -77,9 +77,7 @@
       <p id="rename-message">Leave the name empty to go back to the default.</p>
       <div class="rename-sheet__actions">
         <button type="button" onclick={onCancel}>Cancel</button>
-        <button data-cta="primary" class="rename-sheet__confirm" type="submit"
-          ><span>Rename</span></button
-        >
+        <button class="rename-sheet__confirm" type="submit"><span>Rename</span></button>
       </div>
     </form>
   </div>
@@ -90,30 +88,33 @@
     position: absolute;
     z-index: 120;
     display: grid;
-    padding: 48px 20px;
+    padding: 48px 18px 18px;
+    background: color-mix(in srgb, #000 24%, transparent);
     inset: 0;
     place-items: start center;
   }
 
   .rename-sheet {
-    width: min(256px, 100%);
+    width: min(252px, 100%);
     box-sizing: border-box;
-    padding: 16px 0;
-    border-top: 0.5px solid var(--rule);
-    border-bottom: 0.5px solid var(--rule);
-    color: var(--ink);
-    animation: rename-sheet-in var(--motion-measured) both;
+    padding: 17px;
+    border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+    border-radius: 15px;
+    color: var(--text);
+    background: var(--tray);
+    box-shadow: var(--hard-shadow);
+    animation: rename-sheet-in var(--motion-snap) both;
   }
 
   form {
     display: grid;
-    gap: 12px;
+    gap: 10px;
   }
 
   h1 {
     margin: 0;
     font-size: 13px;
-    font-weight: 500;
+    font-weight: 600;
     letter-spacing: -0.01em;
   }
 
@@ -121,59 +122,95 @@
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    height: 36px;
-    padding: 0;
-    border: 0;
-    border-bottom: 0.5px solid var(--rule);
+    padding: 7px 9px;
+    border: 1px solid var(--separator);
+    border-radius: 8px;
     outline: none;
-    color: var(--ink);
+    color: var(--text);
+    background: var(--card);
     font: inherit;
     font-size: 12px;
   }
 
   input:focus {
-    border-color: var(--ink);
-    outline: 0;
+    border-color: color-mix(in srgb, var(--text) 65%, transparent);
+    outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+    outline-offset: 1px;
   }
 
   p {
-    margin: 0;
-    color: var(--muted);
+    margin: -2px 0 0;
+    color: var(--secondary);
     font-size: 11px;
-    line-height: 1.5;
+    line-height: 15px;
   }
 
   .rename-sheet__actions {
     display: flex;
     justify-content: flex-end;
     gap: 8px;
-    margin-top: 4px;
+    margin-top: 6px;
   }
 
   .rename-sheet__actions button {
-    min-height: 28px;
-    padding: 0;
-    border: 0;
-    color: var(--ink);
-    font-size: 12px;
-    font-weight: 500;
+    min-width: 76px;
+    min-height: 31px;
+    padding: 6px 12px;
+    border: 1px solid color-mix(in srgb, var(--text) 9%, transparent);
+    border-radius: 999px;
+    color: var(--text);
+    background: color-mix(in srgb, var(--text) 7%, var(--tray));
+    font-size: 11px;
+    font-weight: 600;
     cursor: pointer;
-    text-decoration: none;
   }
 
-  .rename-sheet__actions button:not([data-cta='primary']):hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+  .rename-sheet__actions button:hover {
+    background: color-mix(in srgb, var(--text) 11%, var(--tray));
+  }
+
+  .rename-sheet__actions button:active {
+    transform: scale(0.97);
+  }
+
+  .rename-sheet__actions button:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--text) 65%, transparent);
+    outline-offset: 2px;
   }
 
   .rename-sheet__actions .rename-sheet__confirm {
-    padding: 0 12px;
+    position: relative;
+    overflow: hidden;
+    border-color: color-mix(in srgb, var(--action-text) 24%, transparent);
+    color: var(--action-text);
+    background: var(--action-fill);
+  }
+
+  .rename-sheet__confirm::before {
+    position: absolute;
+    background: var(--action-hover);
+    content: '';
+    inset: 0;
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--motion-switch);
+  }
+
+  .rename-sheet__confirm > span {
+    position: relative;
+  }
+
+  .rename-sheet__actions .rename-sheet__confirm:hover::before {
+    transform: scaleX(1);
   }
 
   @keyframes rename-sheet-in {
     from {
-      opacity: 0;
-      transform: translateY(-4px);
+      transform: translateY(-6px);
     }
+  }
+
+  :global(:root[data-reduced-motion]) .rename-sheet__confirm::before {
+    transition: none;
   }
 </style>

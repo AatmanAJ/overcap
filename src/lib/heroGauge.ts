@@ -23,11 +23,6 @@ export interface HeroGaugeSelection {
   projectedToCapBeforeReset: boolean;
 }
 
-export interface HeroBarPresentation {
-  tone: 'accent' | 'warning' | 'critical';
-  activeThreshold: 80 | 95 | 100;
-}
-
 /** Selects the most constrained known-cap quota without changing the provider data. */
 export function selectHeroGaugeMetric(
   providers: readonly HeroGaugeProvider[],
@@ -95,13 +90,6 @@ export function heroGaugeStatus(selection: HeroGaugeSelection) {
   if (selection.usedPercent >= 95) return 'Redlining.';
   if (selection.usedPercent >= 80) return 'Getting tight.';
   return 'Room to breathe.';
-}
-
-/** Maps usage to the bar's state and its next measurement threshold. */
-export function heroBarPresentation(usedPercent: number): HeroBarPresentation {
-  if (usedPercent >= 95) return { tone: 'critical', activeThreshold: 100 };
-  if (usedPercent >= 80) return { tone: 'warning', activeThreshold: 95 };
-  return { tone: 'accent', activeThreshold: 80 };
 }
 
 function quotaMetricDefinition(definitions: readonly MetricDefinition[], quotaId: string) {

@@ -55,35 +55,33 @@
     };
   }
 
-  const snapToGrid = (value: number) => Math.round(value / 4) * 4;
-
-  function placeListbox(estimatedHeight = listbox?.scrollHeight || options.length * 28 + 8) {
+  function placeListbox(estimatedHeight = listbox?.scrollHeight || options.length * 24 + 12) {
     const trigger = root?.querySelector<HTMLButtonElement>('[role="combobox"]');
     if (!root || !trigger) return;
 
     const triggerBounds = trigger.getBoundingClientRect();
     const boundaryTop = 8;
     const boundaryBottom = window.innerHeight - 8;
-    const gap = 8;
+    const gap = 5;
     const spaceAbove = Math.max(0, triggerBounds.top - boundaryTop - gap);
     const spaceBelow = Math.max(0, boundaryBottom - triggerBounds.bottom - gap);
 
     openAbove = spaceBelow < Math.min(estimatedHeight, 120) && spaceAbove > spaceBelow;
-    maxListHeight = Math.max(48, snapToGrid(openAbove ? spaceAbove : spaceBelow));
-    triggerWidth = snapToGrid(triggerBounds.width);
+    maxListHeight = Math.max(48, Math.floor(openAbove ? spaceAbove : spaceBelow));
+    triggerWidth = Math.round(triggerBounds.width);
 
     const renderedHeight = Math.min(estimatedHeight, maxListHeight);
     const renderedWidth =
-      listbox?.offsetWidth || Math.max(triggerBounds.width, variant === 'title' ? 140 : 132);
+      listbox?.offsetWidth || Math.max(triggerBounds.width, variant === 'title' ? 138 : 132);
     const preferredTop = openAbove
       ? triggerBounds.top - gap - renderedHeight
       : triggerBounds.bottom + gap;
     const preferredLeft =
-      variant === 'title' ? triggerBounds.left - 4 : triggerBounds.right - renderedWidth;
-    listTop = snapToGrid(
+      variant === 'title' ? triggerBounds.left - 5 : triggerBounds.right - renderedWidth;
+    listTop = Math.round(
       Math.min(Math.max(boundaryTop, preferredTop), boundaryBottom - renderedHeight),
     );
-    listLeft = snapToGrid(
+    listLeft = Math.round(
       Math.min(Math.max(8, preferredLeft), window.innerWidth - 8 - renderedWidth),
     );
     positioned = true;
@@ -214,23 +212,32 @@
       align-items: center;
       justify-content: space-between;
       gap: 8px;
-      padding: 4px 8px;
-      border: 0;
-      border-bottom: 0.5px solid var(--rule);
-      color: var(--ink);
+      padding: 4px 8px 4px 10px;
+      border: 1px solid var(--separator);
+      border-radius: 7px;
+      color: var(--text);
+      background: var(--card);
       font-size: 12px;
-      line-height: 16px;
+      line-height: 18px;
       cursor: pointer;
-      transition: opacity var(--motion-measured);
+      transition:
+        border-color var(--motion-switch),
+        background var(--motion-switch);
     }
 
+    .select-menu__trigger:hover,
     .select-menu__trigger[aria-expanded='true'] {
-      border-color: var(--ink);
+      border-color: color-mix(in srgb, var(--text) 18%, transparent);
+      background: var(--card-hover);
     }
 
     .select-menu__trigger:focus-visible {
-      outline: 1px solid color-mix(in srgb, var(--ink) 64%, transparent);
-      outline-offset: 4px;
+      outline: 2px solid color-mix(in srgb, var(--text) 55%, transparent);
+      outline-offset: 1px;
+    }
+
+    .select-menu__trigger[aria-expanded='true'] .symbol-icon {
+      transform: rotate(180deg);
     }
 
     .select-menu__list {
@@ -240,18 +247,21 @@
       min-width: max(var(--select-menu-trigger-width), 132px);
       max-width: min(240px, calc(100vw - 16px));
       max-height: min(var(--select-menu-max-height), calc(100vh - 16px));
-      padding: 4px 0;
+      padding: 5px;
       overflow-y: auto;
       overscroll-behavior: contain;
-      border-top: 0.5px solid var(--rule);
-      border-bottom: 0.5px solid var(--rule);
-      animation: select-menu-in var(--motion-measured) both;
+      border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+      border-radius: 8px;
+      background: var(--tray);
+      box-shadow: var(--hard-shadow);
+      animation: select-menu-in var(--motion-snap) both;
       transform-origin: top right;
-      --select-menu-entry-y: -4px;
+      --select-menu-entry-y: -6px;
+      will-change: transform;
     }
 
     .select-menu__list--above {
-      --select-menu-entry-y: 4px;
+      --select-menu-entry-y: 6px;
       transform-origin: bottom right;
     }
 
@@ -262,26 +272,31 @@
     .select-menu__list button {
       display: flex;
       width: 100%;
-      min-height: 28px;
+      min-height: 24px;
       align-items: center;
       justify-content: flex-start;
-      gap: 4px;
-      padding: 4px 8px;
-      border: 0;
-      border-top: 0.5px solid var(--rule);
-      color: var(--ink);
+      gap: 5px;
+      padding: 3px 8px 3px 3px;
+      border: 1px solid transparent;
+      border-radius: 6px;
+      color: var(--text);
+      background: transparent;
       font-size: 13px;
-      line-height: 16px;
+      line-height: 17px;
       text-align: left;
       cursor: pointer;
     }
 
-    .select-menu__list button:first-child {
-      border-top: 0;
+    .select-menu__list button:hover,
+    .select-menu__list button:focus-visible {
+      outline: none;
+      color: var(--text);
+      border-color: color-mix(in srgb, var(--text) 24%, transparent);
+      background: var(--card-hover);
     }
 
     .select-menu__list button.active {
-      font-weight: 500;
+      font-weight: 400;
     }
 
     .select-menu__list button > span:last-child {
@@ -300,9 +315,15 @@
 
     @keyframes select-menu-in {
       from {
-        opacity: 0;
         transform: translateY(var(--select-menu-entry-y));
       }
+    }
+
+    :root[data-density='compact'] .select-menu__trigger {
+      min-height: 26px;
+      padding: 3px 7px 3px 9px;
+      font-size: 12px;
+      line-height: 16px;
     }
   }
 </style>

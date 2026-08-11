@@ -42,17 +42,17 @@ describe('provider sparkline mapping', () => {
     ).toBeNull();
   });
 
-  it('keeps the line and current dot inside the 56x14 drawing area', () => {
+  it('keeps the line and current dot inside the 56x16 drawing area', () => {
     const mapped = mapSparklineData(
       [day('2026-07-10', 70), day('2026-07-09', 20), day('2026-07-08', 40)],
       now,
     );
 
-    expect(mapped?.points[0].x).toBe(1.25);
-    expect(mapped?.current.x).toBe(SPARKLINE_WIDTH - 1.25);
-    expect(mapped?.points.every((point) => point.y >= 1.25 && point.y <= 12.75)).toBe(true);
-    expect(mapped?.current.y).toBeGreaterThanOrEqual(1.25);
-    expect(mapped?.current.y).toBeLessThanOrEqual(SPARKLINE_HEIGHT - 1.25);
+    expect(mapped?.points[0].x).toBe(1.5);
+    expect(mapped?.current.x).toBe(SPARKLINE_WIDTH - 1.5);
+    expect(mapped?.points.every((point) => point.y >= 1.5 && point.y <= 14.5)).toBe(true);
+    expect(mapped?.current.y).toBeGreaterThanOrEqual(1.5);
+    expect(mapped?.current.y).toBeLessThanOrEqual(SPARKLINE_HEIGHT - 1.5);
   });
 
   it('centres a constant series without emitting invalid coordinates', () => {

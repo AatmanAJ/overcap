@@ -18,7 +18,7 @@
       aria-label={`${link.label}, opens in browser`}
       onclick={() => onOpen(linkIndex)}
     >
-      <span>{link.label}</span><Icon name="external-link" size={12} strokeWidth={2} />
+      <span>{link.label}</span><Icon name="external-link" size={10} strokeWidth={1.8} />
     </button>
   {/each}
 </div>
@@ -27,42 +27,52 @@
   .provider-links {
     display: grid;
     grid-template-columns: repeat(var(--provider-link-columns), minmax(0, 1fr));
-    gap: 0 12px;
-    padding: 0;
+    gap: 6px;
+    padding: 7px 6px;
   }
 
   button {
     display: flex;
     min-width: 0;
-    min-height: 36px;
+    min-height: 26px;
     align-items: center;
     justify-content: center;
     gap: 4px;
-    padding: 0;
-    border: 0;
-    border-top: 0.5px solid var(--rule);
-    color: var(--ink);
+    padding: 4px 8px;
+    border: 1px solid var(--separator);
+    border-radius: 6px;
+    color: var(--text);
+    background: transparent;
     font: inherit;
-    font-family: var(--font-ui);
-    font-size: 12px;
-    font-weight: 500;
+    font-size: 10px;
+    font-weight: 600;
     cursor: pointer;
-    text-decoration: none;
   }
 
-  button:hover {
-    text-decoration: underline;
-    text-underline-offset: 4px;
+  button:hover,
+  button:focus-visible {
+    outline: none;
+    background: var(--button-hover);
   }
 
   button:focus-visible {
-    outline: 1px solid color-mix(in srgb, var(--ink) 64%, transparent);
-    outline-offset: 4px;
+    outline: 1px solid color-mix(in srgb, var(--provider) 30%, transparent);
+    outline-offset: 2px;
   }
 
   span {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  :global(html[data-density='compact']) .provider-links {
+    gap: 5px;
+    padding-block: 5px;
+  }
+
+  :global(html[data-density='compact']) button {
+    min-height: 24px;
+    font-size: 9px;
   }
 </style>

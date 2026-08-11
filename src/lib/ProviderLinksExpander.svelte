@@ -1,6 +1,6 @@
 <script lang="ts">
   import Icon from './Icon.svelte';
-  import { measuredReveal } from './motion';
+  import { snapSlide } from './motion';
   import ProviderLinks from './ProviderLinks.svelte';
   import type { ProviderLink } from './types';
 
@@ -26,10 +26,10 @@
     aria-label={expanded ? 'Show less' : 'Show more'}
     onclick={onToggle}
   >
-    <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={12} strokeWidth={2} />
+    <Icon name={expanded ? 'chevron-up' : 'chevron-down'} size={10} strokeWidth={2.2} />
   </button>
   {#if expanded}
-    <div class="demand-metrics" transition:measuredReveal={{ reducedMotion }}>
+    <div class="demand-metrics" transition:snapSlide={{ reducedMotion }}>
       <ProviderLinks {links} {onOpen} />
     </div>
   {/if}

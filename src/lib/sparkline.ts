@@ -1,8 +1,8 @@
 import type { DailyUsage } from './types';
 
 export const SPARKLINE_WIDTH = 56;
-export const SPARKLINE_HEIGHT = 14;
-export const SPARKLINE_DOT_DIAMETER = 2.5;
+export const SPARKLINE_HEIGHT = 16;
+export const SPARKLINE_DOT_DIAMETER = 3;
 
 export interface SparklinePoint {
   date: string;

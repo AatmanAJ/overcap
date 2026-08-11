@@ -61,49 +61,50 @@
   .threshold-controls {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 12px;
-    padding: 12px 0;
-    border-top: 0.5px solid var(--rule);
+    gap: 6px;
+    padding: 9px 10px;
+    border-top: 1px solid var(--separator);
   }
 
   label {
     display: grid;
     gap: 4px;
-    color: var(--muted);
-    font-family: var(--font-ui);
-    font-size: 11px;
-    font-variant-numeric: tabular-nums lining-nums;
+    color: var(--secondary);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.2px;
   }
 
   .threshold-input {
     display: grid;
     grid-template-columns: 1fr auto;
     align-items: center;
-    border-bottom: 0.5px solid var(--rule);
-    color: var(--muted);
-    font-variant-numeric: tabular-nums lining-nums;
+    border: 1px solid var(--surface-border);
+    border-radius: 7px;
+    color: var(--secondary);
+    background: var(--tray);
   }
 
   input {
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    height: 28px;
-    padding: 4px 0;
+    padding: 6px 2px 6px 7px;
     border: 0;
     outline: none;
-    color: var(--ink);
+    color: var(--text);
+    background: transparent;
     font: inherit;
-    font-size: 12px;
-    font-variant-numeric: tabular-nums lining-nums;
+    font-size: 10px;
+    font-variant-numeric: tabular-nums;
   }
 
   .threshold-input > span {
-    padding-right: 4px;
+    padding-right: 7px;
   }
 
   .threshold-input:focus-within {
-    border-color: var(--ink);
-    outline: 0;
+    outline: 1px solid var(--text);
+    outline-offset: 1px;
   }
 </style>

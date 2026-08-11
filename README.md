@@ -41,7 +41,7 @@ Overcap checks for signed updates automatically.
 
 ## Features
 
-- **Hero bar.** The tightest live limit stays at the top, with one measured threshold marker.
+- **Hero gauge.** The tightest live limit stays at the top, with a clear redline before the cap.
 - **Pace projections.** See whether you will cap before reset and where monthly spend is heading.
 - **Provider sparklines.** Scan the last seven days of token usage without opening another view.
 - **Threshold alerts.** Set global or per-provider warnings at 80%, 95%, and 100%.

@@ -128,64 +128,70 @@
   :global {
     .trend-empty {
       display: flex;
-      width: clamp(96px, 48%, 152px);
-      min-height: 16px;
+      width: clamp(90px, 48%, 150px);
+      min-height: 18px;
       align-items: center;
       justify-content: flex-end;
       margin: 0;
-      color: var(--muted);
-      font-size: 11px;
-      font-variant-numeric: tabular-nums lining-nums;
+      color: var(--secondary);
+      font-size: 10px;
       text-align: right;
     }
 
     .trend-row {
       display: flex;
-      height: 36px;
       align-items: center;
       justify-content: space-between;
-      gap: 12px;
-      padding: 0;
-      border-top: 0.5px solid var(--rule);
+      gap: 8px;
+      padding: 9px 14px 10px;
     }
 
     .trend-row > strong {
       flex: 0 0 auto;
       font-size: 12px;
-      font-weight: 400;
-      color: var(--ink);
+      font-weight: 600;
     }
 
     .trend-chart-wrap {
       position: relative;
-      width: clamp(96px, 48%, 152px);
+      width: clamp(90px, 48%, 150px);
       flex: 1;
     }
 
     .trend-bars {
       display: flex;
       width: 100%;
-      height: 16px;
+      height: 18px;
       align-items: flex-end;
-      gap: 4px;
+      gap: 1.5px;
       margin: 0;
       padding: 0;
+      border-radius: 6px;
     }
 
     .trend-bars span {
-      min-height: 4px;
+      min-height: 2px;
       flex: 1;
-      border-left: 1px solid var(--muted);
-      transition: opacity var(--motion-measured);
+      border-radius: 1px;
+      background: var(--secondary);
+      transition:
+        height var(--motion-switch),
+        transform var(--motion-switch);
+    }
+
+    .trend-bars:hover span {
+      background: var(--tertiary);
     }
 
     .trend-bars span:hover {
-      opacity: 0.56;
+      background: var(--secondary);
+      transform: scaleX(1.35);
     }
 
     .trend-bars--active {
-      outline: 1px solid color-mix(in srgb, var(--ink) 64%, transparent);
-      outline-offset: 4px;
+      background: var(--button-hover);
+      outline: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+      outline-offset: 3px;
     }
 
     .trend-detail {
@@ -196,11 +202,13 @@
       display: grid;
       width: 240px;
       gap: 8px;
-      padding: 12px 0;
-      border-top: 0.5px solid var(--rule);
-      border-bottom: 0.5px solid var(--rule);
-      color: var(--ink);
-      animation: trend-detail-in var(--motion-measured) both;
+      padding: 12px;
+      border: 1px solid color-mix(in srgb, var(--text) 24%, transparent);
+      border-radius: 12px;
+      color: var(--text);
+      background: var(--tray);
+      box-shadow: var(--hard-shadow);
+      animation: trend-detail-in var(--motion-snap) both;
     }
 
     .trend-detail > header,
@@ -213,14 +221,14 @@
 
     .trend-detail > header strong {
       font-size: 13px;
-      font-weight: 500;
+      font-weight: 600;
     }
 
     .trend-detail > header span {
-      color: var(--muted);
-      font-family: var(--font-ui);
+      color: var(--secondary);
+      font-family: var(--font-mono);
       font-size: 11px;
-      font-variant-numeric: tabular-nums lining-nums;
+      font-variant-numeric: tabular-nums;
       white-space: nowrap;
     }
 
@@ -228,41 +236,51 @@
       display: flex;
       height: 76px;
       align-items: flex-end;
-      gap: 4px;
+      gap: 2px;
       margin: 0;
     }
 
     .trend-detail__bars i {
-      min-height: 4px;
+      min-height: 2px;
       flex: 1;
-      border-left: 1px solid var(--muted);
-      transition: opacity var(--motion-measured);
+      border-radius: 1px;
+      background: var(--secondary);
     }
 
     .trend-detail__bars i.muted {
-      opacity: 0.32;
+      background: var(--tertiary);
     }
 
     .trend-detail__axis {
-      color: var(--muted);
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-variant-numeric: tabular-nums lining-nums;
+      color: var(--secondary);
+      font-family: var(--font-mono);
+      font-size: 10px;
+      font-variant-numeric: tabular-nums;
     }
 
     .trend-detail__source {
-      color: var(--muted);
-      font-family: var(--font-ui);
-      font-size: 11px;
-      font-variant-numeric: tabular-nums lining-nums;
+      color: var(--secondary);
+      font-family: var(--font-mono);
+      font-size: 10px;
       text-align: center;
     }
 
     @keyframes trend-detail-in {
       from {
-        opacity: 0;
-        transform: translateY(4px);
+        transform: translateY(6px);
       }
+    }
+
+    :root[data-density='compact'] .trend-row {
+      padding: 6px 14px;
+    }
+
+    :root[data-density='compact'] .trend-bars {
+      height: 14px;
+    }
+
+    :root[data-density='compact'] .trend-empty {
+      min-height: 14px;
     }
   }
 </style>

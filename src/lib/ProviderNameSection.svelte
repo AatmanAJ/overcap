@@ -31,7 +31,7 @@
 </script>
 
 <section class="provider-name-section" aria-labelledby={`provider-name-title-${provider.id}`}>
-  <h2 class="section-label" id={`provider-name-title-${provider.id}`}>Name</h2>
+  <h2 id={`provider-name-title-${provider.id}`}>Name</h2>
   <div class="provider-name-card">
     <input
       type="text"
@@ -60,7 +60,26 @@
 
 <style>
   .provider-name-section {
-    margin-bottom: 24px;
+    margin-bottom: 14px;
+  }
+
+  .provider-name-section h2 {
+    margin: 0;
+    padding: 0 8px 4px;
+    color: var(--secondary);
+    font-size: 11px;
+    font-weight: 600;
+  }
+
+  .provider-name-card {
+    overflow: hidden;
+    border-radius: 12px;
+    background: var(--card);
+  }
+
+  .provider-name-card:focus-within {
+    outline: 1px solid color-mix(in srgb, var(--text) 65%, transparent);
+    outline-offset: -1px;
   }
 
   input {
@@ -68,23 +87,22 @@
     width: 100%;
     min-width: 0;
     box-sizing: border-box;
-    height: 36px;
-    padding: 0;
+    padding: 10px 12px;
     border: 0;
-    border-bottom: 0.5px solid var(--rule);
     outline: none;
-    color: var(--ink);
+    color: var(--text);
+    background: transparent;
     font: inherit;
-    font-family: var(--font-ui);
-    font-size: 13px;
+    font-size: 12px;
   }
 
   input::placeholder {
-    color: var(--muted);
+    color: var(--tertiary);
     opacity: 1;
   }
 
-  input:focus {
-    border-color: var(--ink);
+  :global(:root[data-density='compact']) input {
+    padding-top: 8px;
+    padding-bottom: 8px;
   }
 </style>

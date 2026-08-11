@@ -75,10 +75,10 @@ describe('Overcap customization persistence and reorder', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Customise' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'Reset all customisation' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Reset all customization' }));
 
-    const dialog = screen.getByRole('alertdialog', { name: 'Reset all customisation?' });
+    const dialog = screen.getByRole('alertdialog', { name: 'Reset All Customization?' });
     expect(dialog).toHaveTextContent('restores every provider');
     expect(browserConfirm).not.toHaveBeenCalled();
     expect(mocks.invoke).not.toHaveBeenCalledWith('reset_customization');
@@ -86,8 +86,8 @@ describe('Overcap customization persistence and reorder', () => {
     await fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Reset all customisation' }));
-    await fireEvent.click(screen.getByRole('button', { name: 'Reset all' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Reset all customization' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Reset All' }));
     await waitFor(() => expect(mocks.invoke).toHaveBeenCalledWith('reset_customization'));
     expect(screen.queryByRole('alertdialog')).not.toBeInTheDocument();
   });
@@ -96,7 +96,7 @@ describe('Overcap customization persistence and reorder', () => {
     render(App);
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
-    await fireEvent.click(screen.getByRole('button', { name: 'Customise' }));
+    await fireEvent.click(screen.getByRole('button', { name: 'Customize' }));
     const toggle = screen.getByRole('checkbox', { name: 'Enable codex' });
     await fireEvent.click(toggle);
     await waitFor(() =>
@@ -137,7 +137,7 @@ describe('Overcap customization persistence and reorder', () => {
     await screen.findByText('Plus');
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
-    const launchAtLogin = screen.getByRole('checkbox', { name: 'Launch at login' });
+    const launchAtLogin = screen.getByRole('checkbox', { name: 'Launch at Login' });
 
     await fireEvent.click(launchAtLogin);
 
@@ -269,12 +269,12 @@ describe('Overcap customization persistence and reorder', () => {
 
     handle.focus();
     await fireEvent.keyDown(handle, { key: 'Enter' });
-    expect(screen.queryByRole('heading', { name: 'Customise' })).not.toBeInTheDocument();
+    expect(screen.queryByRole('heading', { name: 'Customize' })).not.toBeInTheDocument();
     expect(screen.getByText('Plus')).toBeInTheDocument();
 
     handle.blur();
     await fireEvent.keyDown(document, { key: 'Enter' });
-    expect(await screen.findByRole('heading', { name: 'Customise' })).toBeInTheDocument();
+    expect(await screen.findByRole('heading', { name: 'Customize' })).toBeInTheDocument();
   });
 
   it('restores the pre-drag layout when a reorder is cancelled', async () => {
