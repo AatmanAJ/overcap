@@ -374,7 +374,7 @@ jobs:
               -x "$signature.minisig"
             verified=$((verified + 1))
           done
-          test "$verified" -eq 5
+          test "$verified" -eq 7
 
       - name: Publish verified release
         env:
