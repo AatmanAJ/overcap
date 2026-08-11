@@ -18,9 +18,14 @@
 Overcap brings the limits and usage data from your AI coding tools into one compact desktop panel.
 See the tightest constraint first, check your pace, and know when you are about to hit the cap.
 
+## Demo
+
 <p align="center">
-  <!-- TODO re-record with Overcap UI -->
-  <img src="assets/overcap-demo.gif" alt="Overcap dashboard showing AI usage and limits" width="840">
+  <img src="assets/overcap-dashboard-demo.gif" alt="Overcap dashboard showing the tightest AI usage limit, pace projection, and provider history" width="434">
+</p>
+
+<p align="center">
+  <img src="assets/overcap-customise-demo.gif" alt="Overcap provider customization, alert thresholds, and share receipt export" width="434">
 </p>
 
 ## Download
@@ -35,9 +40,11 @@ Open the latest release and choose the file for your platform:
 
 - **Windows:** `_x64-setup.exe` or `_arm64-setup.exe`
 - **macOS:** `_universal.dmg` (macOS 11 or later)
-- **Linux:** `.AppImage` or `.deb`
+- **Linux:** `_amd64.AppImage` or `_amd64.deb` for x64; the ARM64/aarch64 equivalent for ARM64
 
-Overcap checks for signed updates automatically.
+Overcap 0.1.0 is a public beta. Its automatic updates are cryptographically signed, but its initial
+Windows and macOS installers do not yet carry Microsoft or Apple developer signatures. Read the
+[installation guide](docs/install.md) for the exact first-launch steps and security prompts.
 
 ## Features
 
@@ -111,7 +118,8 @@ corepack pnpm tauri build --bundles dmg   # macOS
 ## Contributing
 
 Issues and pull requests are welcome. Read [CONTRIBUTING.md](CONTRIBUTING.md) first. Report security
-problems privately through [SECURITY.md](SECURITY.md).
+problems privately through [SECURITY.md](SECURITY.md). For installation help and bug-report details,
+see [SUPPORT.md](SUPPORT.md). Overcap's data handling is documented in [PRIVACY.md](PRIVACY.md).
 
 ## Credits
 

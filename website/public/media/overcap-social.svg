@@ -1,0 +1,25 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-labelledby="title description">
+  <title id="title">Overcap</title>
+  <desc id="description">Know your limit. Before it knows you.</desc>
+  <rect width="1200" height="630" fill="#141414"/>
+  <g fill="#fdf9f0">
+    <text x="72" y="282" font-family="Arial Narrow, Impact, sans-serif" font-size="164" font-weight="700" letter-spacing="-4">OVERCAP</text>
+    <text x="78" y="346" font-family="Inter, Arial, sans-serif" font-size="30" font-weight="600">Know your limit. Before it knows you.</text>
+  </g>
+  <g transform="translate(760 92)">
+    <path d="M 32 288 A 228 228 0 0 1 420 128" fill="none" stroke="#c7ff69" stroke-width="56"/>
+    <path d="M 420 128 A 228 228 0 0 1 452 288" fill="none" stroke="#e75c50" stroke-width="56"/>
+    <path d="M 246 294 L 394 172 L 278 326 Z" fill="#c7ff69"/>
+    <circle cx="252" cy="300" r="28" fill="#c7ff69"/>
+    <circle cx="252" cy="300" r="10" fill="#141414"/>
+  </g>
+  <g transform="translate(708 452)" fill="none" stroke="#c7ff69" stroke-width="6">
+    <polyline points="0,70 72,36 144,54 216,14 288,38 360,4 432,24"/>
+  </g>
+  <g transform="translate(708 452)" fill="#c7ff69">
+    <circle cx="0" cy="70" r="9"/><circle cx="72" cy="36" r="9"/><circle cx="144" cy="54" r="9"/>
+    <circle cx="216" cy="14" r="9"/><circle cx="288" cy="38" r="9"/><circle cx="360" cy="4" r="9"/><circle cx="432" cy="24" r="12"/>
+  </g>
+  <text x="78" y="548" fill="#8f8b83" font-family="Inter, Arial, sans-serif" font-size="18" font-weight="600" letter-spacing="2">WINDOWS · MACOS · LINUX</text>
+  <text x="1122" y="586" fill="#8f8b83" text-anchor="end" font-family="Inter, Arial, sans-serif" font-size="18">overcap.dev</text>
+</svg>

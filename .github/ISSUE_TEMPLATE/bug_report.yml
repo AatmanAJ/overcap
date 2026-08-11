@@ -72,6 +72,8 @@ body:
         - OpenCode
         - OpenRouter
         - Z.ai
+        - Kimi
+        - MiniMax
         - Multiple providers
     validations:
       required: true

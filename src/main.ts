@@ -17,4 +17,9 @@ if (!target) {
   throw new Error('Overcap mount point was not found');
 }
 
-mount(App, { target });
+const demoBackendReady =
+  import.meta.env.DEV && new URLSearchParams(window.location.search).get('demo') === '1'
+    ? import('./demo/installDemoBackend').then(({ installDemoBackend }) => installDemoBackend())
+    : Promise.resolve();
+
+void demoBackendReady.then(() => mount(App, { target }));
