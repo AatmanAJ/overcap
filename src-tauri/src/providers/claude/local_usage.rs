@@ -556,7 +556,8 @@ mod tests {
         let events = deduplicate(events);
         assert_eq!(events.len(), 1);
         assert_eq!(events[0].total_tokens(), 170);
-        let history = aggregate(events, chrono::Utc::now(), &test_bundled_pricing());
+        let now = Utc.with_ymd_and_hms(2026, 7, 11, 12, 0, 0).unwrap();
+        let history = aggregate(events, now, &test_bundled_pricing());
         assert!(history.last_30_days.unwrap().estimated_cost_usd.is_some());
     }
 

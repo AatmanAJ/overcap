@@ -55,6 +55,7 @@ const releaseContracts = [
   'artifact-root: ${{ matrix.smoke-artifact-root }}',
   "needs.validate.result == 'success' && (inputs.verify_only",
   "APPLE_SIGNING_IDENTITY: ${{ runner.os == 'macOS' && '-' || '' }}",
+  'test "$verified" -eq 5',
 ];
 const actionContracts = [
   'Install, start, and uninstall the Windows NSIS package',

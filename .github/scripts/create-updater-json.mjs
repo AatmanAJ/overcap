@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-const signedArtifacts = [
+const updaterArtifacts = [
   {
     label: 'Windows x64 NSIS installer',
     pattern: /_x64-setup\.exe$/i,
@@ -24,16 +24,6 @@ const signedArtifacts = [
     platforms: ['linux-aarch64', 'linux-aarch64-appimage'],
   },
   {
-    label: 'Linux x64 Debian package',
-    pattern: /_amd64\.deb$/i,
-    platforms: ['linux-x86_64-deb'],
-  },
-  {
-    label: 'Linux ARM64 Debian package',
-    pattern: /_arm64\.deb$/i,
-    platforms: ['linux-aarch64-deb'],
-  },
-  {
     label: 'macOS Universal app archive',
     pattern: /_universal\.app\.tar\.gz$/i,
     platforms: [
@@ -44,6 +34,17 @@ const signedArtifacts = [
       'darwin-x86_64-app',
       'darwin-universal-app',
     ],
+  },
+];
+
+const manualArtifacts = [
+  {
+    label: 'Linux x64 Debian package',
+    pattern: /_amd64\.deb$/i,
+  },
+  {
+    label: 'Linux ARM64 Debian package',
+    pattern: /_arm64\.deb$/i,
   },
 ];
 
@@ -71,7 +72,7 @@ export function createUpdaterMetadata(release, signatures, repository, tag, vers
   const platforms = {};
   const prefix = `https://github.com/${repository}/releases/download/${encodeURIComponent(tag)}/`;
 
-  for (const definition of signedArtifacts) {
+  for (const definition of updaterArtifacts) {
     const asset = findExactlyOne(assets, definition.pattern, definition.label);
     if (!asset.name.includes(`_${version}_`)) {
       throw new Error(
@@ -94,6 +95,16 @@ export function createUpdaterMetadata(release, signatures, repository, tag, vers
     };
     for (const platform of definition.platforms) {
       platforms[platform] = entry;
+    }
+    recognized.add(asset.name);
+  }
+
+  for (const definition of manualArtifacts) {
+    const asset = findExactlyOne(assets, definition.pattern, definition.label);
+    if (!asset.name.includes(`_${version}_`)) {
+      throw new Error(
+        `${definition.label} does not match release version ${version}: ${asset.name}`,
+      );
     }
     recognized.add(asset.name);
   }
