@@ -214,6 +214,7 @@ fn handle_run_event(_app: &AppHandle, _event: tauri::RunEvent) {
     #[cfg(target_os = "macos")]
     if let tauri::RunEvent::Reopen {
         has_visible_windows: false,
+        ..
     } = _event
     {
         if _app
