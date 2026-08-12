@@ -1,12 +1,12 @@
-import type { Metadata } from "next";
-import { DownloadGrid } from "../components/DownloadGrid";
-import { SiteFooter } from "../components/SiteFooter";
-import { SiteHeader } from "../components/SiteHeader";
+import type { Metadata } from 'next';
+import { DownloadGrid } from '../components/DownloadGrid';
+import { SiteFooter } from '../components/SiteFooter';
+import { SiteHeader } from '../components/SiteHeader';
 
 export const metadata: Metadata = {
-  title: "Download",
-  description: "Download the Overcap desktop beta for Windows, macOS or Linux.",
-  alternates: { canonical: "/download" },
+  title: 'Download',
+  description: 'Download Overcap for Windows, macOS or Linux.',
+  alternates: { canonical: '/download' },
 };
 
 export default function DownloadPage() {
@@ -15,27 +15,40 @@ export default function DownloadPage() {
       <SiteHeader />
       <main id="main-content">
         <header className="page-hero shell">
-          <p className="eyebrow eyebrow-accent">Overcap 0.1.1 beta</p>
-          <h1>Download once.<br />Watch every limit.</h1>
+          <p className="signal-label">
+            <span aria-hidden="true" />
+            Build index / 0.1.1
+          </p>
+          <h1>
+            Choose a machine.
+            <br />
+            Read the signal.
+          </h1>
           <p>
-            Choose your platform below. Every build comes from the public GitHub release, and
-            Overcap checks that same release feed for signed in-app updates.
+            Every build comes from the public GitHub release. Overcap checks that same feed for
+            cryptographically verified in-app updates.
           </p>
         </header>
         <section className="inner-section shell" aria-labelledby="builds-heading">
-          <h2 className="visually-hidden" id="builds-heading">Available builds</h2>
+          <h2 className="visually-hidden" id="builds-heading">
+            Available builds
+          </h2>
           <div className="notice">
-            <strong>Beta note</strong>
+            <strong>Unsigned beta</strong>
             <p>
-              These first builds are not signed with Apple or Microsoft developer certificates.
-              Your operating system may ask for one extra confirmation before opening Overcap.
-              Download only from the official release page linked here.
+              Current builds are not signed with Apple or Microsoft developer certificates. Your
+              operating system may ask for one extra confirmation before opening Overcap. Download
+              only from the official release page linked here.
             </p>
           </div>
           <DownloadGrid />
 
           <div className="install-guide">
-            <h2>Install without the guesswork</h2>
+            <h2>
+              First launch,
+              <br />
+              without guesswork.
+            </h2>
             <ol className="install-list">
               <li>
                 <h3>Windows</h3>

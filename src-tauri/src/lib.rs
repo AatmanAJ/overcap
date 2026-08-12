@@ -1,46 +1,75 @@
+#[cfg(not(feature = "recorder"))]
 mod child_process;
+#[cfg(not(feature = "recorder"))]
 mod commands;
+#[cfg(not(feature = "recorder"))]
 mod desktop_integration;
+#[cfg(not(feature = "recorder"))]
 mod logging;
-#[cfg(any(target_os = "macos", test))]
+#[cfg(all(not(feature = "recorder"), any(target_os = "macos", test)))]
 mod menu_bar;
+#[cfg(not(feature = "recorder"))]
 mod models;
+#[cfg(not(feature = "recorder"))]
 mod notifications;
+#[cfg(not(feature = "recorder"))]
 mod pacing;
+#[cfg(not(feature = "recorder"))]
 mod policy;
+#[cfg(not(feature = "recorder"))]
 mod popup;
+#[cfg(not(feature = "recorder"))]
 mod pricing;
+#[cfg(not(feature = "recorder"))]
 mod provider_environment;
+#[cfg(not(feature = "recorder"))]
 mod providers;
+#[cfg(not(feature = "recorder"))]
 mod refresh_loop;
+#[cfg(not(feature = "recorder"))]
 mod service;
+#[cfg(not(feature = "recorder"))]
 mod settings;
+#[cfg(not(feature = "recorder"))]
 mod storage;
-#[cfg(any(not(target_os = "macos"), test))]
+#[cfg(all(not(feature = "recorder"), any(not(target_os = "macos"), test)))]
 mod tray_icon;
+#[cfg(not(feature = "recorder"))]
 mod tray_presentation;
+#[cfg(not(feature = "recorder"))]
 mod updates;
+#[cfg(not(feature = "recorder"))]
 mod webview_memory;
+#[cfg(not(feature = "recorder"))]
 mod window;
-#[cfg(any(target_os = "linux", test))]
+#[cfg(all(not(feature = "recorder"), any(target_os = "linux", test)))]
 mod xdg_autostart;
 
+#[cfg(not(feature = "recorder"))]
 use std::sync::Arc;
 
+#[cfg(not(feature = "recorder"))]
 use popup::PopupDismissGuard;
+#[cfg(not(feature = "recorder"))]
 use service::ProviderService;
+#[cfg(not(feature = "recorder"))]
 use settings::{CredentialDetectionPlan, SettingsService};
-#[cfg(not(target_os = "linux"))]
+#[cfg(all(not(feature = "recorder"), not(target_os = "linux")))]
 use tauri::tray::{MouseButton, MouseButtonState, TrayIconEvent};
+#[cfg(not(feature = "recorder"))]
 use tauri::{
     menu::{Menu, MenuItem, PredefinedMenuItem},
     tray::TrayIconBuilder,
     AppHandle, Emitter, Manager,
 };
-#[cfg(not(target_os = "linux"))]
+#[cfg(feature = "recorder")]
+use tauri::{AppHandle, Manager};
+#[cfg(all(not(feature = "recorder"), not(target_os = "linux")))]
 use tauri_plugin_autostart::ManagerExt as AutostartExt;
+#[cfg(not(feature = "recorder"))]
 use tauri_plugin_global_shortcut::{GlobalShortcutExt, ShortcutState};
 
+#[cfg(not(feature = "recorder"))]
 use crate::{
     desktop_integration::DesktopIntegration,
     pacing::NotificationEvaluator,
@@ -59,6 +88,7 @@ use crate::{
     },
 };
 
+#[cfg(not(feature = "recorder"))]
 fn spawn_startup_credential_detection(
     app: AppHandle,
     registry: Arc<ProviderRegistry>,
@@ -116,6 +146,7 @@ fn spawn_startup_credential_detection(
     });
 }
 
+#[cfg(not(feature = "recorder"))]
 fn register_shortcut(app: &AppHandle, shortcut: &str) -> Result<(), String> {
     app.global_shortcut()
         .on_shortcut(shortcut, |app, _, event| {
@@ -129,6 +160,7 @@ fn register_shortcut(app: &AppHandle, shortcut: &str) -> Result<(), String> {
         })
 }
 
+#[cfg(not(feature = "recorder"))]
 pub(crate) fn apply_shortcut_change(
     app: &AppHandle,
     previous: Option<&str>,
@@ -152,6 +184,7 @@ pub(crate) fn apply_shortcut_change(
     Ok(())
 }
 
+#[cfg(not(feature = "recorder"))]
 pub(crate) fn set_autostart(app: &AppHandle, enabled: bool) -> Result<(), String> {
     #[cfg(target_os = "linux")]
     {
@@ -171,6 +204,7 @@ pub(crate) fn set_autostart(app: &AppHandle, enabled: bool) -> Result<(), String
     }
 }
 
+#[cfg(not(feature = "recorder"))]
 pub(crate) fn autostart_is_enabled(app: &AppHandle) -> Result<bool, ()> {
     #[cfg(target_os = "linux")]
     {
@@ -183,7 +217,7 @@ pub(crate) fn autostart_is_enabled(app: &AppHandle) -> Result<bool, ()> {
     }
 }
 
-#[cfg(target_os = "macos")]
+#[cfg(all(not(feature = "recorder"), target_os = "macos"))]
 fn install_macos_application_menu(app: &mut tauri::App) -> tauri::Result<()> {
     let menu = Menu::default(app.handle())?;
     if let Some(application_menu) = menu
@@ -207,6 +241,7 @@ fn install_macos_application_menu(app: &mut tauri::App) -> tauri::Result<()> {
     Ok(())
 }
 
+#[cfg(not(feature = "recorder"))]
 fn handle_run_event(_app: &AppHandle, _event: tauri::RunEvent) {
     if matches!(&_event, tauri::RunEvent::ExitRequested { .. }) {
         window::persist_application_window_state(_app);
@@ -228,6 +263,35 @@ fn handle_run_event(_app: &AppHandle, _event: tauri::RunEvent) {
     }
 }
 
+#[cfg(feature = "recorder")]
+fn setup_recorder(app: &mut tauri::App) -> Result<(), Box<dyn std::error::Error>> {
+    let Some(window) = app.get_webview_window("main") else {
+        return Err("Overcap Recorder requires the main window".into());
+    };
+    window.set_skip_taskbar(false)?;
+    window.set_always_on_top(false)?;
+    window.show()?;
+    window.set_focus()?;
+    Ok(())
+}
+
+#[cfg(feature = "recorder")]
+#[tauri::command]
+fn recorder_close(app: AppHandle) {
+    app.exit(0);
+}
+
+#[cfg(feature = "recorder")]
+pub fn run() {
+    tauri::Builder::default()
+        .setup(setup_recorder)
+        .invoke_handler(tauri::generate_handler![recorder_close])
+        .build(tauri::generate_context!())
+        .expect("error while building Overcap Recorder")
+        .run(|_, _| {});
+}
+
+#[cfg(not(feature = "recorder"))]
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default();

@@ -2,7 +2,7 @@
 
 Effective 11 August 2026
 
-Overcap is a local desktop app. AIWITHAJ does not operate an Overcap account service or cloud
+Overcap is a local desktop app. The Overcap project does not operate an account service or cloud
 backend, and Overcap does not include analytics, advertising, tracking pixels, or usage telemetry.
 
 ## What stays on your device
@@ -12,7 +12,7 @@ usage history, notification state, and diagnostic logs locally. API keys entered
 stored through your operating system's credential store, not in Overcap's settings database.
 
 Depending on the provider, Overcap may also read an existing local session, credential, or usage
-file created by that provider's own tool. Overcap does not upload that local data to AIWITHAJ.
+file created by that provider's own tool. Overcap does not upload that local data to the project.
 
 ## Network connections
 
@@ -26,7 +26,7 @@ Overcap makes network requests only to provide app functionality:
 
 Those services receive the information normally required to answer the request, such as your IP
 address and the provider credential used for that connection. Their own privacy policies apply.
-AIWITHAJ does not receive a copy through Overcap.
+The Overcap project does not receive a copy.
 
 ## Exports, notifications, and logs
 

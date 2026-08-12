@@ -1,0 +1,37 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Overcap Recorder",
+  "identifier": "dev.overcap.recorder",
+  "build": {
+    "beforeBuildCommand": "corepack pnpm build:recorder:web"
+  },
+  "app": {
+    "security": {
+      "capabilities": ["recorder"]
+    },
+    "windows": [
+      {
+        "label": "main",
+        "title": "Overcap Recorder",
+        "width": 320,
+        "height": 800,
+        "minWidth": 320,
+        "minHeight": 800,
+        "maxWidth": 320,
+        "maxHeight": 800,
+        "resizable": false,
+        "fullscreen": false,
+        "decorations": false,
+        "transparent": false,
+        "visible": true,
+        "skipTaskbar": false,
+        "alwaysOnTop": false,
+        "shadow": true,
+        "center": true
+      }
+    ]
+  },
+  "bundle": {
+    "active": false
+  }
+}

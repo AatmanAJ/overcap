@@ -25,6 +25,14 @@ type DemoTauriInternals = {
   unregisterCallback: (id: number) => void;
 };
 
+export type DemoTheme = 'dark' | 'light';
+
+export type DemoBackendOptions = {
+  defaultTheme?: DemoTheme;
+};
+
+export type RecorderShortcutAction = DemoTheme | 'reset' | null;
+
 const DEMO_PROVIDER_IDS = ['codex', 'claude', 'openrouter', 'antigravity'];
 
 function isoAt(now: number, offsetMs: number) {
@@ -180,13 +188,13 @@ function buildClaudeState(now: number): ProviderViewState {
   return state;
 }
 
-function buildSettings(): SettingsViewState {
+function buildSettings(defaultTheme: DemoTheme): SettingsViewState {
   const base = structuredClone(settingsState);
   const settings: AppSettings = {
     ...base.settings,
     providerNames: { codex: 'Studio' },
     knownProviderIds: [...DEMO_PROVIDER_IDS],
-    theme: 'dark',
+    theme: defaultTheme,
     windowMode: 'floating',
     autoCheckUpdates: false,
     notifications: { almostOut: true, cuttingItClose: true, willRunOut: true },
@@ -219,7 +227,10 @@ function buildSettings(): SettingsViewState {
   };
 }
 
-function buildBootstrap(now = Date.now()): BootstrapState {
+export function buildDemoBootstrap(
+  now = Date.now(),
+  defaultTheme: DemoTheme = 'dark',
+): BootstrapState {
   return {
     usage: {
       providers: {
@@ -228,9 +239,59 @@ function buildBootstrap(now = Date.now()): BootstrapState {
       },
       lastFullRefreshAt: isoAt(now, -3 * 60_000),
     },
-    settings: buildSettings(),
+    settings: buildSettings(defaultTheme),
     catalog: structuredClone(providerCatalog),
   };
+}
+
+export function recorderShortcutAction(
+  event: Pick<KeyboardEvent, 'altKey' | 'code' | 'ctrlKey' | 'key' | 'metaKey' | 'shiftKey'>,
+): RecorderShortcutAction {
+  if (!event.ctrlKey || !event.shiftKey || event.altKey || event.metaKey) return null;
+  if (event.code === 'Digit0' || event.code === 'Numpad0' || event.key === '0') return 'reset';
+  const key = event.key.toLowerCase();
+  if (key === 'l') return 'light';
+  if (key === 'd') return 'dark';
+  return null;
+}
+
+export function installRecorderIndicator() {
+  const existing = document.querySelector<HTMLElement>('[data-recorder-indicator]');
+  if (existing) return existing;
+
+  const indicator = document.createElement('div');
+  indicator.dataset.recorderIndicator = '';
+  indicator.setAttribute('role', 'status');
+  indicator.setAttribute('aria-label', 'Recorder edition using demo data');
+  indicator.textContent = 'Demo data';
+  document.body.append(indicator);
+
+  if (!document.querySelector('[data-recorder-indicator-style]')) {
+    const style = document.createElement('style');
+    style.dataset.recorderIndicatorStyle = '';
+    style.textContent = `
+      [data-recorder-indicator] {
+        position: fixed;
+        z-index: 10001;
+        top: 8px;
+        left: 8px;
+        display: grid;
+        height: 16px;
+        padding: 0 8px;
+        border: 1px solid color-mix(in srgb, #12161b 32%, transparent);
+        border-radius: 999px;
+        background: #f04b2f;
+        color: #12161b;
+        font: 600 9px/14px Inter, system-ui, sans-serif;
+        letter-spacing: 0.04em;
+        pointer-events: none;
+        place-items: center;
+      }
+    `;
+    document.head.append(style);
+  }
+
+  return indicator;
 }
 
 function installReceiptPreview() {
@@ -301,12 +362,18 @@ function installReceiptPreview() {
   document.head.append(style);
 }
 
-export function installDemoBackend() {
-  const demo = buildBootstrap();
+type DemoBackend = {
+  demo: BootstrapState;
+  invoke: DemoTauriInternals['invoke'];
+};
+
+type NativeInvoke = typeof import('@tauri-apps/api/core').invoke;
+
+function createDemoBackend(options: DemoBackendOptions = {}): DemoBackend {
+  const defaultTheme = options.defaultTheme ?? 'dark';
+  const demo = buildDemoBootstrap(Date.now(), defaultTheme);
   let settingsRevision = demo.settings.accountRevision;
-  let callbackId = 0;
   let eventId = 0;
-  const callbacks = new Map<number, unknown>();
 
   const invoke: DemoTauriInternals['invoke'] = async (command, args = {}) => {
     switch (command) {
@@ -332,25 +399,46 @@ export function installDemoBackend() {
         return structuredClone(demo.settings);
       }
       case 'reset_customization':
-        demo.settings = buildSettings();
+        demo.settings = buildSettings(defaultTheme);
         return structuredClone(demo.settings);
       case 'reset_provider_customization':
       case 'request_notification_permission':
         return structuredClone(demo.settings);
       case 'get_provider_api_key_state':
         return { providerId: args.providerId, status: 'notSet' };
+      case 'save_provider_api_key':
+      case 'delete_provider_api_key':
+        return { providerId: args.providerId, status: 'notSet' };
+      case 'claim_codex_reset_credit':
+        return 'noCredit';
       case 'get_panel_resize_edge':
+      case 'begin_panel_resize':
         return 'bottom';
       case 'get_panel_height_mode':
         return 'automatic';
       case 'fit_panel_to_content':
         return true;
+      case 'set_panel_height_automatic':
+      case 'set_panel_height_manual':
+      case 'lock_panel_resize_axis':
+      case 'open_external_link':
+      case 'open_provider_link':
+      case 'open_notification_settings':
+      case 'open_log_folder':
+      case 'open_update_page':
+      case 'install_update':
+        return null;
       case 'get_log_path':
         return 'Demo log';
+      case 'dismiss_main_window':
+      case 'quit_app':
+        return null;
+      case 'restart_app':
+        return null;
       case 'check_for_updates':
         return {
           available: false,
-          currentVersion: '0.1.0',
+          currentVersion: '0.1.1',
           version: null,
           body: null,
           installable: false,
@@ -366,12 +454,63 @@ export function installDemoBackend() {
       case 'plugin:window|inner_size':
         return { width: window.innerWidth, height: window.innerHeight };
       default:
-        return null;
+        throw new Error(`Recorder backend rejected command: ${command}`);
     }
   };
 
+  return { demo, invoke };
+}
+
+let recorderBackend: DemoBackend | null = null;
+
+export function recorderInvoke<T>(
+  command: string,
+  args: Record<string, unknown> = {},
+  nativeInvoke?: NativeInvoke,
+  options?: Parameters<NativeInvoke>[2],
+): Promise<T> {
+  const backend = recorderBackend;
+  if (!backend) return Promise.reject(new Error('Overcap Recorder backend is not ready.'));
+  if ((command === 'dismiss_main_window' || command === 'quit_app') && nativeInvoke) {
+    return nativeInvoke<T>('recorder_close', {}, options);
+  }
+  if (command === 'restart_app') {
+    window.location.reload();
+    return Promise.resolve(undefined as T);
+  }
+  return backend.invoke(command, args) as Promise<T>;
+}
+
+export function installRecorderEdition(options: DemoBackendOptions = {}) {
+  recorderBackend = createDemoBackend(options);
+  document.documentElement.dataset.recorderEdition = '';
+  installRecorderIndicator();
+  window.addEventListener(
+    'keydown',
+    (event) => {
+      const action = recorderShortcutAction(event);
+      if (!action) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      if (action === 'reset') {
+        window.location.reload();
+        return;
+      }
+      if (recorderBackend) recorderBackend.demo.settings.settings.theme = action;
+      document.documentElement.dataset.theme = action;
+    },
+    { capture: true },
+  );
+  installReceiptPreview();
+}
+
+export function installDemoBackend(options: DemoBackendOptions = {}) {
+  const backend = createDemoBackend(options);
+  let callbackId = 0;
+  const callbacks = new Map<number, unknown>();
+
   const internals: DemoTauriInternals = {
-    invoke,
+    invoke: backend.invoke,
     metadata: {
       currentWindow: { label: 'main' },
       currentWebview: { label: 'main', windowLabel: 'main' },

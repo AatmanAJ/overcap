@@ -1011,7 +1011,8 @@
             ><Icon name="close" size={11} strokeWidth={2.3} /></button
           >
           <OvercapMark size={44} />
-          <h1>Overcap by AIWITHAJ</h1>
+          <p class="about-card__eyebrow">Local capacity monitor</p>
+          <h1>Overcap</h1>
           <p class="about-card__version">Version {appVersion}</p>
           <a
             class="about-card__credit"
@@ -1020,7 +1021,6 @@
           >
           <nav class="about-card__links" aria-label="Overcap links">
             <a href="https://overcap.dev" onclick={openAboutLink}>overcap.dev</a>
-            <a href="https://aiwithaj.dev" onclick={openAboutLink}>aiwithaj.dev</a>
           </nav>
         </div>
       </div>
@@ -1626,7 +1626,7 @@
       z-index: 100;
       display: grid;
       border: 0;
-      background: rgba(0, 0, 0, 0.28);
+      background: color-mix(in srgb, var(--ink) 28%, transparent);
       inset: 0;
       place-items: center;
     }
@@ -1647,10 +1647,11 @@
     }
 
     .about-card h1 {
-      margin: 10px 0 2px;
-      font-size: 17px;
+      margin: 4px 0 2px;
+      font-size: 18px;
+      font-weight: 600;
       font-family: var(--font-display);
-      letter-spacing: 0.04em;
+      letter-spacing: -0.02em;
     }
 
     .about-card p {
@@ -1660,6 +1661,25 @@
       font-size: 10px;
       font-variant-numeric: tabular-nums;
       text-align: center;
+    }
+
+    .about-card .about-card__eyebrow {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      margin-top: 12px;
+      color: var(--secondary);
+      font-size: 9px;
+      font-weight: 600;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
+    .about-card .about-card__eyebrow::before {
+      width: 12px;
+      height: 2px;
+      background: var(--signal);
+      content: '';
     }
 
     .about-card__credit {

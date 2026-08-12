@@ -207,7 +207,7 @@
 
   .hero-gauge__needle-shadow {
     transform: translate(2px, 2px) rotate(var(--needle-angle));
-    stroke: color-mix(in srgb, #141414 65%, transparent);
+    stroke: color-mix(in srgb, var(--edge) 65%, transparent);
   }
 
   .hero-gauge__needle {
@@ -215,7 +215,7 @@
   }
 
   .hero-gauge__pivot-shadow {
-    fill: color-mix(in srgb, #141414 65%, transparent);
+    fill: color-mix(in srgb, var(--edge) 65%, transparent);
   }
 
   .hero-gauge__pivot {

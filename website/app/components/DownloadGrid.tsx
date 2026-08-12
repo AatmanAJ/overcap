@@ -1,35 +1,35 @@
-const latestRelease = "https://github.com/AJ-Base44/overcap/releases/latest";
+const latestRelease = 'https://github.com/AJ-Base44/overcap/releases/latest';
 
 const platforms = [
   {
-    name: "Windows",
-    kicker: "Windows 10+",
-    builds: "x64 and ARM64",
-    files: "Choose the .exe ending in _x64-setup or _arm64-setup.",
+    name: 'Windows',
+    kicker: 'Windows 10+',
+    builds: 'x64 and ARM64',
+    files: 'Choose the .exe ending in _x64-setup or _arm64-setup.',
     caveat:
-      "The first beta is not code-signed. Windows may show an Unknown publisher or SmartScreen warning.",
+      'The current beta is not code-signed. Windows may show an Unknown publisher or SmartScreen warning.',
   },
   {
-    name: "macOS",
-    kicker: "macOS 11+",
-    builds: "Apple Silicon and Intel",
-    files: "Choose the universal .dmg.",
+    name: 'macOS',
+    kicker: 'macOS 11+',
+    builds: 'Apple Silicon and Intel',
+    files: 'Choose the universal .dmg.',
     caveat:
-      "The first beta is ad-hoc signed. If macOS blocks it, control-click Overcap, choose Open, then confirm.",
+      'The current beta is ad-hoc signed. If macOS blocks it, control-click Overcap, choose Open, then confirm.',
   },
   {
-    name: "Linux",
-    kicker: "64-bit Linux",
-    builds: "x64 and ARM64",
-    files: "Choose an AppImage or Debian .deb package.",
+    name: 'Linux',
+    kicker: '64-bit Linux',
+    builds: 'x64 and ARM64',
+    files: 'Choose an AppImage or Debian .deb package.',
     caveat:
-      "For AppImage, allow the file to run as a program. Debian packages install with your normal package manager.",
+      'For AppImage, allow the file to run as a program. Debian packages install with your normal package manager.',
   },
 ];
 
 export function DownloadGrid({ compact = false }: { compact?: boolean }) {
   return (
-    <div className={`download-grid${compact ? " download-grid-compact" : ""}`}>
+    <div className={`download-grid${compact ? ' download-grid-compact' : ''}`}>
       {platforms.map((platform) => (
         <article className="download-card" key={platform.name}>
           <div className="download-card-top">
@@ -40,7 +40,7 @@ export function DownloadGrid({ compact = false }: { compact?: boolean }) {
           <p>{platform.files}</p>
           {!compact && <p className="caveat">{platform.caveat}</p>}
           <a className="button button-small" href={latestRelease}>
-            Get {platform.name} build
+            Download / {platform.name}
           </a>
         </article>
       ))}

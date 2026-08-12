@@ -1,0 +1,30 @@
+:root {
+  --overcap-canvas: #f3f1ea;
+  --overcap-surface: #fcfbf7;
+  --overcap-ink: #12161b;
+  --overcap-body: #343a40;
+  --overcap-muted: #5c646b;
+  --overcap-rule: #c9c7be;
+  --overcap-edge: #747a7f;
+  --overcap-track: #dedcd4;
+  --overcap-signal: #f04b2f;
+  --overcap-warning: #a36500;
+  --overcap-critical: #b52c2c;
+  --overcap-font: 'Inter', system-ui, sans-serif;
+  --overcap-figure-font: 'JetBrains Mono', ui-monospace, SFMono-Regular, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --overcap-canvas: #0e1115;
+    --overcap-surface: #151a20;
+    --overcap-ink: #f2f0e9;
+    --overcap-body: #c7c9c6;
+    --overcap-muted: #91979d;
+    --overcap-rule: #343b43;
+    --overcap-edge: #66717c;
+    --overcap-track: #232930;
+    --overcap-warning: #e8b04b;
+    --overcap-critical: #ff6b62;
+  }
+}

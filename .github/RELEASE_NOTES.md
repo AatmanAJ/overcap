@@ -1,6 +1,6 @@
 ## Overcap 0.1.1
 
-Track usage and limits across your AI coding tools from one desktop app.
+Live quotas, reset times and spend across your coding tools from one desktop app.
 
 ### What's new
 

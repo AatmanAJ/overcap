@@ -21,9 +21,8 @@
   role={decorative ? undefined : 'img'}
   focusable="false"
 >
-  <path d="M3.5 16.5A9 9 0 0 1 20.5 15" stroke-width="2.25" />
-  <path d="m12 16 3.15-9.15" stroke-width="2" />
-  <circle cx="12" cy="16" r="1.75" fill="currentColor" stroke="none" />
+  <path d="M17.6 8.2a7.4 7.4 0 1 0 1.1 5.8" stroke-width="2.4" />
+  <path class="overcap-mark__cap" d="M15.8 4.7h4.9" stroke-width="2.4" />
 </svg>
 
 <style>

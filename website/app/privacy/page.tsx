@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
-import { SiteFooter } from "../components/SiteFooter";
-import { SiteHeader } from "../components/SiteHeader";
+import type { Metadata } from 'next';
+import { SiteFooter } from '../components/SiteFooter';
+import { SiteHeader } from '../components/SiteHeader';
 
 export const metadata: Metadata = {
-  title: "Privacy",
-  description: "How the Overcap desktop app handles provider credentials, usage data and updates.",
-  alternates: { canonical: "/privacy" },
+  title: 'Privacy',
+  description: 'How the Overcap desktop app handles provider credentials, usage data and updates.',
+  alternates: { canonical: '/privacy' },
 };
 
 export default function PrivacyPage() {
@@ -32,9 +32,9 @@ export default function PrivacyPage() {
         <section className="legal-section">
           <h2>Where credentials live</h2>
           <p>
-            API keys entered in Overcap are stored by your operating system’s credential store, not
-            in the website and not in an AIWITHAJ cloud account. The app uses them only to request
-            the provider data shown in your dashboard.
+            API keys entered in Overcap are stored by your operating system&apos;s credential store,
+            not in the website or an Overcap account. Overcap has no account service. The app uses
+            credentials only to request the provider data shown in your dashboard.
           </p>
         </section>
 
@@ -69,7 +69,7 @@ export default function PrivacyPage() {
         <section className="legal-section">
           <h2>Questions</h2>
           <p>
-            Read the source on <a href="https://github.com/AJ-Base44/overcap">GitHub</a> or email{" "}
+            Read the source on <a href="https://github.com/AJ-Base44/overcap">GitHub</a> or email{' '}
             <a href="mailto:aj@seebyond.com">aj@seebyond.com</a>. Last updated 11 August 2026.
           </p>
         </section>

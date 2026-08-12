@@ -5,23 +5,27 @@
 <h1 align="center">Overcap</h1>
 
 <p align="center">
-  Track usage and limits across your AI coding tools
+  <strong>See the limit. Before you hit it.</strong>
+</p>
+
+<p align="center">
+  Live quotas, reset times and spend across your coding tools.
 </p>
 
 <p align="center">
   <a href="https://github.com/AJ-Base44/overcap/actions/workflows/ci.yml"><img src="https://github.com/AJ-Base44/overcap/actions/workflows/ci.yml/badge.svg" alt="CI status"></a>
   <a href="https://github.com/AJ-Base44/overcap/releases/latest"><img src="https://img.shields.io/github/v/release/AJ-Base44/overcap" alt="Latest release"></a>
   <a href="https://github.com/AJ-Base44/overcap/releases"><img src="https://img.shields.io/github/downloads/AJ-Base44/overcap/total" alt="Total downloads"></a>
-  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-141414.svg" alt="MIT license"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-151A20.svg" alt="MIT license"></a>
 </p>
 
-Overcap brings the limits and usage data from your AI coding tools into one compact desktop panel.
-See the tightest constraint first, check your pace, and know when you are about to hit the cap.
+Overcap turns scattered quota data into one live capacity readout. See the tightest constraint
+first, check the current pace, and know what resets next without breaking your flow.
 
 ## Demo
 
 <p align="center">
-  <img src="assets/overcap-dashboard-demo.gif" alt="Overcap dashboard showing the tightest AI usage limit, pace projection, and provider history" width="434">
+  <img src="assets/overcap-dashboard-demo.gif" alt="Overcap dashboard showing the tightest quota, pace projection, and provider history" width="434">
 </p>
 
 <p align="center">
@@ -126,12 +130,12 @@ see [SUPPORT.md](SUPPORT.md). Overcap's data handling is documented in [PRIVACY.
 ## Credits
 
 Overcap started life as [OpenQuota by deviffyy](https://github.com/deviffyy/OpenQuota). Full credit
-to the original build, this fork rebrands, rethemes and extends it as an AIWITHAJ product.
+to the original build. This fork rebrands, rethemes, and extends that foundation.
 
 ## License
 
 [MIT](LICENSE)
 
 <p align="center">
-  Built by AIWITHAJ · <a href="https://aiwithaj.dev">aiwithaj.dev</a> · <a href="https://overcap.dev">overcap.dev</a>
+  <a href="https://overcap.dev">overcap.dev</a> · Open source under the MIT License
 </p>

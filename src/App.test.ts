@@ -1469,7 +1469,8 @@ describe('Overcap dashboard', () => {
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'About Overcap' }));
     expect(screen.getByRole('dialog', { name: 'About Overcap' })).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Overcap by AIWITHAJ' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Overcap' })).toBeInTheDocument();
+    expect(screen.getByText('Local capacity monitor')).toBeInTheDocument();
     expect(screen.getByText(`Version ${import.meta.env.APP_VERSION}`)).toBeInTheDocument();
     expect(screen.getByRole('link', { name: /Started life/ })).toBeInTheDocument();
     await fireEvent.click(screen.getByRole('link', { name: 'overcap.dev' }));

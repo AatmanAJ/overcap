@@ -425,7 +425,7 @@
   <section class="detection-card" out:snapScale={{ start: 0.95, reducedMotion }}>
     <div>
       <strong>Welcome to Overcap</strong><span
-        >We set you up with the AI tools found on your computer. Add or hide providers any time.</span
+        >We set you up with the coding tools found on your computer. Add or hide providers any time.</span
       >
     </div>
     <button type="button" onclick={onCustomize}>Open Customize</button>

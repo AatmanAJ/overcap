@@ -6,7 +6,12 @@ const application = fs.readFileSync(new URL('src-tauri/src/lib.rs', root), 'utf8
 const invokedCommands = new Set(
   [...backend.matchAll(/invoke(?:<[^>]+>)?\(\s*'([^']+)'/g)].map((match) => match[1]),
 );
-const handlerBlock = application.match(/invoke_handler\(tauri::generate_handler!\[([\s\S]*?)\]\)/);
+const handlerBlocks = [
+  ...application.matchAll(/invoke_handler\(tauri::generate_handler!\[([\s\S]*?)\]\)/g),
+];
+const handlerBlock = handlerBlocks.find((match) =>
+  match[1].includes('commands::bootstrap::get_bootstrap_state'),
+);
 if (!handlerBlock) {
   throw new Error('Could not find the Tauri invoke handler registration.');
 }

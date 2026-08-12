@@ -1,0 +1,12 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "recorder",
+  "description": "Minimal window geometry and movement for the isolated Overcap Recorder edition",
+  "windows": ["main"],
+  "permissions": [
+    "core:window:allow-current-monitor",
+    "core:window:allow-inner-size",
+    "core:window:allow-scale-factor",
+    "core:window:allow-start-dragging"
+  ]
+}

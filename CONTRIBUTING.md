@@ -8,8 +8,8 @@ By participating, you agree to follow the project [Code of Conduct](CODE_OF_COND
 ## Project philosophy
 
 Overcap aims for clean design, fast performance, and a focused user experience. Its purpose is
-simple: make AI coding subscription usage and quota limits easy to understand without interrupting
-the user's work.
+simple: make coding-tool usage and quota limits easy to understand without interrupting the user's
+work.
 
 New features should fit that purpose, follow the existing architecture, and remain useful across the
 supported desktop platforms where applicable. Prefer clear, maintainable solutions over unnecessary

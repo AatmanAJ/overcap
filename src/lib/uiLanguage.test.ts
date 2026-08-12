@@ -17,10 +17,11 @@ import { coLocatedComponentCss } from './uiStyleSources';
 const css = `${tokensCss}\n${layoutCss}\n${sharedComponentCss}\n${coLocatedComponentCss}`;
 
 describe('native UI language contract', () => {
-  it('uses the Overcap type system and reference type sizes', () => {
+  it('uses the Overcap instrument type system and reference type sizes', () => {
     expect(tokensCss).toContain("--font-ui: 'Inter'");
     expect(tokensCss).toContain("--font-mono: 'JetBrains Mono'");
-    expect(tokensCss).toContain("--font-display: 'Bebas Neue'");
+    expect(tokensCss).toContain('--font-display: var(--font-ui)');
+    expect(tokensCss).not.toMatch(/--font-display:[^;]*Impact/);
     expect(css).toMatch(/\.metric\s*{[^}]*font-family: var\(--font-mono\);/s);
     expect(css).toMatch(/font-variant-numeric:\s*tabular-nums/);
     expect(css).toMatch(/\.provider-header h1\s*{[^}]*font-size: 14px;[^}]*font-weight: 600;/s);
@@ -37,20 +38,49 @@ describe('native UI language contract', () => {
     expect(sharedComponentCss).not.toMatch(/@keyframes (?:detail|menu)-in[\s\S]*?opacity:/);
   });
 
-  it('reserves Lime Squeeze for the five product accent roles', () => {
+  it('uses one Signal Orange across the product accent roles', () => {
+    expect(tokensCss).toContain('--signal: #f04b2f;');
     expect(heroGauge).toContain('stroke: var(--meter-fill);');
     expect(providerSparkline).toContain('fill: var(--spark-current);');
     expect(sharedComponentCss).toContain('background: var(--action-fill);');
-    expect(shareCard).toContain("header: '#c7ff69'");
+    expect(shareCard).toContain("signal: '#f04b2f'");
+    expect(shareCard).toContain('RECEIPT_HEADER_HEIGHT - 6');
 
     for (const source of [layoutCss, sharedComponentCss, customizeDetail, statusMetric]) {
       expect(source).not.toContain('var(--meter-fill)');
     }
 
     expect(overcapMark).toContain('stroke="currentColor"');
-    expect(overcapMark).toContain('fill="currentColor"');
+    expect(overcapMark).toContain('overcap-mark__cap');
     expect(overcapMark).not.toContain('overcap-mark.png');
-    expect(overcapMark).not.toContain('#c7ff69');
+    expect(overcapMark).not.toContain('#f04b2f');
+  });
+
+  it('exposes the audited warm light and dark palettes', () => {
+    for (const value of [
+      '#f3f1ea',
+      '#fcfbf7',
+      '#12161b',
+      '#343a40',
+      '#5c646b',
+      '#c9c7be',
+      '#747a7f',
+      '#dedcd4',
+      '#a36500',
+      '#b52c2c',
+      '#0e1115',
+      '#151a20',
+      '#f2f0e9',
+      '#c7c9c6',
+      '#91979d',
+      '#343b43',
+      '#66717c',
+      '#232930',
+      '#e8b04b',
+      '#ff6b62',
+    ]) {
+      expect(tokensCss).toContain(value);
+    }
   });
 
   it('keeps the critical flame colored while its warning copy stays secondary', () => {

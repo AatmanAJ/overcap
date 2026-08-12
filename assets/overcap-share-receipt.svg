@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="720" height="900" viewBox="0 0 720 900" role="img" aria-labelledby="title description">
+  <title id="title">Overcap usage receipt</title>
+  <desc id="description">A sample Overcap receipt using the Operator Signal visual system.</desc>
+  <rect width="720" height="900" fill="#FCFBF7"/>
+  <rect width="720" height="128" fill="#151A20"/>
+  <rect y="116" width="720" height="12" fill="#F04B2F"/>
+  <text x="40" y="78" fill="#F2F0E9" font-family="Inter, Arial, sans-serif" font-size="56" font-weight="600">Overcap</text>
+  <text x="680" y="74" fill="#F2F0E9" text-anchor="end" font-family="JetBrains Mono, Consolas, monospace" font-size="20" font-weight="600">12 AUG 2026</text>
+  <g fill="#12161B" font-family="JetBrains Mono, Consolas, monospace">
+    <g font-size="20">
+      <text x="40" y="186" font-weight="600">PROVIDER</text><text x="680" y="186" text-anchor="end">Claude</text>
+      <text x="40" y="238" font-weight="600">PLAN</text><text x="680" y="238" text-anchor="end">Max</text>
+    </g>
+    <g stroke="#C9C7BE" stroke-width="2" stroke-dasharray="10 8">
+      <line x1="40" y1="280" x2="680" y2="280"/>
+      <line x1="40" y1="706" x2="680" y2="706"/>
+    </g>
+    <text x="40" y="342" font-size="20" font-weight="600">SESSION</text>
+    <text x="680" y="342" text-anchor="end" font-size="22">84% used</text>
+    <rect x="40" y="366" width="640" height="10" fill="#DEDCD4"/>
+    <rect x="40" y="366" width="538" height="10" fill="#F04B2F"/>
+    <text x="40" y="410" fill="#5C646B" font-size="17">RESETS IN 3H 18M / CAPS IN ~2H 05M</text>
+    <text x="40" y="478" font-size="20" font-weight="600">WEEKLY</text>
+    <text x="680" y="478" text-anchor="end" font-size="22">56% used</text>
+    <text x="40" y="530" fill="#5C646B" font-size="17">RESETS IN 2D 8H</text>
+    <text x="40" y="598" font-size="20" font-weight="600">TODAY</text>
+    <text x="680" y="598" text-anchor="end" font-size="22">$3.91 · 2.5M tokens</text>
+    <text x="40" y="650" fill="#5C646B" font-size="17">ESTIMATED FROM LOCAL USAGE</text>
+    <text x="360" y="814" fill="#5C646B" text-anchor="middle" font-size="20" font-weight="600">overcap.dev</text>
+  </g>
+</svg>

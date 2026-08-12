@@ -84,7 +84,7 @@
     z-index: 120;
     display: grid;
     padding: 48px 18px 18px;
-    background: color-mix(in srgb, #000 24%, transparent);
+    background: color-mix(in srgb, var(--ink) 24%, transparent);
     inset: 0;
     place-items: start center;
   }

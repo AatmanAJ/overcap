@@ -394,7 +394,7 @@
     }
 
     .reset-node--warning {
-      color: #141414;
+      color: var(--action-text);
       background: var(--meter-warning);
     }
 

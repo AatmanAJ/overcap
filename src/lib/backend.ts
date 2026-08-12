@@ -1,5 +1,5 @@
-import { invoke } from '@tauri-apps/api/core';
-import { listen } from '@tauri-apps/api/event';
+import { invoke } from 'virtual:overcap-invoke';
+import { listen } from 'virtual:overcap-listen';
 import type {
   AppSettings,
   BootstrapState,

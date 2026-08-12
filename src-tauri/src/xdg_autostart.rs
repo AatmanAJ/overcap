@@ -62,7 +62,7 @@ fn desktop_entry(executable: &std::path::Path) -> String {
 Type=Application\n\
 Version=1.0\n\
 Name=Overcap\n\
-Comment=Track local AI provider quotas\n\
+Comment=Track local coding-tool quotas\n\
 Exec={}\n\
 Icon=dev.overcap.app\n\
 Terminal=false\n\

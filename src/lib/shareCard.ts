@@ -16,9 +16,13 @@ export const SHARE_CARD_WIDTH = 360;
 export const SHARE_CARD_SCALE = 4;
 
 export const SHARE_RECEIPT_COLORS = {
-  paper: '#fdf9f0',
-  ink: '#141414',
-  header: '#c7ff69',
+  paper: '#fcfbf7',
+  ink: '#12161b',
+  header: '#151a20',
+  headerInk: '#f2f0e9',
+  muted: '#5c646b',
+  rule: '#c9c7be',
+  signal: '#f04b2f',
 } as const;
 
 const RECEIPT_HEADER_HEIGHT = 64;
@@ -28,8 +32,8 @@ const RECEIPT_ROW_HEIGHT = 24;
 const RECEIPT_SEPARATOR_HEIGHT = 21;
 const RECEIPT_FOOTER_HEIGHT = 40;
 const RECEIPT_EMPTY_ROW_HEIGHT = RECEIPT_ROW_HEIGHT;
-const DISPLAY_FONT = '"Bebas Neue", Impact, sans-serif';
-const MONO_FONT = '"JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace';
+const UI_FONT = '"Inter", system-ui, sans-serif';
+const FIGURE_FONT = '"JetBrains Mono", ui-monospace, SFMono-Regular, Consolas, monospace';
 const RECEIPT_MONTHS = [
   'JAN',
   'FEB',
@@ -426,13 +430,16 @@ function drawReceiptBase(
   context.fillRect(0, 0, width, height);
   context.fillStyle = SHARE_RECEIPT_COLORS.header;
   context.fillRect(0, 0, width, RECEIPT_HEADER_HEIGHT);
+  context.fillStyle = SHARE_RECEIPT_COLORS.signal;
+  context.fillRect(0, RECEIPT_HEADER_HEIGHT - 6, width, 6);
 
-  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-  context.font = `400 32px ${DISPLAY_FONT}`;
+  context.fillStyle = SHARE_RECEIPT_COLORS.headerInk;
+  context.font = `600 28px ${UI_FONT}`;
   context.textAlign = 'left';
-  context.fillText('OVERCAP', RECEIPT_HORIZONTAL_PADDING, 42);
+  context.fillText('Overcap', RECEIPT_HORIZONTAL_PADDING, 40);
 
-  context.font = `600 10px ${MONO_FONT}`;
+  context.fillStyle = SHARE_RECEIPT_COLORS.headerInk;
+  context.font = `500 10px ${FIGURE_FONT}`;
   context.textAlign = 'right';
   context.fillText(formatReceiptDate(now), width - RECEIPT_HORIZONTAL_PADDING, 37);
   context.textAlign = 'left';
@@ -450,10 +457,10 @@ function drawReceiptLine(
   const right = SHARE_CARD_WIDTH - RECEIPT_HORIZONTAL_PADDING;
   const baseline = top + 16;
   context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-  context.font = `${emphasis ? '600 13px' : '600 10px'} ${MONO_FONT}`;
+  context.font = `${emphasis ? '600 13px' : '600 10px'} ${FIGURE_FONT}`;
   fitText(context, preserveLabelCase ? label : label.toUpperCase(), left, baseline, 145);
 
-  context.font = `${emphasis ? '600 13px' : '400 11px'} ${MONO_FONT}`;
+  context.font = `${emphasis ? '600 13px' : '400 11px'} ${FIGURE_FONT}`;
   context.textAlign = 'right';
   fitTextRight(context, value, right, baseline, 165);
   context.textAlign = 'left';
@@ -464,7 +471,7 @@ function drawReceiptShareRow(context: CanvasRenderingContext2D, row: ShareRow, t
     drawReceiptLine(context, row.label, row.reading, top);
     const details = [row.trailing, row.paceLabel].filter(Boolean).join(' / ');
     context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-    context.font = `400 9px ${MONO_FONT}`;
+    context.font = `400 9px ${FIGURE_FONT}`;
     fitText(
       context,
       details.toUpperCase(),
@@ -495,7 +502,7 @@ function drawReceiptSeparator(context: CanvasRenderingContext2D, width: number, 
   context.save();
   context.beginPath();
   context.setLineDash([5, 4]);
-  context.strokeStyle = SHARE_RECEIPT_COLORS.ink;
+  context.strokeStyle = SHARE_RECEIPT_COLORS.rule;
   context.lineWidth = 1;
   context.moveTo(RECEIPT_HORIZONTAL_PADDING, y);
   context.lineTo(width - RECEIPT_HORIZONTAL_PADDING, y);
@@ -506,8 +513,8 @@ function drawReceiptSeparator(context: CanvasRenderingContext2D, width: number, 
 }
 
 function drawReceiptFooter(context: CanvasRenderingContext2D, width: number, top: number) {
-  context.fillStyle = SHARE_RECEIPT_COLORS.ink;
-  context.font = `600 10px ${MONO_FONT}`;
+  context.fillStyle = SHARE_RECEIPT_COLORS.muted;
+  context.font = `500 10px ${FIGURE_FONT}`;
   context.textAlign = 'center';
   context.fillText('overcap.dev', width / 2, top + 25);
   context.textAlign = 'left';

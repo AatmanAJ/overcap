@@ -6,7 +6,7 @@ use svgtypes::{PathParser, PathSegment};
 use tauri::image::Image;
 use tiny_skia::{FillRule, Mask, Paint, Path, PathBuilder, Pixmap, Transform};
 
-const SOURCE: &str = include_str!("../../assets/overcap-tray.svg");
+const SOURCE: &str = include_str!("../../assets/overcap-tray-gauge.svg");
 const SOURCE_SIZE: f32 = 24.0;
 const ICON_SIZE: u32 = 32;
 const SEGMENT_COUNT: usize = 6;
@@ -18,10 +18,10 @@ const SWEEP_STEPS: usize = 192;
 
 type Rgba = (u8, u8, u8, u8);
 
-const TRACK_COLOR: Rgba = (142, 142, 147, 150);
-const HEALTHY_COLOR: Rgba = (199, 255, 105, 255);
-const CAUTION_COLOR: Rgba = (240, 195, 60, 255);
-const CRITICAL_COLOR: Rgba = (227, 72, 63, 255);
+const TRACK_COLOR: Rgba = (116, 122, 127, 165);
+const HEALTHY_COLOR: Rgba = (240, 75, 47, 255);
+const CAUTION_COLOR: Rgba = (232, 176, 75, 255);
+const CRITICAL_COLOR: Rgba = (255, 107, 98, 255);
 const CRITICAL_THRESHOLD: f64 = 0.2;
 const HEALTHY_THRESHOLD: f64 = 0.6;
 
@@ -301,9 +301,14 @@ mod tests {
                 .map(|pixel| u64::from(pixel[3]))
                 .sum::<u64>()
         };
-        let healthy_pixels = |rgba: &[u8]| {
+        let signal_pixels = |rgba: &[u8]| {
             rgba.chunks_exact(4)
-                .filter(|pixel| pixel[1] > pixel[0] && pixel[1] > pixel[2] && pixel[3] > 200)
+                .filter(|pixel| {
+                    pixel[0] > pixel[1]
+                        && pixel[1] > pixel[2]
+                        && pixel[0].saturating_sub(pixel[1]) > 80
+                        && pixel[3] > 200
+                })
                 .count()
         };
         let red_pixels = |rgba: &[u8]| {
@@ -314,7 +319,7 @@ mod tests {
         assert!(alpha_weight(&empty) < alpha_weight(&quarter));
         assert!(alpha_weight(&quarter) < alpha_weight(&half));
         assert!(alpha_weight(&half) < alpha_weight(&full));
-        assert!(healthy_pixels(&full) > 0);
+        assert!(signal_pixels(&full) > 0);
         assert!(red_pixels(&depleted) > 0);
     }
 }

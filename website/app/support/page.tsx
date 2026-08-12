@@ -1,11 +1,11 @@
-import type { Metadata } from "next";
-import { SiteFooter } from "../components/SiteFooter";
-import { SiteHeader } from "../components/SiteHeader";
+import type { Metadata } from 'next';
+import { SiteFooter } from '../components/SiteFooter';
+import { SiteHeader } from '../components/SiteHeader';
 
 export const metadata: Metadata = {
-  title: "Support",
-  description: "Get help with Overcap, report a bug or privately disclose a security issue.",
-  alternates: { canonical: "/support" },
+  title: 'Support',
+  description: 'Get help with Overcap, report a bug or privately disclose a security issue.',
+  alternates: { canonical: '/support' },
 };
 
 export default function SupportPage() {
@@ -14,8 +14,15 @@ export default function SupportPage() {
       <SiteHeader />
       <main id="main-content">
         <header className="page-hero shell">
-          <p className="eyebrow eyebrow-accent">Support</p>
-          <h1>Stuck? Let’s get it unstuck.</h1>
+          <p className="signal-label">
+            <span aria-hidden="true" />
+            Support channel
+          </p>
+          <h1>
+            Something off?
+            <br />
+            Send a clear signal.
+          </h1>
           <p>
             Overcap is an early beta. Clear bug reports make it better quickly; private security
             reports keep everyone safer.
@@ -35,10 +42,12 @@ export default function SupportPage() {
             <p className="eyebrow">Security issue</p>
             <h2>Report it privately</h2>
             <p>
-              Do not post security vulnerabilities in a public issue. Use GitHub’s private
+              Do not post security vulnerabilities in a public issue. Use GitHub&apos;s private
               reporting flow so the details can be handled safely.
             </p>
-            <a href="https://github.com/AJ-Base44/overcap/security/advisories/new">Private vulnerability report</a>
+            <a href="https://github.com/AJ-Base44/overcap/security/advisories/new">
+              Private vulnerability report
+            </a>
           </article>
           <article className="support-card">
             <p className="eyebrow">Install help</p>
@@ -51,7 +60,7 @@ export default function SupportPage() {
           </article>
           <article className="support-card">
             <p className="eyebrow">Everything else</p>
-            <h2>Contact AIWITHAJ</h2>
+            <h2>Contact the project</h2>
             <p>
               For questions that do not belong in a public issue, email the project contact. Please
               never send API keys, login tokens or provider credentials.

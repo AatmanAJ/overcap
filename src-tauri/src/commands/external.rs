@@ -1,11 +1,7 @@
 use tauri::AppHandle;
 use tauri_plugin_opener::OpenerExt;
 
-const ALLOWED_ORIGINS: [&str; 3] = [
-    "https://overcap.dev",
-    "https://aiwithaj.dev",
-    "https://github.com",
-];
+const ALLOWED_ORIGINS: [&str; 2] = ["https://overcap.dev", "https://github.com"];
 
 fn is_allowed_external_url(url: &str) -> bool {
     if url.chars().any(char::is_whitespace) || url.chars().any(char::is_control) {
@@ -46,9 +42,6 @@ mod tests {
     fn accepts_https_links_on_the_product_and_github_origins() {
         assert!(is_allowed_external_url("https://overcap.dev"));
         assert!(is_allowed_external_url("https://overcap.dev/download"));
-        assert!(is_allowed_external_url(
-            "https://aiwithaj.dev/about?from=app"
-        ));
         assert!(is_allowed_external_url(
             "https://github.com/example/project#readme"
         ));

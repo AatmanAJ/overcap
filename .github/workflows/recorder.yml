@@ -1,0 +1,89 @@
+name: Recorder EXE
+
+on:
+  workflow_dispatch:
+    inputs:
+      theme:
+        description: Starting theme
+        required: true
+        default: dark
+        type: choice
+        options:
+          - dark
+          - light
+
+permissions:
+  contents: read
+
+concurrency:
+  group: recorder-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    name: Build isolated Windows recorder
+    runs-on: windows-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+
+      - uses: pnpm/action-setup@v6
+        with:
+          version: 11.11.0
+          run_install: false
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: src-tauri -> target
+
+      - name: Install frontend dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Test recorder fixtures and controls
+        run: pnpm vitest run src/demo/installDemoBackend.test.ts --maxWorkers=1
+
+      - name: Verify normal build excludes recorder data
+        shell: powershell
+        run: |
+          pnpm build
+          $markers = @('Demo data', 'Recorder edition using demo data', 'Overcap Recorder backend is not ready', 'Studio')
+          $leaks = Get-ChildItem dist -Recurse -File | Select-String -SimpleMatch -Pattern $markers
+          if ($leaks) {
+            $leaks | Select-Object Path, LineNumber, Line
+            throw 'Recorder data leaked into the normal production bundle.'
+          }
+
+      - name: Check recorder Rust surface
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --features recorder -- -D warnings
+
+      - name: Build recorder executable
+        shell: powershell
+        run: .\scripts\build-recorder.ps1 -Theme '${{ inputs.theme }}'
+
+      - name: Verify recorder executable
+        shell: powershell
+        run: |
+          $artifact = Get-Item -LiteralPath artifacts/recorder/Overcap-Recorder.exe
+          if ($artifact.Length -lt 1MB) {
+            throw "Recorder executable is unexpectedly small: $($artifact.Length) bytes."
+          }
+          $bundleText = (Get-ChildItem dist -Recurse -File -Filter '*.js' | ForEach-Object { Get-Content -Raw -LiteralPath $_.FullName }) -join "`n"
+          foreach ($marker in @('Demo data', 'Recorder edition using demo data')) {
+            if (-not $bundleText.Contains($marker)) {
+              throw "Recorder web bundle is missing marker: $marker"
+            }
+          }
+
+      - name: Upload recorder executable
+        uses: actions/upload-artifact@v7
+        with:
+          name: overcap-recorder-windows
+          path: artifacts/recorder/Overcap-Recorder.exe
+          if-no-files-found: error
+          retention-days: 7

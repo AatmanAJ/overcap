@@ -575,7 +575,7 @@
       height: 13px;
       margin-left: 3px;
       border-radius: 50%;
-      color: #141414;
+      color: var(--action-text);
       background: var(--warning);
       font-size: 8px;
       place-items: center;

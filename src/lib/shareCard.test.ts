@@ -349,7 +349,7 @@ describe('share card layout', () => {
     expect(canvas.height).toBe(providerShareCardHeight(rows, true) * SHARE_CARD_SCALE);
     expect(text).toEqual(
       expect.arrayContaining([
-        'OVERCAP',
+        'Overcap',
         '18 JUL 2026',
         'PROVIDER',
         'Work Codex',
@@ -362,17 +362,28 @@ describe('share card layout', () => {
         'overcap.dev',
       ]),
     );
-    expect(drawn.find((entry) => entry.value === 'OVERCAP')?.font).toContain('Bebas Neue');
+    expect(drawn.find((entry) => entry.value === 'Overcap')?.font).toContain('Inter');
     expect(
       drawn
-        .filter((entry) => entry.value !== 'OVERCAP')
+        .filter((entry) => entry.value !== 'Overcap')
         .every((entry) => entry.font.includes('JetBrains Mono')),
     ).toBe(true);
-    expect(drawn.every((entry) => entry.fillStyle === SHARE_RECEIPT_COLORS.ink)).toBe(true);
+    expect(
+      drawn.every((entry) =>
+        (
+          [
+            SHARE_RECEIPT_COLORS.ink,
+            SHARE_RECEIPT_COLORS.headerInk,
+            SHARE_RECEIPT_COLORS.muted,
+          ] as string[]
+        ).includes(entry.fillStyle),
+      ),
+    ).toBe(true);
     expect(fills).toEqual(
       expect.arrayContaining([
         expect.objectContaining({ fillStyle: SHARE_RECEIPT_COLORS.paper }),
         expect.objectContaining({ fillStyle: SHARE_RECEIPT_COLORS.header }),
+        expect.objectContaining({ fillStyle: SHARE_RECEIPT_COLORS.signal }),
       ]),
     );
     expect(context.setLineDash).toHaveBeenCalledWith([5, 4]);
@@ -410,7 +421,7 @@ describe('share card layout', () => {
     expect(canvas.height).toBe(totalSpendShareCardHeight(1) * SHARE_CARD_SCALE);
     expect(text).toEqual(
       expect.arrayContaining([
-        'OVERCAP',
+        'Overcap',
         '18 JUL 2026',
         'PERIOD',
         '30 DAYS',

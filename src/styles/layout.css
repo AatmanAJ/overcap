@@ -157,7 +157,7 @@
     border-radius: 50%;
     border: 1px solid var(--surface-border);
     background: var(--tray);
-    box-shadow: 1px 1px 0 color-mix(in srgb, #141414 25%, transparent);
+    box-shadow: 1px 1px 0 color-mix(in srgb, var(--ink) 25%, transparent);
     content: '';
     transition: transform var(--motion-switch);
   }

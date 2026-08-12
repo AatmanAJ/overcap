@@ -1,0 +1,43 @@
+{
+  "$schema": "https://design-tokens.github.io/community-group/format/",
+  "brand": {
+    "name": "Overcap",
+    "system": "Overcap Instrument",
+    "signal": "#F04B2F"
+  },
+  "color": {
+    "light": {
+      "canvas": "#F3F1EA",
+      "surface": "#FCFBF7",
+      "ink": "#12161B",
+      "body": "#343A40",
+      "muted": "#5C646B",
+      "rule": "#C9C7BE",
+      "edge": "#747A7F",
+      "track": "#DEDCD4",
+      "signal": "#F04B2F",
+      "warning": "#A36500",
+      "critical": "#B52C2C"
+    },
+    "dark": {
+      "canvas": "#0E1115",
+      "surface": "#151A20",
+      "ink": "#F2F0E9",
+      "body": "#C7C9C6",
+      "muted": "#91979D",
+      "rule": "#343B43",
+      "edge": "#66717C",
+      "track": "#232930",
+      "signal": "#F04B2F",
+      "warning": "#E8B04B",
+      "critical": "#FF6B62"
+    }
+  },
+  "typography": {
+    "interfaceFamily": "Inter",
+    "interfaceFallback": "system-ui, sans-serif",
+    "figureFamily": "JetBrains Mono",
+    "figureFallback": "ui-monospace, SFMono-Regular, Consolas, monospace",
+    "figureNumeric": "tabular-nums lining-nums"
+  }
+}
