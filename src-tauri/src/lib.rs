@@ -54,8 +54,8 @@ use crate::{
     },
     storage::Storage,
     window::{
-        handle_window_event, open_screen, show_main_window, toggle_main_window, PanelResizeSession,
-        MAIN_WINDOW,
+        handle_window_event, open_screen, show_main_window, toggle_main_window,
+        DesktopWindowPositionSession, PanelResizeSession, MAIN_WINDOW,
     },
 };
 
@@ -183,6 +183,50 @@ pub(crate) fn autostart_is_enabled(app: &AppHandle) -> Result<bool, ()> {
     }
 }
 
+#[cfg(target_os = "macos")]
+fn install_macos_application_menu(app: &mut tauri::App) -> tauri::Result<()> {
+    let menu = Menu::default(app.handle())?;
+    if let Some(application_menu) = menu
+        .items()?
+        .into_iter()
+        .next()
+        .and_then(|item| item.as_submenu().cloned())
+    {
+        let settings =
+            MenuItem::with_id(app, "app-settings", "Settings…", true, Some("CmdOrCtrl+,"))?;
+        let restart = MenuItem::with_id(app, "app-restart", "Restart Overcap", true, None::<&str>)?;
+        let separator = PredefinedMenuItem::separator(app)?;
+        application_menu.insert_items(&[&settings, &restart, &separator], 2)?;
+    }
+    app.set_menu(menu)?;
+    app.on_menu_event(|app, event| match event.id().as_ref() {
+        "app-settings" => open_screen(app, "settings"),
+        "app-restart" => window::restart_application(app),
+        _ => {}
+    });
+    Ok(())
+}
+
+fn handle_run_event(_app: &AppHandle, _event: tauri::RunEvent) {
+    if matches!(&_event, tauri::RunEvent::ExitRequested { .. }) {
+        window::persist_application_window_state(_app);
+    }
+    #[cfg(target_os = "macos")]
+    if let tauri::RunEvent::Reopen {
+        has_visible_windows: false,
+    } = _event
+    {
+        if _app
+            .try_state::<DesktopIntegration>()
+            .is_some_and(|integration| integration.is_floating())
+        {
+            if let Some(window) = _app.get_webview_window(MAIN_WINDOW) {
+                show_main_window(&window);
+            }
+        }
+    }
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     let builder = tauri::Builder::default();
@@ -208,6 +252,9 @@ pub fn run() {
             #[cfg(target_os = "macos")]
             app.set_activation_policy(tauri::ActivationPolicy::Accessory);
 
+            #[cfg(target_os = "macos")]
+            install_macos_application_menu(app)?;
+
             app.handle().plugin(tauri_plugin_positioner::init())?;
             let desktop_integration = DesktopIntegration::detect();
             app_info!(
@@ -222,6 +269,7 @@ pub fn run() {
             let storage = Arc::new(Storage::open(&database_path)?);
             provider_environment::initialize(storage.load_provider_environment()?);
             provider_environment::refresh_for_next_launch(storage.clone());
+            app.manage(Arc::new(DesktopWindowPositionSession::new(storage.clone())));
             app.manage(Arc::new(PanelResizeSession::new(storage.clone())));
             app_debug!("cache", "application database opened");
             let pricing = Arc::new(PricingStore::new(app_data_dir.join("pricing"))?);
@@ -285,10 +333,12 @@ pub fn run() {
                 let menu = {
                     let settings_item =
                         MenuItem::with_id(app, "settings", "Settings", true, Some("CmdOrCtrl+,"))?;
+                    let restart =
+                        MenuItem::with_id(app, "restart", "Restart Overcap", true, None::<&str>)?;
                     let separator = PredefinedMenuItem::separator(app)?;
                     let quit =
                         MenuItem::with_id(app, "quit", "Quit Overcap", true, Some("CmdOrCtrl+Q"))?;
-                    Menu::with_items(app, &[&settings_item, &separator, &quit])?
+                    Menu::with_items(app, &[&settings_item, &restart, &separator, &quit])?
                 };
                 #[cfg(not(target_os = "macos"))]
                 let menu = {
@@ -298,8 +348,20 @@ pub fn run() {
                     let settings_item =
                         MenuItem::with_id(app, "settings", "Settings…", true, None::<&str>)?;
                     let separator = PredefinedMenuItem::separator(app)?;
+                    let restart =
+                        MenuItem::with_id(app, "restart", "Restart Overcap", true, None::<&str>)?;
                     let quit = MenuItem::with_id(app, "quit", "Quit Overcap", true, None::<&str>)?;
-                    Menu::with_items(app, &[&open, &customize, &settings_item, &separator, &quit])?
+                    Menu::with_items(
+                        app,
+                        &[
+                            &open,
+                            &customize,
+                            &settings_item,
+                            &separator,
+                            &restart,
+                            &quit,
+                        ],
+                    )?
                 };
 
                 let tray = TrayIconBuilder::with_id("overcap-tray")
@@ -320,12 +382,8 @@ pub fn run() {
                     }
                     "customize" => open_screen(app, "customize"),
                     "settings" => open_screen(app, "settings"),
-                    "quit" => {
-                        if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
-                            window::finish_native_panel_resize(&window);
-                        }
-                        app.exit(0);
-                    }
+                    "restart" => window::restart_application(app),
+                    "quit" => window::quit_application(app),
                     _ => {}
                 });
                 #[cfg(not(target_os = "linux"))]
@@ -399,12 +457,14 @@ pub fn run() {
             commands::window::set_panel_height_manual,
             commands::window::begin_panel_resize,
             commands::window::lock_panel_resize_axis,
+            commands::window::restart_app,
             commands::window::quit_app,
             updates::check_for_updates,
             updates::install_update,
             updates::open_update_page
         ])
         .on_window_event(handle_window_event)
-        .run(tauri::generate_context!())
-        .expect("error while running Overcap");
+        .build(tauri::generate_context!())
+        .expect("error while building Overcap")
+        .run(handle_run_event);
 }

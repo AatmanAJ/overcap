@@ -58,7 +58,7 @@ const structuredData = {
   name: "Overcap",
   applicationCategory: "DeveloperApplication",
   operatingSystem: "Windows 10+, macOS 11+, Linux",
-  softwareVersion: "0.1.0",
+  softwareVersion: "0.1.1",
   url: "https://overcap.dev",
   downloadUrl: releaseUrl,
   codeRepository: "https://github.com/AJ-Base44/overcap",

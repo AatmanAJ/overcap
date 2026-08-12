@@ -1,8 +1,15 @@
-## Overcap 0.1.0
+## Overcap 0.1.1
 
 Track usage and limits across your AI coding tools from one desktop app.
 
-### What ships
+### What's new
+
+- Restart Overcap without opening Task Manager or Activity Monitor
+- Use Desktop Window mode to keep Overcap visible in the taskbar or Dock
+- Move Overcap to a second display and keep that position after restarting
+- Reopen a hidden Desktop Window directly from the macOS Dock
+
+### Also included
 
 - A hero gauge that surfaces your tightest current limit
 - Pace and monthly-spend projections
@@ -17,6 +24,6 @@ Track usage and limits across your AI coding tools from one desktop app.
 - macOS: Universal DMG for Apple silicon and Intel
 - Linux x64 and ARM64: AppImage and Debian package
 
-This first public beta is not yet Authenticode-signed or Apple-notarised, so Windows SmartScreen and macOS Gatekeeper may ask you to confirm the install. See the [install guide](https://github.com/AJ-Base44/overcap/blob/main/docs/install.md) for the exact safe steps.
+This public beta is not yet Authenticode-signed or Apple-notarised, so Windows SmartScreen and macOS Gatekeeper may ask you to confirm the install. See the [install guide](https://github.com/AJ-Base44/overcap/blob/main/docs/install.md) for the exact safe steps.
 
 Automatic update packages are separately protected by Overcap's bundled updater signature. Linux in-app updates are supported by AppImage builds; Debian packages update through your package installer.

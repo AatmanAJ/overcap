@@ -19,6 +19,7 @@
     openNotificationSettings as openSystemNotificationSettings,
     openLogFolder as openSystemLogFolder,
     quitApplication,
+    restartApplication,
     refreshProviderUsage,
     refreshUsage,
     requestNotificationPermission,
@@ -158,6 +159,9 @@
   }
   function quitApp() {
     void quitApplication();
+  }
+  function restartApp() {
+    void restartApplication();
   }
   function screenRank(value: Screen) {
     if (value.startsWith('provider:')) return 2;
@@ -813,6 +817,8 @@
                 onAbout={() => (showAbout = true)}
                 onCopyLogPath={copyLogPath}
                 onOpenLogFolder={openLogFolder}
+                onRestart={restartApp}
+                onQuit={quitApp}
               />
             {:else if screen === 'customize'}
               <CustomizeProviderList
@@ -862,9 +868,9 @@
                 class="window-mode-toggle"
                 class:window-mode-toggle--active={floatingWindow}
                 type="button"
-                aria-label={floatingWindow ? 'Return to Tray Popup' : 'Keep Window Open'}
+                aria-label={floatingWindow ? 'Return to Tray Popup' : 'Open as Desktop Window'}
                 aria-pressed={floatingWindow}
-                data-tooltip={floatingWindow ? 'Return to Tray Popup' : 'Keep Window Open'}
+                data-tooltip={floatingWindow ? 'Return to Tray Popup' : 'Open as Desktop Window'}
                 onclick={toggleFloatingWindow}
               >
                 <Icon name={floatingWindow ? 'pin-filled' : 'pin'} size={14} strokeWidth={1.9} />
@@ -904,6 +910,17 @@
                   onclick={() => navigate('settings')}
                   ><Icon name="gear" /><span>Settings</span><kbd>{shortcuts.settings}</kbd></button
                 >
+                {#if settingsState.trayAvailable}
+                  <button
+                    class="menu-item"
+                    type="button"
+                    aria-label={floatingWindow ? 'Return to Tray Popup' : 'Open as Desktop Window'}
+                    onclick={toggleFloatingWindow}
+                    ><Icon name={floatingWindow ? 'pin-filled' : 'pin'} /><span
+                      >{floatingWindow ? 'Return to Tray Popup' : 'Open as Desktop Window'}</span
+                    ></button
+                  >
+                {/if}
                 <hr />
                 <details
                   bind:this={shareMenuElement}
@@ -931,6 +948,12 @@
                 <hr />
                 <button class="menu-item" type="button" onclick={() => (showAbout = true)}
                   ><Icon name="about" /><span>About Overcap</span></button
+                >
+                <button
+                  class="menu-item"
+                  type="button"
+                  aria-label="Restart Overcap"
+                  onclick={restartApp}><Icon name="reset" /><span>Restart Overcap</span></button
                 >
                 <button
                   class="menu-item menu-item--danger"

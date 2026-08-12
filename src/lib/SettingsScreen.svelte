@@ -26,6 +26,8 @@
     onAbout: () => void;
     onCopyLogPath: () => Promise<void>;
     onOpenLogFolder: () => Promise<void>;
+    onRestart: () => void;
+    onQuit: () => void;
   }
   let {
     settingsView,
@@ -42,6 +44,8 @@
     onAbout,
     onCopyLogPath,
     onOpenLogFolder,
+    onRestart,
+    onQuit,
   }: Props = $props();
   let recording = $state(false);
   let logActionError = $state<string | null>(null);
@@ -209,12 +213,17 @@
     </div>
     {#if settingsView.trayAvailable}
       <div class="setting-row">
-        <span><b>Window Mode</b></span><SelectMenu
+        <span
+          ><b>Window Mode</b><small
+            >Desktop Window stays open, appears in the taskbar or Dock, and can sit on another
+            display.</small
+          ></span
+        ><SelectMenu
           label="Window Mode"
           value={settings.windowMode}
           options={[
             { value: 'popup', label: 'Tray Popup' },
-            { value: 'floating', label: 'Floating Window' },
+            { value: 'floating', label: 'Desktop Window' },
           ]}
           onChange={(value) => patch({ windowMode: value as AppSettings['windowMode'] })}
         />
@@ -421,6 +430,28 @@
       </div>{/if}
   </div>
 
+  <div class="settings-section">
+    <h2>Application</h2>
+    <div class="setting-row">
+      <span><b>Restart Overcap</b><small>Close and reopen the app.</small></span>
+      <button
+        class="secondary-button"
+        type="button"
+        aria-label="Restart Overcap"
+        onclick={onRestart}>Restart</button
+      >
+    </div>
+    <div class="setting-row">
+      <span><b>Quit Overcap</b><small>Close Overcap completely.</small></span>
+      <button
+        class="secondary-button danger-button"
+        type="button"
+        aria-label="Quit Overcap"
+        onclick={onQuit}>Quit</button
+      >
+    </div>
+  </div>
+
   <button class="screen-cross-link" type="button" aria-label="Customize" onclick={onCustomize}>
     <Icon name="sliders" size={17} />
     <span><b>Customize</b><small>Choose what's visible and where</small></span>
@@ -532,6 +563,10 @@
 
     .secondary-button:disabled {
       opacity: 0.55;
+    }
+
+    .danger-button {
+      color: var(--meter-critical);
     }
 
     .permission-warning {

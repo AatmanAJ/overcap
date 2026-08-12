@@ -100,6 +100,8 @@ describe('Overcap dashboard', () => {
       if (command === 'get_log_path') return Promise.resolve('C:\\Overcap\\logs\\Overcap.log');
       if (command === 'open_log_folder') return Promise.resolve();
       if (command === 'dismiss_main_window') return Promise.resolve();
+      if (command === 'restart_app') return Promise.resolve();
+      if (command === 'quit_app') return Promise.resolve();
       if (command === 'check_for_updates')
         return Promise.resolve({
           available: false,
@@ -132,11 +134,12 @@ describe('Overcap dashboard', () => {
     expect(container.querySelector('.floating-chrome')).not.toBeInTheDocument();
   });
 
-  it('toggles floating window mode from the footer pin when a tray is available', async () => {
-    render(App);
+  it('toggles desktop window mode from the footer pin when a tray is available', async () => {
+    const { container } = render(App);
     await screen.findByText('Plus');
 
-    const pin = screen.getByRole('button', { name: 'Keep Window Open' });
+    const pin = container.querySelector<HTMLButtonElement>('.window-mode-toggle')!;
+    expect(pin).toHaveAccessibleName('Open as Desktop Window');
     expect(pin).toHaveAttribute('aria-pressed', 'false');
     await fireEvent.click(pin);
 
@@ -148,12 +151,10 @@ describe('Overcap dashboard', () => {
         }),
       ),
     );
-    expect(screen.getByRole('button', { name: 'Return to Tray Popup' })).toHaveAttribute(
-      'aria-pressed',
-      'true',
-    );
+    expect(pin).toHaveAccessibleName('Return to Tray Popup');
+    expect(pin).toHaveAttribute('aria-pressed', 'true');
 
-    await fireEvent.click(screen.getByRole('button', { name: 'Return to Tray Popup' }));
+    await fireEvent.click(pin);
     await waitFor(() =>
       expect(mocks.invoke).toHaveBeenCalledWith(
         'save_app_settings',
@@ -162,6 +163,26 @@ describe('Overcap dashboard', () => {
         }),
       ),
     );
+  });
+
+  it('offers desktop window mode by name in Options and preserves the floating wire value', async () => {
+    render(App);
+    await screen.findByText('Plus');
+
+    await fireEvent.click(screen.getByLabelText('Open options'));
+    const menu = screen.getByRole('menu', { name: 'Options menu' });
+    await fireEvent.click(within(menu).getByRole('button', { name: 'Open as Desktop Window' }));
+
+    await waitFor(() =>
+      expect(mocks.invoke).toHaveBeenCalledWith(
+        'save_app_settings',
+        expect.objectContaining({
+          settings: expect.objectContaining({ windowMode: 'floating' }),
+        }),
+      ),
+    );
+    await fireEvent.click(screen.getByLabelText('Open options'));
+    expect(within(menu).getByRole('button', { name: 'Return to Tray Popup' })).toBeInTheDocument();
   });
 
   it('provides a native drag surface and hide control in floating window mode', async () => {
@@ -823,7 +844,9 @@ describe('Overcap dashboard', () => {
     render(App);
     await screen.findByText('Plus');
     expect(screen.getByRole('button', { name: 'Close Overcap' })).toBeInTheDocument();
-    expect(screen.queryByRole('button', { name: 'Keep Window Open' })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('button', { name: 'Open as Desktop Window' }),
+    ).not.toBeInTheDocument();
     expect(screen.queryByRole('button', { name: 'Return to Tray Popup' })).not.toBeInTheDocument();
     await fireEvent.click(screen.getByLabelText('Open options'));
     await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
@@ -1228,6 +1251,36 @@ describe('Overcap dashboard', () => {
     expect(mocks.invoke).toHaveBeenCalledWith('quit_app');
   });
 
+  it('offers restart and quit from Options', async () => {
+    render(App);
+    await screen.findByText('Plus');
+    await fireEvent.click(screen.getByLabelText('Open options'));
+
+    await fireEvent.click(screen.getByRole('button', { name: 'Restart Overcap' }));
+    expect(mocks.invoke).toHaveBeenCalledWith('restart_app');
+
+    await fireEvent.click(screen.getByLabelText('Open options'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Quit Overcap' }));
+    expect(mocks.invoke).toHaveBeenCalledWith('quit_app');
+  });
+
+  it('offers clear restart and quit controls in Settings', async () => {
+    render(App);
+    await screen.findByText('Plus');
+    await fireEvent.click(screen.getByLabelText('Open options'));
+    await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
+
+    expect(
+      screen.getByText(
+        'Desktop Window stays open, appears in the taskbar or Dock, and can sit on another display.',
+      ),
+    ).toBeInTheDocument();
+    await fireEvent.click(screen.getByRole('button', { name: 'Restart Overcap' }));
+    expect(mocks.invoke).toHaveBeenCalledWith('restart_app');
+    await fireEvent.click(screen.getByRole('button', { name: 'Quit Overcap' }));
+    expect(mocks.invoke).toHaveBeenCalledWith('quit_app');
+  });
+
   it('closes the custom Options surface after a command like a native menu', async () => {
     render(App);
     await screen.findByText('Plus');
@@ -1373,7 +1426,7 @@ describe('Overcap dashboard', () => {
       await fireEvent.click(screen.getByRole('button', { name: 'Settings' }));
       const windowMode = screen.getByRole('combobox', { name: 'Window Mode' });
       await fireEvent.click(windowMode);
-      await fireEvent.click(screen.getByRole('option', { name: 'Floating Window' }));
+      await fireEvent.click(screen.getByRole('option', { name: 'Desktop Window' }));
       await waitFor(() =>
         expect(mocks.invoke).toHaveBeenCalledWith(
           'save_app_settings',

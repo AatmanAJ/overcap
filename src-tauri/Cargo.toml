@@ -1,6 +1,6 @@
 [package]
 name = "overcap"
-version = "0.1.0"
+version = "0.1.1"
 description = "Cross-platform AI quota tracker"
 authors = ["AIWITHAJ"]
 edition = "2021"

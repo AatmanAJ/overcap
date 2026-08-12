@@ -291,7 +291,7 @@ pub async fn install_update(
             })?;
     }
     crate::app_info!("updates", "signed update installed; restarting");
-    app.restart();
+    crate::window::restart_application(&app);
 }
 
 #[tauri::command]

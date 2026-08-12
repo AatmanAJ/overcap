@@ -124,6 +124,10 @@ export function quitApplication() {
   return invoke<void>('quit_app');
 }
 
+export function restartApplication() {
+  return invoke<void>('restart_app');
+}
+
 export function checkForApplicationUpdates() {
   return invoke<UpdateStatus>('check_for_updates');
 }

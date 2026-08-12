@@ -20,7 +20,7 @@ use crate::{
     models::{ThemePreference, WindowMode},
     popup::PopupDismissGuard,
     settings::SettingsService,
-    storage::Storage,
+    storage::{DesktopWindowBounds, Storage},
 };
 
 pub const MAIN_WINDOW: &str = "main";
@@ -28,6 +28,7 @@ pub const PANEL_WIDTH: f64 = 320.0;
 pub const PANEL_MIN_HEIGHT: u32 = 240;
 const PANEL_SCREEN_FRACTION: f64 = 0.85;
 const PANEL_RESIZE_SAVE_DELAY: Duration = Duration::from_millis(120);
+const DESKTOP_POSITION_SAVE_DELAY: Duration = Duration::from_millis(150);
 const LIGHT_PANEL_SURFACE: Color = Color(0xfd, 0xf9, 0xf0, 0xff);
 const DARK_PANEL_SURFACE: Color = Color(0x14, 0x14, 0x14, 0xff);
 
@@ -35,6 +36,77 @@ const DARK_PANEL_SURFACE: Color = Color(0x14, 0x14, 0x14, 0xff);
 struct PendingPanelHeight {
     generation: u64,
     height: u32,
+}
+
+#[derive(Clone, Copy)]
+struct PendingDesktopWindowBounds {
+    generation: u64,
+    bounds: DesktopWindowBounds,
+}
+
+pub struct DesktopWindowPositionSession {
+    generation: Arc<AtomicU64>,
+    latest: Mutex<Option<DesktopWindowBounds>>,
+    bounds_sender: Sender<PendingDesktopWindowBounds>,
+    persistence: Arc<Mutex<()>>,
+    storage: Arc<Storage>,
+}
+
+impl DesktopWindowPositionSession {
+    pub fn new(storage: Arc<Storage>) -> Self {
+        let generation = Arc::new(AtomicU64::new(0));
+        let persistence = Arc::new(Mutex::new(()));
+        let (bounds_sender, bounds_receiver) = mpsc::channel::<PendingDesktopWindowBounds>();
+        let worker_generation = generation.clone();
+        let worker_persistence = persistence.clone();
+        let worker_storage = storage.clone();
+        thread::spawn(move || {
+            while let Ok(mut pending) = bounds_receiver.recv() {
+                while let Ok(next) = bounds_receiver.recv_timeout(DESKTOP_POSITION_SAVE_DELAY) {
+                    pending = next;
+                }
+                let Ok(_guard) = worker_persistence.lock() else {
+                    continue;
+                };
+                if pending.generation == worker_generation.load(Ordering::SeqCst) {
+                    let _ = worker_storage.save_desktop_window_bounds(pending.bounds);
+                }
+            }
+        });
+        Self {
+            generation,
+            latest: Mutex::new(None),
+            bounds_sender,
+            persistence,
+            storage,
+        }
+    }
+
+    fn record(&self, bounds: DesktopWindowBounds) {
+        if let Ok(mut latest) = self.latest.lock() {
+            *latest = Some(bounds);
+        }
+        let _ = self.bounds_sender.send(PendingDesktopWindowBounds {
+            generation: self.generation.load(Ordering::SeqCst),
+            bounds,
+        });
+    }
+
+    fn flush(&self, current: Option<DesktopWindowBounds>) {
+        let bounds = current.or_else(|| self.latest.lock().ok().and_then(|latest| *latest));
+        let Some(bounds) = bounds else {
+            return;
+        };
+        let Ok(_guard) = self.persistence.lock() else {
+            return;
+        };
+        self.generation.fetch_add(1, Ordering::SeqCst);
+        let _ = self.storage.save_desktop_window_bounds(bounds);
+    }
+
+    fn saved(&self) -> Option<DesktopWindowBounds> {
+        self.storage.load_desktop_window_bounds().ok().flatten()
+    }
 }
 
 pub struct PanelResizeSession {
@@ -266,6 +338,7 @@ pub fn show_main_window(window: &WebviewWindow) {
         .is_floating()
     {
         let _ = window.unminimize();
+        restore_desktop_window_position(window);
         let _ = restore_manual_panel_height(window);
     } else {
         position_popup(window);
@@ -275,10 +348,119 @@ pub fn show_main_window(window: &WebviewWindow) {
     let _ = window.set_focus();
 }
 
+fn bounds_intersect(left: DesktopWindowBounds, right: DesktopWindowBounds) -> bool {
+    let left_right = i64::from(left.x) + i64::from(left.width);
+    let left_bottom = i64::from(left.y) + i64::from(left.height);
+    let right_right = i64::from(right.x) + i64::from(right.width);
+    let right_bottom = i64::from(right.y) + i64::from(right.height);
+    i64::from(left.x) < right_right
+        && left_right > i64::from(right.x)
+        && i64::from(left.y) < right_bottom
+        && left_bottom > i64::from(right.y)
+}
+
+fn clamp_axis_to_work_area(
+    position: i32,
+    window_size: u32,
+    work_start: i32,
+    work_size: u32,
+) -> i32 {
+    let lower = i64::from(work_start);
+    let visible_window_size = i64::from(window_size.min(work_size));
+    let upper = (lower + i64::from(work_size) - visible_window_size).max(lower);
+    i64::from(position)
+        .clamp(lower, upper)
+        .clamp(i64::from(i32::MIN), i64::from(i32::MAX)) as i32
+}
+
+fn window_bounds(
+    window: &Window,
+    position: tauri::PhysicalPosition<i32>,
+) -> Option<DesktopWindowBounds> {
+    let size = window.outer_size().ok()?;
+    Some(DesktopWindowBounds {
+        x: position.x,
+        y: position.y,
+        width: size.width.max(1),
+        height: size.height.max(1),
+    })
+}
+
+fn persist_desktop_window_bounds(window: &Window) {
+    let app = window.app_handle();
+    if !app.state::<DesktopIntegration>().is_floating() {
+        return;
+    }
+    let Some(session) = app.try_state::<Arc<DesktopWindowPositionSession>>() else {
+        return;
+    };
+    let bounds = window
+        .outer_position()
+        .ok()
+        .and_then(|position| window_bounds(window, position));
+    session.flush(bounds);
+}
+
+fn restore_desktop_window_position(window: &WebviewWindow) {
+    let saved = window
+        .app_handle()
+        .try_state::<Arc<DesktopWindowPositionSession>>()
+        .and_then(|session| session.saved());
+    let restored_position = saved.and_then(|bounds| {
+        window.available_monitors().ok().and_then(|monitors| {
+            monitors.into_iter().find_map(|monitor| {
+                let work_area = monitor.work_area();
+                let work_bounds = DesktopWindowBounds {
+                    x: work_area.position.x,
+                    y: work_area.position.y,
+                    width: work_area.size.width,
+                    height: work_area.size.height,
+                };
+                if !bounds_intersect(bounds, work_bounds) {
+                    return None;
+                }
+                Some(tauri::PhysicalPosition::new(
+                    clamp_axis_to_work_area(
+                        bounds.x,
+                        bounds.width,
+                        work_bounds.x,
+                        work_bounds.width,
+                    ),
+                    clamp_axis_to_work_area(
+                        bounds.y,
+                        bounds.height,
+                        work_bounds.y,
+                        work_bounds.height,
+                    ),
+                ))
+            })
+        })
+    });
+    if let Some(position) = restored_position {
+        let _ = window.set_position(position);
+    } else {
+        let _ = window.center();
+    }
+}
+
+#[cfg(target_os = "macos")]
+fn set_desktop_shell_visibility(window: &WebviewWindow, floating: bool) -> tauri::Result<()> {
+    window.app_handle().set_activation_policy(if floating {
+        tauri::ActivationPolicy::Regular
+    } else {
+        tauri::ActivationPolicy::Accessory
+    })
+}
+
+#[cfg(not(target_os = "macos"))]
+fn set_desktop_shell_visibility(window: &WebviewWindow, floating: bool) -> tauri::Result<()> {
+    window.set_skip_taskbar(!floating)
+}
+
 fn set_window_chrome(window: &WebviewWindow, floating: bool) -> tauri::Result<()> {
     window
         .set_resizable(false)
-        .and_then(|_| window.set_skip_taskbar(!floating))
+        .and_then(|_| set_desktop_shell_visibility(window, floating))
         .and_then(|_| window.set_always_on_top(!floating))
         .and_then(|_| window.set_decorations(false))
 }
@@ -297,6 +479,9 @@ pub fn apply_window_mode(
         .state::<PopupDismissGuard>()
         .cancel_pending();
     finish_native_panel_resize(window);
+    if previous_floating && !floating {
+        persist_desktop_window_bounds(&window.as_ref().window());
+    }
     if set_window_chrome(window, floating).is_err() {
         let _ = set_window_chrome(window, previous_floating);
         return Err("Overcap window mode could not be changed.".to_owned());
@@ -312,7 +497,7 @@ pub fn apply_window_mode(
         let _ = window.unminimize();
         if floating {
             if center_floating {
-                let _ = window.center();
+                restore_desktop_window_position(window);
             }
         } else {
             position_popup(window);
@@ -331,6 +516,7 @@ pub fn apply_window_mode(
 }
 
 fn hide_main_native_window(window: &Window) {
+    persist_desktop_window_bounds(window);
     if window.hide().is_err() {
         return;
     }
@@ -343,6 +529,23 @@ fn hide_main_native_window(window: &Window) {
 pub fn hide_main_window(window: &WebviewWindow) {
     finish_native_panel_resize(window);
     hide_main_native_window(&window.as_ref().window());
+}
+
+pub fn restart_application(app: &AppHandle) -> ! {
+    persist_application_window_state(app);
+    app.restart()
+}
+
+pub fn quit_application(app: &AppHandle) {
+    persist_application_window_state(app);
+    app.exit(0);
+}
+
+pub fn persist_application_window_state(app: &AppHandle) {
+    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
+        finish_native_panel_resize(&window);
+        persist_desktop_window_bounds(&window.as_ref().window());
+    }
 }
 
 pub fn toggle_main_window(app: &AppHandle) {
@@ -730,6 +933,21 @@ pub fn handle_window_event(window: &Window, event: &WindowEvent) {
     }
 
     match event {
+        WindowEvent::Moved(position)
+            if window
+                .app_handle()
+                .try_state::<DesktopIntegration>()
+                .is_some_and(|integration| integration.is_floating()) =>
+        {
+            if let (Some(session), Some(bounds)) = (
+                window
+                    .app_handle()
+                    .try_state::<Arc<DesktopWindowPositionSession>>(),
+                window_bounds(window, *position),
+            ) {
+                session.record(bounds);
+            }
+        }
         WindowEvent::Resized(size) => {
             if let Some(session) = window.app_handle().try_state::<Arc<PanelResizeSession>>() {
                 let scale = window.scale_factor().unwrap_or(1.0);
@@ -787,12 +1005,13 @@ mod tests {
     use tempfile::tempdir;
 
     use super::{
-        anchored_vertical_frame, panel_resize_edge_for_context, panel_resize_edge_for_frames,
-        panel_surface_color, PanelHeightMode, PanelResizeEdge, PanelResizeSession, VerticalFrame,
-        DARK_PANEL_SURFACE, LIGHT_PANEL_SURFACE,
+        anchored_vertical_frame, bounds_intersect, clamp_axis_to_work_area,
+        panel_resize_edge_for_context, panel_resize_edge_for_frames, panel_surface_color,
+        DesktopWindowPositionSession, PanelHeightMode, PanelResizeEdge, PanelResizeSession,
+        VerticalFrame, DARK_PANEL_SURFACE, LIGHT_PANEL_SURFACE,
     };
     use crate::models::ThemePreference;
-    use crate::storage::Storage;
+    use crate::storage::{DesktopWindowBounds, Storage};
     use tauri::Theme;
 
     #[test]
@@ -824,6 +1043,66 @@ mod tests {
         session.finish(Some(720));
         assert_eq!(session.mode(), PanelHeightMode::Automatic);
         assert_eq!(storage.load_panel_height().unwrap(), None);
+    }
+
+    #[test]
+    fn desktop_window_position_flushes_the_latest_move_before_restart() {
+        let directory = tempdir().unwrap();
+        let storage = Arc::new(Storage::open(&directory.path().join("overcap.db")).unwrap());
+        let session = DesktopWindowPositionSession::new(storage.clone());
+        let first = DesktopWindowBounds {
+            x: 120,
+            y: 80,
+            width: 320,
+            height: 640,
+        };
+        let latest = DesktopWindowBounds {
+            x: -1_720,
+            y: 160,
+            width: 320,
+            height: 640,
+        };
+
+        session.record(first);
+        session.record(latest);
+        session.flush(None);
+
+        assert_eq!(storage.load_desktop_window_bounds().unwrap(), Some(latest));
+    }
+
+    #[test]
+    fn saved_desktop_window_only_restores_when_it_intersects_a_live_display() {
+        let second_display = DesktopWindowBounds {
+            x: -1_920,
+            y: 0,
+            width: 1_920,
+            height: 1_080,
+        };
+        assert!(bounds_intersect(
+            DesktopWindowBounds {
+                x: -1_700,
+                y: 100,
+                width: 320,
+                height: 640,
+            },
+            second_display,
+        ));
+        assert!(!bounds_intersect(
+            DesktopWindowBounds {
+                x: 2_560,
+                y: 100,
+                width: 320,
+                height: 640,
+            },
+            second_display,
+        ));
+    }
+
+    #[test]
+    fn restored_desktop_window_is_clamped_inside_the_live_display() {
+        assert_eq!(clamp_axis_to_work_area(1_919, 320, 0, 1_920), 1_600);
+        assert_eq!(clamp_axis_to_work_area(-1_700, 320, -1_920, 1_920), -1_700);
+        assert_eq!(clamp_axis_to_work_area(-2_100, 320, -1_920, 1_920), -1_920);
     }
 
     #[test]

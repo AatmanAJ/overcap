@@ -36,6 +36,14 @@ pub struct ProviderAccountUpdate {
     pub payload: String,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct DesktopWindowBounds {
+    pub x: i32,
+    pub y: i32,
+    pub width: u32,
+    pub height: u32,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ThresholdNotificationState {
     pub reset_at_millis: i64,
@@ -87,6 +95,13 @@ impl Storage {
              );
              CREATE TABLE IF NOT EXISTS panel_state (
                id INTEGER PRIMARY KEY CHECK (id = 1),
+               height INTEGER NOT NULL
+             );
+             CREATE TABLE IF NOT EXISTS desktop_window_state (
+               id INTEGER PRIMARY KEY CHECK (id = 1),
+               x INTEGER NOT NULL,
+               y INTEGER NOT NULL,
+               width INTEGER NOT NULL,
                height INTEGER NOT NULL
              );
              CREATE TABLE IF NOT EXISTS provider_environment (
@@ -580,6 +595,54 @@ impl Storage {
         Ok(())
     }
 
+    pub fn load_desktop_window_bounds(&self) -> Result<Option<DesktopWindowBounds>, StorageError> {
+        let connection = self.connection()?;
+        let bounds = connection
+            .query_row(
+                "SELECT x, y, width, height FROM desktop_window_state WHERE id = 1",
+                [],
+                |row| {
+                    Ok((
+                        row.get::<_, i64>(0)?,
+                        row.get::<_, i64>(1)?,
+                        row.get::<_, i64>(2)?,
+                        row.get::<_, i64>(3)?,
+                    ))
+                },
+            )
+            .optional()?;
+        Ok(bounds.and_then(|(x, y, width, height)| {
+            Some(DesktopWindowBounds {
+                x: i32::try_from(x).ok()?,
+                y: i32::try_from(y).ok()?,
+                width: u32::try_from(width).ok()?.max(1),
+                height: u32::try_from(height).ok()?.max(1),
+            })
+        }))
+    }
+
+    pub fn save_desktop_window_bounds(
+        &self,
+        bounds: DesktopWindowBounds,
+    ) -> Result<(), StorageError> {
+        self.connection()?.execute(
+            "INSERT INTO desktop_window_state(id, x, y, width, height)
+             VALUES (1, ?1, ?2, ?3, ?4)
+             ON CONFLICT(id) DO UPDATE SET
+               x = excluded.x,
+               y = excluded.y,
+               width = excluded.width,
+               height = excluded.height",
+            params![
+                i64::from(bounds.x),
+                i64::from(bounds.y),
+                i64::from(bounds.width),
+                i64::from(bounds.height)
+            ],
+        )?;
+        Ok(())
+    }
+
     fn insert_day(
         transaction: &rusqlite::Transaction<'_>,
         provider_id: &str,
@@ -972,6 +1035,26 @@ mod tests {
 
         storage.clear_panel_height().unwrap();
         assert_eq!(storage.load_panel_height().unwrap(), None);
+    }
+
+    #[test]
+    fn desktop_window_bounds_round_trip_is_independent_from_app_settings() {
+        let directory = tempdir().unwrap();
+        let storage = Storage::open(&directory.path().join("overcap.db")).unwrap();
+        let settings = AppSettings::default();
+        storage.save_settings(&settings).unwrap();
+
+        assert_eq!(storage.load_desktop_window_bounds().unwrap(), None);
+        let bounds = super::DesktopWindowBounds {
+            x: -1_920,
+            y: 144,
+            width: 320,
+            height: 734,
+        };
+        storage.save_desktop_window_bounds(bounds).unwrap();
+
+        assert_eq!(storage.load_desktop_window_bounds().unwrap(), Some(bounds));
+        assert_eq!(storage.load_settings().unwrap(), Some(settings));
     }
 
     #[test]

@@ -42,7 +42,7 @@ Open the latest release and choose the file for your platform:
 - **macOS:** `_universal.dmg` (macOS 11 or later)
 - **Linux:** `_amd64.AppImage` or `_amd64.deb` for x64; the ARM64/aarch64 equivalent for ARM64
 
-Overcap 0.1.0 is a public beta. Its automatic updates are cryptographically signed, but its initial
+Overcap 0.1.1 is a public beta. Its automatic updates are cryptographically signed, but its initial
 Windows and macOS installers do not yet carry Microsoft or Apple developer signatures. Read the
 [installation guide](docs/install.md) for the exact first-launch steps and security prompts.
 
@@ -53,7 +53,9 @@ Windows and macOS installers do not yet carry Microsoft or Apple developer signa
 - **Provider sparklines.** Scan the last seven days of token usage without opening another view.
 - **Threshold alerts.** Set global or per-provider warnings at 80%, 95%, and 100%.
 - **Share receipts.** Export usage and spend as a compact till-style PNG receipt.
-- **Tray or floating dashboard.** Open a compact popup or pin the movable panel to your desktop.
+- **Tray or desktop window.** Use the compact popup or keep Overcap visible in the taskbar or Dock,
+  including on a second display.
+- **Built-in restart and quit.** Restart or close Overcap from the app, Settings, or tray menu.
 - **Used or left.** Show how much quota has gone or how much remains.
 - **Custom layouts.** Reorder providers and metrics, hide rows, and add provider nicknames.
 - **Local by default.** Overcap has no account, cloud backend, analytics, or usage telemetry.

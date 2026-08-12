@@ -76,8 +76,10 @@ pub fn lock_panel_resize_axis(app: AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 pub fn quit_app(app: AppHandle) {
-    if let Some(window) = app.get_webview_window(MAIN_WINDOW) {
-        finish_native_panel_resize(&window);
-    }
-    app.exit(0);
+    crate::window::quit_application(&app);
+}
+
+#[tauri::command]
+pub fn restart_app(app: AppHandle) {
+    crate::window::restart_application(&app);
 }

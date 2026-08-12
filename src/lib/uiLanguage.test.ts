@@ -101,6 +101,7 @@ describe('native UI language contract', () => {
       'Notifications',
       'Advanced',
       'Updates',
+      'Application',
       'Check for Updates Automatically',
       'Check for Updates…',
     ]) {

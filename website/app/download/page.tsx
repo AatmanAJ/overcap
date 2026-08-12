@@ -15,7 +15,7 @@ export default function DownloadPage() {
       <SiteHeader />
       <main id="main-content">
         <header className="page-hero shell">
-          <p className="eyebrow eyebrow-accent">Overcap 0.1.0 beta</p>
+          <p className="eyebrow eyebrow-accent">Overcap 0.1.1 beta</p>
           <h1>Download once.<br />Watch every limit.</h1>
           <p>
             Choose your platform below. Every build comes from the public GitHub release, and

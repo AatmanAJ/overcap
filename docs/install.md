@@ -6,7 +6,7 @@ for your operating system and processor.
 
 ## Beta signing notice
 
-Overcap 0.1.0 is a public beta. Its updater packages are cryptographically signed so the app can
+Overcap 0.1.1 is a public beta. Its updater packages are cryptographically signed so the app can
 reject a tampered update. The initial Windows and macOS installers are not yet signed with
 Microsoft or Apple developer certificates. Windows may show **Unknown publisher** or Microsoft
 Defender SmartScreen, and macOS may block the first launch.
@@ -77,6 +77,10 @@ sudo apt remove overcap
 Overcap opens in the tray. Open **Customize** to choose providers, add API keys where required,
 reorder metrics, set nicknames, and adjust alert thresholds. Provider-specific setup is documented
 under [`docs/providers`](providers/).
+
+To keep Overcap visible while you work, choose **Desktop Window** in **Settings > Appearance**.
+That mode appears in the taskbar or Dock, stays open when it loses focus, and remembers its position
+on a second display. Restart and quit controls are available under **Settings > Application**.
 
 Overcap has no account, analytics, or telemetry. See [PRIVACY.md](../PRIVACY.md) for the full data
 handling summary.
