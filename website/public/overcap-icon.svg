@@ -1,12 +1,11 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="1024" height="1024" viewBox="0 0 1024 1024" fill="none">
   <title>Overcap</title>
-  <desc>An open off-white O with an orange cap bar on a dark square.</desc>
+  <desc>A closed off-white O with an orange cap seated across its upper-right edge.</desc>
   <rect x="32" y="32" width="960" height="960" rx="196" fill="#151A20" />
   <path
-    d="M726 374C662 270 516 228 388 276C234 334 170 514 236 666C302 818 478 882 630 814C716 776 772 704 790 622"
-    stroke="#F2F0E9"
-    stroke-width="78"
-    stroke-linecap="round"
+    fill="#F2F0E9"
+    fill-rule="evenodd"
+    d="M448 224A296 296 0 1 0 448 816A296 296 0 1 0 448 224ZM448 324A196 196 0 1 1 448 716A196 196 0 1 1 448 324Z"
   />
-  <path d="M650 250H824" stroke="#F04B2F" stroke-width="78" stroke-linecap="round" />
+  <rect x="550" y="238" width="250" height="76" rx="38" fill="#F04B2F" />
 </svg>

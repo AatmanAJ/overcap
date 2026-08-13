@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 const repoUrl = 'https://github.com/AJ-Base44/overcap';
@@ -7,9 +8,7 @@ export function SiteHeader() {
     <header className="site-header">
       <div className="shell header-inner">
         <Link className="brand" href="/" aria-label="Overcap home">
-          <span className="brand-mark" aria-hidden="true">
-            <i />
-          </span>
+          <Image className="brand-icon" src="/overcap-icon.svg" alt="" width={22} height={22} aria-hidden="true" />
           <span>OVERCAP</span>
         </Link>
         <p className="operator-mark">

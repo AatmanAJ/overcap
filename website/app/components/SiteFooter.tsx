@@ -1,3 +1,4 @@
+import Image from 'next/image';
 import Link from 'next/link';
 
 export function SiteFooter() {
@@ -5,9 +6,7 @@ export function SiteFooter() {
     <footer className="site-footer">
       <div className="shell footer-top">
         <Link className="brand footer-brand" href="/" aria-label="Overcap home">
-          <span className="brand-mark brand-mark-dark" aria-hidden="true">
-            <i />
-          </span>
+          <Image className="brand-icon" src="/overcap-icon.svg" alt="" width={22} height={22} aria-hidden="true" />
           <span>OVERCAP</span>
         </Link>
         <p>Live quotas, reset times and spend across your coding tools.</p>

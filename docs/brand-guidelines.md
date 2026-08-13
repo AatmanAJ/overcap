@@ -15,12 +15,13 @@ The product name remains **Overcap**. “Overcap Instrument” is an internal de
 
 ## Mark
 
-The Overcap mark combines an open **O** with a horizontal **cap**. The opening suggests live headroom; the orange cap is the threshold being watched.
+The Overcap mark combines a closed **O** with a horizontal **cap** seated across its upper-right edge. The complete ring keeps the letter unmistakable at small sizes; the orange cap is the threshold being watched.
 
-- Primary app mark: dark square, off-white open O, Signal Orange cap bar.
-- Inline mark: one-colour O/cap construction using the surrounding text colour.
+- Primary app mark: dark square, off-white closed O, Signal Orange cap bar overlapping the ring.
+- Inline mark: closed O in the surrounding text colour with a Signal Orange cap.
 - Tray mark: solid monochrome template artwork. Never place colour in a macOS template icon.
 - Keep clear space equal to the cap-bar thickness around the mark.
+- Keep the cap visibly seated on the ring. Never detach it into a floating dash or open the O into a C.
 - Do not add gauges, needles, circuit traces, gradients, glow or generative-AI motifs.
 
 ## Colour

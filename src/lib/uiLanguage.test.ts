@@ -50,8 +50,11 @@ describe('native UI language contract', () => {
       expect(source).not.toContain('var(--meter-fill)');
     }
 
-    expect(overcapMark).toContain('stroke="currentColor"');
+    expect(overcapMark).toContain('fill="currentColor"');
+    expect(overcapMark).toContain('fill-rule="evenodd"');
+    expect(overcapMark).toContain('overcap-mark__ring');
     expect(overcapMark).toContain('overcap-mark__cap');
+    expect(overcapMark).toContain('fill: var(--signal);');
     expect(overcapMark).not.toContain('overcap-mark.png');
     expect(overcapMark).not.toContain('#f04b2f');
   });

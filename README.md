@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/overcap-icon.png" alt="Overcap logo" width="88">
+  <img src="assets/overcap-icon.svg" alt="Overcap logo" width="88">
 </p>
 
 <h1 align="center">Overcap</h1>
@@ -21,16 +21,6 @@
 
 Overcap turns scattered quota data into one live capacity readout. See the tightest constraint
 first, check the current pace, and know what resets next without breaking your flow.
-
-## Demo
-
-<p align="center">
-  <img src="assets/overcap-dashboard-demo.gif" alt="Overcap dashboard showing the tightest quota, pace projection, and provider history" width="434">
-</p>
-
-<p align="center">
-  <img src="assets/overcap-customise-demo.gif" alt="Overcap provider customization, alert thresholds, and share receipt export" width="434">
-</p>
 
 ## Download
 
