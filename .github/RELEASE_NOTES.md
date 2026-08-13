@@ -1,15 +1,15 @@
-## Overcap 0.1.1
+## Overcap 0.1.2
 
 Live quotas, reset times and spend across your coding tools from one desktop app.
 
-### What's new
+### What's fixed
 
-- Restart Overcap without opening Task Manager or Activity Monitor
-- Use Desktop Window mode to keep Overcap visible in the taskbar or Dock
-- Move Overcap to a second display and keep that position after restarting
-- Reopen a hidden Desktop Window directly from the macOS Dock
+- Rebuilt the Overcap mark as a clear closed O with its orange cap seated on the ring
+- Synchronized the corrected mark across the app, tray, installers, website, favicon and social artwork
+- Removed outdated demo screenshots from the repository README
+- Added a brand-asset contract so future logo drift fails CI
 
-### Also included
+### Product highlights
 
 - A hero gauge that surfaces your tightest current limit
 - Pace and monthly-spend projections

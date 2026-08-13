@@ -438,7 +438,7 @@ function createDemoBackend(options: DemoBackendOptions = {}): DemoBackend {
       case 'check_for_updates':
         return {
           available: false,
-          currentVersion: '0.1.1',
+          currentVersion: '0.1.2',
           version: null,
           body: null,
           installable: false,

@@ -65,7 +65,7 @@ const structuredData = {
   name: 'Overcap',
   applicationCategory: 'DeveloperApplication',
   operatingSystem: 'Windows 10+, macOS 11+, Linux',
-  softwareVersion: '0.1.1',
+  softwareVersion: '0.1.2',
   url: 'https://overcap.dev',
   downloadUrl: releaseUrl,
   codeRepository: 'https://github.com/AJ-Base44/overcap',
@@ -135,7 +135,7 @@ export default function Home() {
             </div>
             <figcaption>
               <span>CAPACITY MONITOR</span>
-              <span>DESKTOP / 0.1.1</span>
+              <span>DESKTOP / 0.1.2</span>
             </figcaption>
           </figure>
         </section>
@@ -297,7 +297,7 @@ export default function Home() {
         <section className="section shell" id="download" aria-labelledby="download-title">
           <div className="section-index">
             <p>04 / Install</p>
-            <p>Public beta / 0.1.1</p>
+            <p>Public beta / 0.1.2</p>
           </div>
           <div className="section-heading">
             <h2 id="download-title">

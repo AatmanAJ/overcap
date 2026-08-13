@@ -17,7 +17,7 @@ export default function DownloadPage() {
         <header className="page-hero shell">
           <p className="signal-label">
             <span aria-hidden="true" />
-            Build index / 0.1.1
+            Build index / 0.1.2
           </p>
           <h1>
             Choose a machine.

@@ -36,7 +36,7 @@ Open the latest release and choose the file for your platform:
 - **macOS:** `_universal.dmg` (macOS 11 or later)
 - **Linux:** `_amd64.AppImage` or `_amd64.deb` for x64; the ARM64/aarch64 equivalent for ARM64
 
-Overcap 0.1.1 is a public beta. Its automatic updates are cryptographically signed, but its initial
+Overcap 0.1.2 is a public beta. Its automatic updates are cryptographically signed, but its initial
 Windows and macOS installers do not yet carry Microsoft or Apple developer signatures. Read the
 [installation guide](docs/install.md) for the exact first-launch steps and security prompts.
 

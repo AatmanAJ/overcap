@@ -1,6 +1,6 @@
 [package]
 name = "overcap"
-version = "0.1.1"
+version = "0.1.2"
 description = "Cross-platform quota and spend tracker for coding tools"
 authors = ["Overcap contributors"]
 edition = "2021"
